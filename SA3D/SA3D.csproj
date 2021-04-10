@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>SATools.SA3D</RootNamespace>
+    <StartupObject>SATools.SA3D.Program</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SAModel.Graphics.OpenGL\SAModel.Graphics.OpenGL.csproj" />
+    <ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
+    <ProjectReference Include="..\SAModel\SAModel.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Icons\**">
+			<CopyToOutputDirectory>Resource</CopyToOutputDirectory>
+		</Resource>
+	</ItemGroup>
+
+</Project>
