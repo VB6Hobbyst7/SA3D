@@ -5,11 +5,10 @@ using SATools.SAModel.Graphics.OpenGL;
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Interop;
 
 namespace SATools.SA3D.ViewModel
 {
-    enum Mode
+    internal enum Mode
     {
         Model,
         Level,

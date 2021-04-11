@@ -41,10 +41,7 @@ namespace SATools.SA3D.ViewModel
             Display();
         }
 
-        private void Select(NJObjectVM item)
-        {
-            _mainVM.RenderContext.ActiveNJO = item.NJObject;
-        }
+        private void Select(NJObjectVM item) => _mainVM.RenderContext.ActiveNJO = item.NJObject;
 
         public void Refresh()
         {

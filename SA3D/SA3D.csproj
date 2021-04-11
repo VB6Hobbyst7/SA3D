@@ -32,4 +32,9 @@
 		</Resource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Icons\RecordDot_redNoHalo_16x.png" />
+	  <None Remove="Icons\Refresh_16x.png" />
+	</ItemGroup>
+
 </Project>

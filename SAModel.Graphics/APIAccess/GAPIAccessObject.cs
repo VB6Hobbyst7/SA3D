@@ -12,6 +12,8 @@ namespace SATools.SAModel.Graphics.APIAccess
     /// </summary>
     public abstract class GAPIAccessObject : IGAPIACamera, IGAPIAMaterial, IGAPIACanvas
     {
+        private bool _used;
+
         public GAPIAInputBridge InputBridge { get; }
 
         public GAPIAccessObject()
@@ -28,13 +30,29 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// <summary>
         /// Runs the Context as a window
         /// </summary>
-        public abstract void AsWindow(Context context);
+        public void AsWindow(Context context)
+        {
+            if(_used)
+                throw new System.InvalidOperationException("Access object was already used before!");
+            _used = true;
+            InternalAsWindow(context);
+        }
+
+        protected abstract void InternalAsWindow(Context context);
 
         /// <summary>
         /// Creates a WPF control from a context
         /// </summary>
         /// <param name="windowSource">Window source to attach to</param>
-        public abstract System.Windows.FrameworkElement AsControl(Context context);
+        public System.Windows.FrameworkElement AsControl(Context context)
+        {
+            if(_used)
+                throw new System.InvalidOperationException("Access object was already used before!");
+            _used = true;
+            return InternalAsControl(context);
+        }
+
+        protected abstract System.Windows.FrameworkElement InternalAsControl(Context context);
 
         /// <summary>
         /// Updates the viewport resolution

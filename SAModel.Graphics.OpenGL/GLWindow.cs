@@ -248,42 +248,35 @@ namespace SATools.SAModel.Graphics.OpenGL
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
             base.OnMouseMove(e);
-            if(IsFocused)
-            {
-                var pos = e.Position;
-                if(_mouseLocked)
-                    _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), new(_center.X, _center.Y));
-                else
-                    _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), null);
-            }
+            var pos = e.Position;
+            if(_mouseLocked)
+                _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), new(_center.X, _center.Y));
+            else
+                _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), null);
         }
 
         protected override void OnMouseLeave()
         {
             base.OnMouseLeave();
-            if(IsFocused)
-                _inputBridge.UpdateCursorPos(null, null);
+            _inputBridge.ClearInputs();
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
-            if(IsFocused)
-                _inputBridge.UpdateScroll(e.Offset.Y);
+            _inputBridge.UpdateScroll(e.Offset.Y);
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            if(IsFocused)
-                _inputBridge.MouseButtonPressed((MouseButton)e.Button);
+            _inputBridge.MouseButtonPressed((MouseButton)e.Button);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            if(IsFocused)
-                _inputBridge.MouseButtonReleased((MouseButton)e.Button);
+            _inputBridge.MouseButtonReleased((MouseButton)e.Button);
         }
 
         #endregion

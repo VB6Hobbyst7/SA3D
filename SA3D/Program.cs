@@ -13,7 +13,9 @@ namespace SATools.SA3D
         {
             if(args.Length == 0)
             {
-                App.Main();
+                var app = new XAML.App();
+                app.InitializeComponent();
+                app.Run();
                 return;
             }
 

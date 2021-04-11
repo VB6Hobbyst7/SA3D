@@ -56,18 +56,19 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             Loaded += (o, e) =>
             {
-                context.Resolution = new((int)RenderSize.Width, (int)RenderSize.Height);
+                _context.Resolution = new((int)RenderSize.Width, (int)RenderSize.Height);
                 _center = new((float)RenderSize.Width / 2f, (float)RenderSize.Height / 2f);
             };
 
-            Ready += context.GraphicsInit;
+            Ready += _context.GraphicsInit;
 
             Render += (time) =>
             {
-                if(context.IsFocused && !IsFocused)
+                if(_context.IsFocused && !IsFocused)
                     inputBridge.ClearInputs();
-                context.IsFocused = IsFocused;
-                context.Update(time.TotalSeconds);
+
+                _context.IsFocused = IsFocused;
+                _context.Update(time.TotalSeconds);
 
                 if(_mouseLocked)
                 {
@@ -126,13 +127,13 @@ namespace SATools.SAModel.Graphics.OpenGL
         protected override void OnMouseLeave(MouseEventArgs e)
         {
             base.OnMouseLeave(e);
-             _inputBridge.UpdateCursorPos(null, null);
+            _inputBridge.ClearInputs();
         }
 
         protected override void OnMouseWheel(System.Windows.Input.MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
-            _inputBridge.UpdateScroll(e.Delta);
+            _inputBridge.UpdateScroll(e.Delta / 120f);
         }
 
         protected override void OnMouseDown(System.Windows.Input.MouseButtonEventArgs e)

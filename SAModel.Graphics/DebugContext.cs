@@ -251,14 +251,6 @@ namespace SATools.SAModel.Graphics
             mat.DestinationBlendmode = ModelData.BlendMode.SrcAlphaInverted;
             mat.Ambient = new Color(128, 128, 128, 64);
 
-            if(File.Exists("Settings.json"))
-                DebugSettings.Load("Settings.json");
-            else
-            {
-                DebugSettings.InitDefault();
-                DebugSettings.Global.Save("Settings");
-            }
-
             RenderMode = RenderMode.Default;
             WireframeMode = WireFrameMode.None;
             BoundsMode = BoundsMode.None;
@@ -378,7 +370,7 @@ namespace SATools.SAModel.Graphics
                     0);
 
                 // modifying movement speed 
-                float dir = Input.ScrollDif > 0 ? -0.05f : 0.05f;
+                float dir = Input.ScrollDif < 0 ? -0.05f : 0.05f;
                 for(int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
                 {
                     CamMovementSpeed += CamMovementSpeed * dir;
@@ -446,7 +438,7 @@ namespace SATools.SAModel.Graphics
                     else if(Input.KeyPressed(s.alignUp))
                         Camera.Rotation = new Vector3(invertAxis ? -90 : 90, 0, 0);
 
-                    float dir = Input.ScrollDif > 0 ? 0.07f : -0.07f;
+                    float dir = Input.ScrollDif < 0 ? 0.07f : -0.07f;
                     for(int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
                     {
                         Camera.Distance += Camera.Distance * dir;

@@ -69,6 +69,11 @@ namespace SATools.SAModel.Graphics
         {
             _apiAccess = apiAccess ?? throw new NotInitializedException("Inputhandler required");
             _apiAccess.inputHandler = this;
+
+            _keyPressed = new();
+            _keyWasPressed = new();
+            _mousePressed = new();
+            _mouseWasPressed = new();
         }
 
 
@@ -79,18 +84,21 @@ namespace SATools.SAModel.Graphics
         {
             _apiAccess.PreUpdate();
 
+            var tKey = _keyWasPressed;
             _keyWasPressed = _keyPressed;
+            _keyPressed = tKey;
+            _keyPressed.Clear();
+
+            var tMouse = _mouseWasPressed;
             _mouseWasPressed = _mousePressed;
+            _mousePressed = tMouse;
+            _mousePressed.Clear();
+
 
             if(focused)
             {
-                _keyPressed = new(_apiAccess.PressedKeys);
-                _mousePressed = new(_apiAccess.PressedButtons);
-            }
-            else
-            {
-                _keyPressed = new();
-                _mousePressed = new();
+                _keyPressed.UnionWith(_apiAccess.PressedKeys);
+                _mousePressed.UnionWith(_apiAccess.PressedButtons);
             }
 
             CursorDif = _apiAccess.CursorDelta;

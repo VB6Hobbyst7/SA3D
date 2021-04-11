@@ -5,20 +5,13 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Windows.Interop;
-using OpenTK.Wpf;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.OpenGL.Properties;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
-using Key = System.Windows.Input.Key;
-using TKey = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
-using TMouse = OpenTK.Windowing.GraphicsLibraryFramework.MouseButton;
 using UIElement = SATools.SAModel.Graphics.UI.UIElement;
 using TKVector3 = OpenTK.Mathematics.Vector3;
 
@@ -36,6 +29,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Viewport(default, context.Resolution);
             GL.ClearColor(context.BackgroundColor.SystemCol);
             GL.Enable(EnableCap.DepthTest);
+            //GL.Enable(EnableCap.FramebufferSrgb); srgb doesnt work for glcontrol, so we'll just leave it out
             GL.Uniform1(13, 0f); // setting normal offset for wireframe
 
             // Material
@@ -52,9 +46,6 @@ namespace SATools.SAModel.Graphics.OpenGL
             fragShader = Encoding.ASCII.GetString(Resources.DefaultUI_frag).Trim('?');
             _uiShader = new Shader(vertexShader, fragShader);
 
-            _reuse = new Queue<UIBuffer>();
-            _buffers = new Dictionary<Guid, UIBuffer>();
-
             // for debug
             if(context.GetType() == typeof(DebugContext))
             {
@@ -66,10 +57,10 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
         }
 
-        public override void AsWindow(Context context)
+        protected override void InternalAsWindow(Context context)
             => new GLWindow(context, InputBridge, context.Resolution).Run();
 
-        public override FrameworkElement AsControl(Context context)
+        protected override FrameworkElement InternalAsControl(Context context)
             => new GLControl(context, InputBridge);
 
         public override void UpdateViewport(Rectangle screen, bool resized)
@@ -331,12 +322,12 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// <summary>
         /// Buffers that can be repurposed
         /// </summary>
-        private Queue<UIBuffer> _reuse;
+        private readonly Queue<UIBuffer> _reuse = new();
 
         /// <summary>
         /// Buffers that were used in the last cycle
         /// </summary>
-        private Dictionary<Guid, UIBuffer> _buffers;
+        private readonly Dictionary<Guid, UIBuffer> _buffers = new();
 
 
         public override void CanvasPreDraw(int width, int height)

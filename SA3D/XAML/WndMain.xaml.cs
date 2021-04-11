@@ -1,16 +1,14 @@
 ﻿using SATools.SA3D.ViewModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 
-namespace SATools.SA3D
+namespace SATools.SA3D.XAML
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class WndMain : Window
     {
-        public MainWindow()
+        public WndMain()
         {
             DataContext = new MainViewModel();
             InitializeComponent();
@@ -19,5 +17,7 @@ namespace SATools.SA3D
 
             maingrid.Children.Add(c);
         }
+
+        private void ControlSettings_Click(object sender, RoutedEventArgs e) => new WndControlSettings().ShowDialog();
     }
 }

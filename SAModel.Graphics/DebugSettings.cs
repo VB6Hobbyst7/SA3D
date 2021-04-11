@@ -6,6 +6,16 @@ using System.Windows.Input;
 
 namespace SATools.SAModel.Graphics
 {
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    public class SettingsKeyCategoryAttribute : Attribute
+    {
+        public string Title { get; }
+
+        public SettingsKeyCategoryAttribute(string title)
+        {
+            Title = title;
+        }
+    }
 
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     public class SettingsKeyAttribute : Attribute
@@ -41,11 +51,13 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public static DebugSettings Global { get; private set; }
 
+        [SettingsKeyCategory("Switching the camera")]
         [SettingsKey("Navigation Mode", "Switches between Orbiting and FPS movement", Key.O)]
         public Key navMode;
         [SettingsKey("Perspective", "Switches between Perspective and Orthographic", Key.NumPad5)]
         public Key perspective;
 
+        [SettingsKeyCategory("First Person Controls")]
         [SettingsKey("Forward", "Key used to move forward in first person", Key.W)]
         public Key fpForward;
         [SettingsKey("Backward", "Key used to move backward in first person", Key.S)]
@@ -61,6 +73,7 @@ namespace SATools.SAModel.Graphics
         [SettingsKey("Speed up", "Movement modifier used to speed up a bit", Key.LeftShift)]
         public Key fpSpeedup;
 
+        [SettingsKeyCategory("Orbiting Controls")]
         [SettingsKey("Orbiting Key", "Mouse button used for navigating in orbit mode", MouseButton.Middle)]
         public MouseButton OrbitKey;
         [SettingsKey("Drag Modifier", "Modifier used to move camera when pressing the orbit key", Key.LeftShift)]
@@ -68,6 +81,7 @@ namespace SATools.SAModel.Graphics
         [SettingsKey("Zoom Modifier", "Modifier used to zoom camera when pressing the orbit key", Key.LeftCtrl)]
         public Key zoomModifier;
 
+        [SettingsKeyCategory("Camera Snapping")]
         [SettingsKey("Align Forward", "Aligns camera with the -Z axis", Key.NumPad1)]
         public Key alignForward;
         [SettingsKey("Align Up", "Aligns camera with the -Y axis", Key.NumPad7)]
@@ -81,6 +95,7 @@ namespace SATools.SAModel.Graphics
         [SettingsKey("Focus Object", "Focuses camera to selected object when in orbit mode", Key.F)]
         public Key focusObj;
 
+        [SettingsKeyCategory("Debug Menu Keys")]
         [SettingsKey("Debug Help", "Displays the debug help menu", Key.F1)]
         public Key DebugHelp;
         [SettingsKey("Debug Camera", "Displays the debug camera menu", Key.F2)]
@@ -88,6 +103,7 @@ namespace SATools.SAModel.Graphics
         [SettingsKey("Debug Render", "Displays the debug render menu", Key.F3)]
         public Key DebugRender;
 
+        [SettingsKeyCategory("Debug Option Keys")]
         [SettingsKey("Circle Render mode", "Circles between the various render modes", Key.F5)]
         public Key circleRenderMode;
         [SettingsKey("Circle Wireframe Mode", "Circles between the various wireframe modes", Key.F6)]
@@ -117,12 +133,15 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        /// <summary>
-        /// creates the default settings
-        /// </summary>
-        public static void InitDefault()
+        static DebugSettings()
         {
-            Global = new DebugSettings();
+            if(File.Exists("Settings.json"))
+                Load("Settings.json");
+            else
+            {
+                Global = new DebugSettings();
+                Global.Save("Settings");
+            }
         }
 
         /// <summary>
@@ -132,9 +151,9 @@ namespace SATools.SAModel.Graphics
         public void Save(string path)
         {
             JsonSerializer js = new JsonSerializer() { Culture = System.Globalization.CultureInfo.InvariantCulture };
-            using(TextWriter tw = File.CreateText(Path.ChangeExtension(path, ".json")))
-            using(JsonTextWriter jtw = new JsonTextWriter(tw) { Formatting = Formatting.Indented })
-                js.Serialize(jtw, this);
+            using TextWriter tw = File.CreateText(Path.ChangeExtension(path, ".json"));
+            using JsonTextWriter jtw = new JsonTextWriter(tw) { Formatting = Formatting.Indented };
+            js.Serialize(jtw, this);
         }
 
         /// <summary>
