@@ -36,14 +36,14 @@ namespace SATools.SAModel.Graphics.OpenGL
             _materialHandle = GL.GenBuffer();
 
             // loading the shader
-            string vertexShader = Encoding.ASCII.GetString(Resources.VertexShader).Trim('?');
-            string fragShader = Encoding.ASCII.GetString(Resources.FragShader).Trim('?');
+            string vertexShader = Encoding.UTF8.GetString(Resources.VertexShader);
+            string fragShader = Encoding.UTF8.GetString(Resources.FragShader);
             _defaultShader = new Shader(vertexShader, fragShader);
             _defaultShader.BindUniformBlock("Material", 0, _materialHandle);
 
             // canvas
-            vertexShader = Encoding.ASCII.GetString(Resources.DefaultUI_vert).Trim('?');
-            fragShader = Encoding.ASCII.GetString(Resources.DefaultUI_frag).Trim('?');
+            vertexShader = Encoding.UTF8.GetString(Resources.DefaultUI_vert);
+            fragShader = Encoding.UTF8.GetString(Resources.DefaultUI_frag);
             _uiShader = new Shader(vertexShader, fragShader);
 
             // for debug
