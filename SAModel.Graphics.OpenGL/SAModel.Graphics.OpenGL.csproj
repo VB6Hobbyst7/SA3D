@@ -45,8 +45,5 @@
 	<ItemGroup>
 		<None Include="Shaders\Fragment\*" />
 		<None Include="Shaders\Vertex\*" />
-		<None Update="Sphere.bufmdl">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 </Project>

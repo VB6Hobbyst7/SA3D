@@ -3,14 +3,17 @@ using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
+using SATools.SACommon;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
+using System.Reflection;
 using System.Windows.Input;
 using Color = SATools.SAModel.Structs.Color;
+using System.Runtime.InteropServices;
 
 namespace SATools.SAModel.Graphics
 {
@@ -52,9 +55,10 @@ namespace SATools.SAModel.Graphics
         private UIImage _debugPanel;
 
         /// <summary>
-        /// Font collection
+        /// The private font collection for the fonts. <br/>
+        /// If we dont assign it to a field, then it will auto dispose itself or something and the fonts wont work anymore, so here it stays
         /// </summary>
-        private readonly PrivateFontCollection _fonts;
+        private readonly PrivateFontCollection _fonts = new();
 
         /// <summary>
         /// Default debug font
@@ -232,17 +236,20 @@ namespace SATools.SAModel.Graphics
         {
             Material = new DebugMaterial(apiAccessObject);
 
-            _fonts = new PrivateFontCollection();
-            _fonts.AddFontFile("debugFont.ttf");
+            LoadFonts();
             _debugFont = new Font(_fonts.Families[0], 12);
             _debugFontBold = new Font(_fonts.Families[0], 15, FontStyle.Bold);
 
-            byte[] sphere = File.ReadAllBytes("Sphere.bufmdl");
+            var stream = GetType().Assembly.GetManifestResourceStream("SATools.SAModel.Graphics.Sphere.bufmdl");
+            byte[] sphere = stream.ReadFully();
+            stream.Close();
+
             uint addr = 0;
             SphereMesh = new ModelData.Attach(new BufferMesh[] { BufferMesh.Read(sphere, ref addr) })
             {
                 Name = "Debug_Sphere"
             };
+
             BufferMaterial mat = SphereMesh.MeshData[0].Material;
             mat.MaterialFlags = MaterialFlags.noDiffuse | MaterialFlags.noSpecular;
             mat.UseAlpha = true;
@@ -542,6 +549,20 @@ namespace SATools.SAModel.Graphics
         {
             DrawDebug(_apiAccessObject.RenderDebug(this));
             Canvas.Render(Resolution.Width, Resolution.Height);
+        }
+
+        private void LoadFonts()
+        { 
+            using Stream fontStream = GetType().Assembly.GetManifestResourceStream("SATools.SAModel.Graphics.debugFont.ttf");
+            byte[] fontBytes = fontStream.ReadFully();
+
+            unsafe
+            {
+                fixed(byte* pFontData = fontBytes)
+                {
+                    _fonts.AddMemoryFont((IntPtr)pFontData, fontBytes.Length);
+                }
+            }
         }
     }
 }

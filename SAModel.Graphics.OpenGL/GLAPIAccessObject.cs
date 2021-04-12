@@ -175,7 +175,8 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(context.WireframeMode == WireFrameMode.Overlay)
                 RenderExtensions.RenderModelsWireframe(renderMeshes, true, context.Material);
 
-            if(context.BoundsMode != BoundsMode.None && context.ActiveLE != null)
+            if(context.BoundsMode == BoundsMode.All 
+                || context.BoundsMode == BoundsMode.Selected && context.ActiveLE != null)
             {
                 GL.Disable(EnableCap.DepthTest);
                 context.Material.RenderMode = RenderMode.Falloff;
@@ -185,9 +186,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 List<LandEntry> boundObjs;
 
                 if(context.BoundsMode == BoundsMode.All)
-                {
                     boundObjs = context.Scene.geometry;
-                }
                 else
                 {
                     boundObjs = new List<LandEntry>
