@@ -139,6 +139,11 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
+        private string CorrectString(string input)
+        {
+            return input.Trim(new char[] { '\uFEFF', '\u200B' }) + "\n\0";
+        }
+
         /// <summary>
         /// Binds a uniform buffer to a uniform block of a shader
         /// </summary>
