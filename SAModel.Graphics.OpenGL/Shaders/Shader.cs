@@ -74,10 +74,10 @@ namespace SATools.SAModel.Graphics.OpenGL
         public Shader(string vertexShaderSource, string fragmentShaderSource)
         {
             int vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vertexShader, vertexShaderSource + "\n\0");
+            GL.ShaderSource(vertexShader, CorrectString(vertexShaderSource));
 
             int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, fragmentShaderSource + "\n\0");
+            GL.ShaderSource(fragmentShader, CorrectString(fragmentShaderSource));
 
             GL.CompileShader(vertexShader);
 
