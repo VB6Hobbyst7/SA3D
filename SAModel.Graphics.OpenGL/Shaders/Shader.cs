@@ -129,8 +129,6 @@ namespace SATools.SAModel.Graphics.OpenGL
                 else
                     _uniformLocations.Add(key, new UniformType(location, t));
             }
-
-            GL.GetProgram(_handle, GetProgramParameterName.ActiveUniformBlocks, out int test);
         }
 
         /// <summary>
