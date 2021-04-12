@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Vector2 = SATools.SAModel.Structs.Vector2;
 using Vector3 = SATools.SAModel.Structs.Vector3;
 
@@ -55,6 +56,11 @@ namespace SATools.SAModel.Graphics.OpenGL
                 this.unit = unit;
             }
         }
+
+        /// <summary>
+        /// Used to trim byte order myke
+        /// </summary>
+        private readonly char[] bomTrimmer = new char[] { '\uFEFF', '\u200B' };
 
         /// <summary>
         /// The shader program handle
@@ -140,9 +146,8 @@ namespace SATools.SAModel.Graphics.OpenGL
         }
 
         private string CorrectString(string input)
-        {
-            return input.Trim(new char[] { '\uFEFF', '\u200B' }) + "\n\0";
-        }
+            => Regex.Replace(input.Trim(bomTrimmer) + "\n\0", @"\r\n?|\n", Environment.NewLine);
+        
 
         /// <summary>
         /// Binds a uniform buffer to a uniform block of a shader
