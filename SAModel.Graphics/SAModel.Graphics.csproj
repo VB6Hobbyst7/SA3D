@@ -4,8 +4,9 @@
     <TargetFramework>net5.0-windows</TargetFramework>
 	  <OutputType>Library</OutputType>
 	  <UseWPF>true</UseWPF>
-	  <AssemblyName>SAGraphics</AssemblyName>
+	  <AssemblyName>SAModel.Graphics</AssemblyName>
 	  <RootNamespace>SATools.SAModel.Graphics</RootNamespace>
+	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

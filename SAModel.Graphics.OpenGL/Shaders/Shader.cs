@@ -74,13 +74,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.CompileShader(vertexShader);
 
             string infoLogVert = GL.GetShaderInfoLog(vertexShader);
-            if(infoLogVert != string.Empty)
+            if(!string.IsNullOrWhiteSpace(infoLogVert))
                 Console.WriteLine("vertex shader couldnt compile: \n" + infoLogVert);
 
             GL.CompileShader(fragmentShader);
 
             string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
-            if(infoLogFrag != string.Empty)
+            if(!string.IsNullOrWhiteSpace(infoLogFrag))
                 Console.WriteLine("fragment shader couldnt compile: \n" + infoLogFrag);
 
             //linking the shaders
@@ -130,7 +130,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                     _uniformLocations.Add(key, new UniformType(location, t));
             }
 
-
+            GL.GetProgram(_handle, GetProgramParameterName.ActiveUniformBlocks, out int test);
         }
 
         /// <summary>

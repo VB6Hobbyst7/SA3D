@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>SATools.SAModel</RootNamespace>
+	  <AssemblyName>SAModel</AssemblyName>
+	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,8 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>SATools.SA3D</RootNamespace>
     <StartupObject>SATools.SA3D.Program</StartupObject>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
