@@ -14,6 +14,14 @@ namespace SATools.SAModel.Graphics.OpenGL
     /// </summary>
     public class Shader
     {
+        public class ShaderException : Exception
+        {
+            public ShaderException(string message) : base(message)
+            {
+
+            }
+        }
+
         /// <summary>
         /// Used to store the different uniforms in the shader
         /// </summary>
@@ -75,13 +83,13 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             string infoLogVert = GL.GetShaderInfoLog(vertexShader);
             if(!string.IsNullOrWhiteSpace(infoLogVert))
-                Console.WriteLine("vertex shader couldnt compile: \n" + infoLogVert);
+                throw new ShaderException("vertex shader couldnt compile: \n" + infoLogVert);
 
             GL.CompileShader(fragmentShader);
 
             string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
             if(!string.IsNullOrWhiteSpace(infoLogFrag))
-                Console.WriteLine("fragment shader couldnt compile: \n" + infoLogFrag);
+                throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag);
 
             //linking the shaders
 
