@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+	  <OutputType>Library</OutputType>
+	  <UseWPF>true</UseWPF>
+	  <AssemblyName>SAWPF</AssemblyName>
+	  <RootNamespace>SATools.SAWP</RootNamespace>
+	  <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+</Project>

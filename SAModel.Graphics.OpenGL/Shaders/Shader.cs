@@ -4,7 +4,6 @@ using OpenTK.Mathematics;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Vector2 = SATools.SAModel.Structs.Vector2;
 using Vector3 = SATools.SAModel.Structs.Vector3;
 
@@ -15,14 +14,6 @@ namespace SATools.SAModel.Graphics.OpenGL
     /// </summary>
     public class Shader
     {
-        public class ShaderException : Exception
-        {
-            public ShaderException(string message) : base(message)
-            {
-
-            }
-        }
-
         /// <summary>
         /// Used to store the different uniforms in the shader
         /// </summary>
@@ -79,23 +70,25 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// <param name="fragmentShaderSource">The fragment shader source</param>
         public Shader(string vertexShaderSource, string fragmentShaderSource)
         {
+            vertexShaderSource = CorrectString(vertexShaderSource);
             int vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(vertexShader, CorrectString(vertexShaderSource));
+            GL.ShaderSource(vertexShader, vertexShaderSource);
 
+            fragmentShaderSource = CorrectString(fragmentShaderSource);
             int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, CorrectString(fragmentShaderSource));
+            GL.ShaderSource(fragmentShader, fragmentShaderSource);
 
             GL.CompileShader(vertexShader);
 
             string infoLogVert = GL.GetShaderInfoLog(vertexShader);
             if(!string.IsNullOrWhiteSpace(infoLogVert))
-                throw new ShaderException("vertex shader couldnt compile: \n" + infoLogVert);
+                throw new ShaderException("vertex shader couldnt compile: \n" + infoLogVert, infoLogVert.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
 
             GL.CompileShader(fragmentShader);
 
             string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
             if(!string.IsNullOrWhiteSpace(infoLogFrag))
-                throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag);
+                throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag, infoLogVert.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
 
             //linking the shaders
 
@@ -146,7 +139,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         }
 
         private string CorrectString(string input)
-            => Regex.Replace(input.Trim(bomTrimmer) + "\n\0", @"\r\n?|\n", Environment.NewLine);
+            => input.Trim(bomTrimmer) + "\n\0";
         
 
         /// <summary>

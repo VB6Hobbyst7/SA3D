@@ -3,6 +3,7 @@ using SATools.SAModel.Graphics.OpenGL;
 using SATools.SAModel.ObjData.Animation;
 using System;
 using System.IO;
+using System.Windows.Markup;
 
 namespace SATools.SA3D
 {
@@ -11,6 +12,8 @@ namespace SATools.SA3D
         [STAThread]
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += new(CurrentDomain_UnhandledException);
+
             if(args.Length == 0)
             {
                 var app = new XAML.App();
@@ -99,6 +102,30 @@ namespace SATools.SA3D
             }
 
             context.AsWindow();
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (Exception)e.ExceptionObject;
+            if(ex.InnerException != null && ex.GetType() == typeof(XamlParseException))
+                ex = ex.InnerException;
+
+            string errDesc 
+                = $"SA3D has crashed with the following error:\n  {ex.GetType().Name}.\n\n" +
+                   "If you wish to report a bug, please include the following in your report:";
+
+            if(ex is ShaderException se && se.IntegratedGraphics)
+            {
+                errDesc = "An error occured with your rendering hardware! Please do not use integrated graphics. \n\n" + errDesc;
+            }
+
+
+            SAWPF.ErrorDialog report = new("SA3D", errDesc, ex.ToString());
+
+            if(report.ShowDialog() != true)
+            {
+                System.Windows.Application.Current.Shutdown();
+            }
         }
     }
 }
