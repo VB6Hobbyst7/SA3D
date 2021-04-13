@@ -9,6 +9,9 @@
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
 	<DebugType>embedded</DebugType>
+	<Version>0.2</Version>
+	<Authors>Justin113D</Authors>
+	<Company>X-Hax</Company>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

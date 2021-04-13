@@ -42,6 +42,11 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         private Color _backgroundColor;
 
+        /// <summary>
+        /// Whether the graphics have been initialized
+        /// </summary>
+        internal bool _graphicsInitiated;
+
         #endregion
 
         #region Public Properties
@@ -101,7 +106,8 @@ namespace SATools.SAModel.Graphics
             {
                 _screen.Size = value;
                 Camera.Aspect = _screen.Width / (float)_screen.Height;
-                _apiAccessObject.UpdateViewport(_screen, true);
+                if(_graphicsInitiated)
+                    _apiAccessObject.UpdateViewport(_screen, true);
             }
         }
 
@@ -114,7 +120,8 @@ namespace SATools.SAModel.Graphics
             set
             {
                 _screen.Location = value;
-                _apiAccessObject.UpdateViewport(_screen, false);
+                if(_graphicsInitiated)
+                    _apiAccessObject.UpdateViewport(_screen, false);
             }
         }
 
@@ -167,8 +174,12 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Gets called when graphics are being initialized
         /// </summary>
-        public virtual void GraphicsInit()
-            => _apiAccessObject.GraphicsInit(this);
+        public void GraphicsInit()
+        {
+            if(!_graphicsInitiated)
+                _apiAccessObject.GraphicsInit(this);
+            _graphicsInitiated = true;
+        }
 
         /// <summary>
         /// Gameplay logic update

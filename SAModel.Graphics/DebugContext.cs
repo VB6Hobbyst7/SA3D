@@ -543,8 +543,6 @@ namespace SATools.SAModel.Graphics
             Canvas.Draw(_debugPanel);
         }
 
-        public override void GraphicsInit()
-            => _apiAccessObject.GraphicsInit(this);
 
         public override void Render()
         {

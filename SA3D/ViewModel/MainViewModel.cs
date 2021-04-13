@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using SATools.SA3D.ViewModel.Base;
+using SATools.SA3D.XAML;
 using SATools.SAModel.Graphics;
 using SATools.SAModel.Graphics.OpenGL;
 using System;
@@ -29,7 +30,7 @@ namespace SATools.SA3D.ViewModel
         /// <summary>
         /// Render context being displayed
         /// </summary>
-        public DebugContext RenderContext { get; }
+        public DebugContext RenderContext => App.Context;
 
         public RelayCommand OpenFileRC { get; }
 
@@ -37,11 +38,8 @@ namespace SATools.SA3D.ViewModel
 
         public MainViewModel()
         {
-            RenderContext = new DebugContext(default, new GLAPIAccessObject());
-
             NJObjectTreeVM = new NJObjectTreeVM(this);
             OpenFileRC = new RelayCommand(OpenFile);
-
         }
 
         /// <summary>
