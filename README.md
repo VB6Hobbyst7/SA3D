@@ -5,6 +5,9 @@ It started out with a rewritten, fully documented SAModel library, which grew to
 As of now, SA3D is capable of loading all Sonic adventure model formats, including animations- but that's about it. <br/>
 We are working on making it a fully fledged editor, that should at least be able to replace SAMDL and SALVL. <br/>
 
+## Installation
+The program was released for 64x only (at the moment), and thus requires the .net 5 64x runtime to be installed. The link to the runtime can be found [here](https://dotnet.microsoft.com/download)
+
 ## Usage
 You can either simply run the exe, or drag and drop an lvl or mdl file onto it. <br/>
 The program also has several startup parameters, with which it can be run in a "standalone" (aka 3d viewing only) mode, or with which a motion file can be attached. <br/>
