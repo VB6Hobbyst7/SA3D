@@ -1,4 +1,5 @@
 ﻿using SATools.SAModel.Graphics;
+using SATools.SAModel.Graphics.Properties;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +35,7 @@ namespace SATools.SA3D.XAML
             MinWidth = Width;
             MaxWidth = Width;
             Height = 650;
-            Closing += (e, o) => DebugSettings.Global.Save("Settings");
+            Closing += (e, o) => DebugSettings.Default.Save();
 
             ScrollViewer scroll = new();
             scroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -45,8 +46,8 @@ namespace SATools.SA3D.XAML
 
             UcSettingsCategory panel = null;
 
-            var fields = typeof(DebugSettings).GetTypeInfo().GetFields();
-            foreach(var field in fields)
+            var props = typeof(DebugSettings).GetTypeInfo().GetProperties();
+            foreach(var field in props)
             {
                 SettingsKeyCategoryAttribute titleAttr = field.GetCustomAttribute<SettingsKeyCategoryAttribute>();
                 if(titleAttr != null)

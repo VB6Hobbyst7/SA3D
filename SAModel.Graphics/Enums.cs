@@ -128,19 +128,4 @@
         /// </summary>
         All
     }
-
-    public enum MouseButton : int
-    {
-        Left = 0,
-        Right = 1,
-        Middle = 2,
-        /// <summary>
-        /// First extra button
-        /// </summary>
-        XButton1 = 3,
-        /// <summary>
-        /// Second extra button
-        /// </summary>
-        XButton2 = 4,
-    }
 }

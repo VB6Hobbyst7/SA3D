@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using Key = System.Windows.Input.Key;
 using TKey = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
+using MouseButton = System.Windows.Input.MouseButton;
+using TMouseButton = OpenTK.Windowing.GraphicsLibraryFramework.MouseButton;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -137,6 +139,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             { TKey.Menu, Key.None }
         };
 
+        private static readonly Dictionary<TMouseButton, MouseButton> MouseButtonMap = new() {
+            { TMouseButton.Left, MouseButton.Left },
+            { TMouseButton.Middle, MouseButton.Middle },
+            { TMouseButton.Right, MouseButton.Right },
+            { TMouseButton.Button4, MouseButton.XButton1 },
+            { TMouseButton.Button5, MouseButton.XButton2 }
+        };
 
         private readonly Context _context;
 
@@ -270,14 +279,18 @@ namespace SATools.SAModel.Graphics.OpenGL
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            _inputBridge.MouseButtonPressed((MouseButton)e.Button);
+
+            if(MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
+                _inputBridge.MouseButtonPressed(m);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            _inputBridge.MouseButtonReleased((MouseButton)e.Button);
+            if(MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
+                _inputBridge.MouseButtonReleased(m);
         }
+
 
         #endregion
 

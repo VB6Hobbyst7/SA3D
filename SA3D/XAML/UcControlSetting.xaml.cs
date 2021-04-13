@@ -1,10 +1,11 @@
 ﻿using SATools.SAModel.Graphics;
+using SATools.SAModel.Graphics.Properties;
 using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MouseButton = SATools.SAModel.Graphics.MouseButton;
+using System.Configuration;
 
 namespace SATools.SA3D.XAML
 {
@@ -13,25 +14,27 @@ namespace SATools.SA3D.XAML
     /// </summary>
     public partial class UcControlSetting : UserControl
     {
-        private readonly FieldInfo _field;
+        private readonly PropertyInfo _property;
+
+        private string Default => _property.GetCustomAttribute<DefaultSettingValueAttribute>().Value;
 
         private readonly SettingsKeyAttribute _attribute;
 
         private readonly WndControlSettings _window;
 
         public bool UsesKey
-            => _field.FieldType == typeof(Key);
+            => _property.PropertyType == typeof(Key);
 
         public Key OptionKey
         {
-            get => (Key)_field.GetValue(DebugSettings.Global);
-            set => _field.SetValue(DebugSettings.Global, value);
+            get => (Key)_property.GetValue(DebugSettings.Default);
+            set => _property.SetValue(DebugSettings.Default, value);
         }
 
         public MouseButton OptionButton
         {
-            get => (MouseButton)_field.GetValue(DebugSettings.Global);
-            set => _field.SetValue(DebugSettings.Global, value);
+            get => (MouseButton)_property.GetValue(DebugSettings.Default);
+            set => _property.SetValue(DebugSettings.Default, value);
         }
 
         public static readonly Key[] Keys;
@@ -44,11 +47,11 @@ namespace SATools.SA3D.XAML
             MouseButtons = Enum.GetValues<MouseButton>();
         }
 
-        public UcControlSetting(WndControlSettings window, FieldInfo field)
+        public UcControlSetting(WndControlSettings window, PropertyInfo field)
         {
             _window = window;
 
-            _field = field;
+            _property = field;
             _attribute = field.GetCustomAttribute<SettingsKeyAttribute>();
             ToolTip = _attribute.Description;
             InitializeComponent();
@@ -69,9 +72,9 @@ namespace SATools.SA3D.XAML
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             if(UsesKey)
-                KeySelection.SelectedItem = _attribute.DefaultKey;
+                KeySelection.SelectedItem = Default.Substring(5, Default.Length - 11);
             else
-                MouseButtonSelection.SelectedItem = _attribute.DefaultMouse;
+                MouseButtonSelection.SelectedItem = Default;
         }
 
         private void Record_Click(object sender, RoutedEventArgs e)

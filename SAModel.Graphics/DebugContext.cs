@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Windows.Input;
 using Color = SATools.SAModel.Structs.Color;
 using System.Runtime.InteropServices;
+using SATools.SAModel.Graphics.Properties;
 
 namespace SATools.SAModel.Graphics
 {
@@ -298,10 +299,10 @@ namespace SATools.SAModel.Graphics
             if(UseDebugCamera)
                 UpdateCamera(delta);
 
-            DebugSettings s = DebugSettings.Global;
-            bool backward = Input.IsKeyDown(s.circleBackward);
+            DebugSettings s = DebugSettings.Default;
+            bool backward = Input.IsKeyDown(s.CircleBackward);
 
-            if(Input.KeyPressed(s.circleRenderMode))
+            if(Input.KeyPressed(s.CircleRenderMode))
             {
                 RenderMode newRenderMode = Circle(RenderMode, backward);
                 if(newRenderMode == RenderMode.FullBright)
@@ -313,15 +314,15 @@ namespace SATools.SAModel.Graphics
             }
 
             // Circle wireframe mode
-            if(Input.KeyPressed(s.circleWireframe))
+            if(Input.KeyPressed(s.CircleWireframe))
                 WireframeMode = Circle(WireframeMode, backward);
 
             // Circle displaybounds mode
-            if(Input.KeyPressed(s.displayBounds))
+            if(Input.KeyPressed(s.DisplayBounds))
                 BoundsMode = Circle(BoundsMode, backward);
 
             // Switch collision rendering mode
-            if(Input.KeyPressed(s.swapGeometry))
+            if(Input.KeyPressed(s.SwapGeometry))
                 RenderCollision = !RenderCollision;
 
             if(Input.KeyPressed(s.DebugHelp))
@@ -339,23 +340,23 @@ namespace SATools.SAModel.Graphics
         /// <param name="delta"></param>
         private void UpdateCamera(double delta)
         {
-            DebugSettings s = DebugSettings.Global;
+            DebugSettings s = DebugSettings.Default;
             if(!Camera.Orbiting) // if in first-person mode
             {
-                if(!_wasFocused || Input.KeyPressed(Key.Escape) || Input.KeyPressed(s.navMode))
+                if(!_wasFocused || Input.KeyPressed(Key.Escape) || Input.KeyPressed(s.NavMode))
                 {
                     Camera.Orbiting = true;
                     Input.LockCursor = false;
                 }
             }
-            else if(Input.KeyPressed(s.navMode))
+            else if(Input.KeyPressed(s.NavMode))
             {
                 Camera.Orbiting = false;
                 Input.LockCursor = true;
             }
             else
             {
-                if(Input.KeyPressed(s.focusObj))
+                if(Input.KeyPressed(s.FocusObj))
                 {
                     if(ActiveLE != null)
                     {
@@ -387,39 +388,39 @@ namespace SATools.SAModel.Graphics
                 // movement
                 Vector3 dif = default;
 
-                if(Input.IsKeyDown(s.fpForward))
+                if(Input.IsKeyDown(s.FpForward))
                     dif += Camera.Forward;
 
-                if(Input.IsKeyDown(s.fpBackward))
+                if(Input.IsKeyDown(s.FpBackward))
                     dif -= Camera.Forward;
 
-                if(Input.IsKeyDown(s.fpLeft))
+                if(Input.IsKeyDown(s.FpLeft))
                     dif += Camera.Right;
 
-                if(Input.IsKeyDown(s.fpRight))
+                if(Input.IsKeyDown(s.FpRight))
                     dif -= Camera.Right;
 
-                if(Input.IsKeyDown(s.fpUp))
+                if(Input.IsKeyDown(s.FpUp))
                     dif += Camera.Up;
 
-                if(Input.IsKeyDown(s.fpDown))
+                if(Input.IsKeyDown(s.FpDown))
                     dif -= Camera.Up;
 
                 if(dif.Length == 0)
                     return;
 
-                Camera.Position += dif.Normalized() * CamMovementSpeed * (Input.IsKeyDown(s.fpSpeedup) ? CamMovementModif : 1) * (float)delta;
+                Camera.Position += dif.Normalized() * CamMovementSpeed * (Input.IsKeyDown(s.FpSpeedup) ? CamMovementModif : 1) * (float)delta;
             }
             else
             {
                 // mouse orientation
                 if(Input.IsKeyDown(s.OrbitKey))
                 {
-                    if(Input.IsKeyDown(s.zoomModifier)) // zooming
+                    if(Input.IsKeyDown(s.ZoomModifier)) // zooming
                     {
                         Camera.Distance += Camera.Distance * Input.CursorDif.Y * 0.01f;
                     }
-                    else if(Input.IsKeyDown(s.dragModifier)) // moving
+                    else if(Input.IsKeyDown(s.DragModifier)) // moving
                     {
                         Vector3 dif = default;
                         float speed = CamDragSpeed * Camera.Distance;
@@ -434,15 +435,15 @@ namespace SATools.SAModel.Graphics
                 }
                 else
                 {
-                    if(Input.KeyPressed(s.perspective))
+                    if(Input.KeyPressed(s.Perspective))
                         Camera.Orthographic = !Camera.Orthographic;
 
-                    bool invertAxis = Input.IsKeyDown(s.alignInvert);
-                    if(Input.KeyPressed(s.alignForward))
+                    bool invertAxis = Input.IsKeyDown(s.AlignInvert);
+                    if(Input.KeyPressed(s.AlignForward))
                         Camera.Rotation = new Vector3(0, invertAxis ? 180 : 0, 0);
-                    else if(Input.KeyPressed(s.alignSide))
+                    else if(Input.KeyPressed(s.AlignSide))
                         Camera.Rotation = new Vector3(0, invertAxis ? -90 : 90, 0);
-                    else if(Input.KeyPressed(s.alignUp))
+                    else if(Input.KeyPressed(s.AlignUp))
                         Camera.Rotation = new Vector3(invertAxis ? -90 : 90, 0, 0);
 
                     float dir = Input.ScrollDif < 0 ? 0.07f : -0.07f;

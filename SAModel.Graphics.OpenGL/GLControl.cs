@@ -141,27 +141,14 @@ namespace SATools.SAModel.Graphics.OpenGL
             base.OnMouseDown(e);
             if(!IsFocused)
                 Focus();
-            MouseButton btn = e.ChangedButton switch
-            {
-                System.Windows.Input.MouseButton.Middle => MouseButton.Middle,
-                System.Windows.Input.MouseButton.Right => MouseButton.Right,
-                _ => (MouseButton)e.ChangedButton,
-            };
 
-            _inputBridge.MouseButtonPressed(btn);
+            _inputBridge.MouseButtonPressed(e.ChangedButton);
         }
 
         protected override void OnMouseUp(System.Windows.Input.MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            MouseButton btn = e.ChangedButton switch
-            {
-                System.Windows.Input.MouseButton.Middle => MouseButton.Middle,
-                System.Windows.Input.MouseButton.Right => MouseButton.Right,
-                _ => (MouseButton)e.ChangedButton
-            };
-
-            _inputBridge.MouseButtonReleased(btn);
+            _inputBridge.MouseButtonReleased(e.ChangedButton);
         }
 
         private Point ToScreenPos(Vector2 relative)
