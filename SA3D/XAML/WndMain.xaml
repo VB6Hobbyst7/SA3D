@@ -54,12 +54,10 @@
                 <MenuItem Header="Load Texture file" Icon="{StaticResource ico_OpenFile}"/>
             </MenuItem>
             <MenuItem Header="Edit">
-                <MenuItem Header="File info"/>
-                <MenuItem Header="Relabel"/>
-                <MenuItem Header="Recalculate Bounds"/>
-                <MenuItem Header="Clear objects"/>
-                <Separator/>
-                <MenuItem Header="Settings"/>
+                <MenuItem Header="File info" IsEnabled="false"/>
+                <MenuItem Header="Relabel" IsEnabled="false"/>
+                <MenuItem Header="Recalculate Bounds" IsEnabled="false"/>
+                <MenuItem Header="Clear objects" IsEnabled="false"/>
             </MenuItem>
             <MenuItem Header="Settings">
                 <MenuItem Header="Controls" Click="ControlSettings_Click"/>
