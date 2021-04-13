@@ -8,6 +8,7 @@
     <StartupObject>SATools.SA3D.Program</StartupObject>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
+	<DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -36,6 +37,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Icons\logo.ico" />
 	  <None Remove="Icons\RecordDot_redNoHalo_16x.png" />
 	  <None Remove="Icons\Refresh_16x.png" />
 	</ItemGroup>

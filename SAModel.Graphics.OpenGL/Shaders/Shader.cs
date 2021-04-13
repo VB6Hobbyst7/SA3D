@@ -88,7 +88,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
             if(!string.IsNullOrWhiteSpace(infoLogFrag))
-                throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag, infoLogVert.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
+                throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag, infoLogFrag.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
 
             //linking the shaders
 

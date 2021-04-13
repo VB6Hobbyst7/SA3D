@@ -9,4 +9,8 @@
 	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
+  </ItemGroup>
+
 </Project>

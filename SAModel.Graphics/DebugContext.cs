@@ -350,6 +350,7 @@ namespace SATools.SAModel.Graphics
             }
             else if(Input.KeyPressed(s.navMode))
             {
+                throw new ArgumentException("test");
                 Camera.Orbiting = false;
                 Input.LockCursor = true;
             }
