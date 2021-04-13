@@ -29,6 +29,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Viewport(default, context.Resolution);
             GL.ClearColor(context.BackgroundColor.SystemCol);
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Multisample);
             //GL.Enable(EnableCap.FramebufferSrgb); srgb doesnt work for glcontrol, so we'll just leave it out
             GL.Uniform1(13, 0f); // setting normal offset for wireframe
 

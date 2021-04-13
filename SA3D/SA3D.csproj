@@ -9,7 +9,7 @@
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
 	<DebugType>embedded</DebugType>
-	<Version>0.2</Version>
+	<Version>0.2.1</Version>
 	<Authors>Justin113D</Authors>
 	<Company>X-Hax</Company>
   </PropertyGroup>

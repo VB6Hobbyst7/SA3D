@@ -84,7 +84,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             {
                 GraphicsContextFlags = ContextFlags.ForwardCompatible,
                 MajorVersion = 4,
-                MinorVersion = 6,
+                MinorVersion = 6
             };
 
             Start(settings);
@@ -94,6 +94,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             base.OnRenderSizeChanged(info);
             _center = new((float)RenderSize.Width / 2f, (float)RenderSize.Height / 2f);
+            _context.Resolution = new((int)RenderSize.Width, (int)RenderSize.Height);
         }
 
 
