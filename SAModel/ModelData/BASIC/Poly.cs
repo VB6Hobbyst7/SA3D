@@ -110,7 +110,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <returns></returns>
         public static Triangle Read(byte[] source, ref uint address)
         {
-            Triangle t = new Triangle();
+            Triangle t = new();
             t.Indices[0] = source.ToUInt16(address);
             t.Indices[1] = source.ToUInt16(address + 2);
             t.Indices[2] = source.ToUInt16(address + 4);
@@ -143,7 +143,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <returns></returns>
         public static Quad Read(byte[] source, ref uint address)
         {
-            Quad t = new Quad();
+            Quad t = new();
             t.Indices[0] = source.ToUInt16(address);
             t.Indices[1] = source.ToUInt16(address + 2);
             t.Indices[2] = source.ToUInt16(address + 4);

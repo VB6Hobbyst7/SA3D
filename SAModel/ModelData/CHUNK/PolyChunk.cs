@@ -534,7 +534,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             byte flags = (byte)(header >> 8);
             address += 4;
 
-            PolyChunkMaterial mat = new PolyChunkMaterial()
+            PolyChunkMaterial mat = new()
             {
                 Flags = flags
             };
@@ -656,7 +656,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// <returns></returns>
             public static Triangle Read(byte[] source, ref uint address, byte userflags)
             {
-                Triangle tri = new Triangle();
+                Triangle tri = new();
 
                 for(int i = 0; i < 3; i++)
                 {
@@ -717,7 +717,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// <returns></returns>
             public static Quad Read(byte[] source, ref uint address, byte userflags)
             {
-                Quad tri = new Quad();
+                Quad tri = new();
 
                 for(int i = 0; i < 4; i++)
                 {
@@ -806,7 +806,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             public static Strip Read(byte[] source, ref uint address, byte userflags)
             {
                 short header = source.ToInt16(address);
-                Strip r = new Strip(Math.Abs(header), header < 0);
+                Strip r = new(Math.Abs(header), header < 0);
                 address += 2;
 
                 bool flag1 = userflags > 0;
@@ -953,7 +953,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             ushort polyCount = (ushort)(Header2 & 0x3FFFu);
             byte userFlags = (byte)(Header2 >> 14);
 
-            PolyChunkVolume cnk = new PolyChunkVolume(polyType, polyCount, userFlags)
+            PolyChunkVolume cnk = new(polyType, polyCount, userFlags)
             {
                 Flags = flags,
                 Size = size,
@@ -1120,7 +1120,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                 for(int i = 0; i < corners.Length; i++)
                 {
-                    Corner c = new Corner()
+                    Corner c = new()
                     {
                         index = source.ToUInt16(address)
                     };
@@ -1203,7 +1203,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             object ICloneable.Clone() => Clone();
 
-            public Strip Clone() => new Strip((Corner[])Corners.Clone(), Reversed);
+            public Strip Clone() => new((Corner[])Corners.Clone(), Reversed);
         }
 
 
@@ -1529,7 +1529,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             if(type >= ChunkType.Strip_Strip2)
                 throw new NotImplementedException("Param2 types for strips not supported");
 
-            PolyChunkStrip cnk = new PolyChunkStrip(polyCount, userFlags)
+            PolyChunkStrip cnk = new(polyCount, userFlags)
             {
                 Type = type,
                 Flags = flags,

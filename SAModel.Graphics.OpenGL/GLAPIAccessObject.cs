@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.OpenGL.Properties;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
-using UIElement = SATools.SAModel.Graphics.UI.UIElement;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Text;
+using System.Windows;
 using TKVector3 = OpenTK.Mathematics.Vector3;
+using UIElement = SATools.SAModel.Graphics.UI.UIElement;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -24,6 +24,8 @@ namespace SATools.SAModel.Graphics.OpenGL
     {
         private Shader _defaultShader;
 
+        private Shader _wireFrameShader;
+
         public override void GraphicsInit(Context context)
         {
             GL.Viewport(default, context.Resolution);
@@ -31,7 +33,6 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Multisample);
             //GL.Enable(EnableCap.FramebufferSrgb); srgb doesnt work for glcontrol, so we'll just leave it out
-            GL.Uniform1(13, 0f); // setting normal offset for wireframe
 
             // Material
             _materialHandle = GL.GenBuffer();
@@ -41,6 +42,11 @@ namespace SATools.SAModel.Graphics.OpenGL
             string fragShader = Encoding.UTF8.GetString(Resources.FragShader);
             _defaultShader = new Shader(vertexShader, fragShader);
             _defaultShader.BindUniformBlock("Material", 0, _materialHandle);
+
+            // wireframe
+            vertexShader = Encoding.UTF8.GetString(Resources.Wireframe_vert);
+            fragShader = Encoding.UTF8.GetString(Resources.Wireframe_frag);
+            _wireFrameShader = new Shader(vertexShader, fragShader);
 
             // canvas
             vertexShader = Encoding.UTF8.GetString(Resources.DefaultUI_vert);
@@ -72,10 +78,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public override void UpdateBackgroundColor(Structs.Color color)
-        {
-            GL.ClearColor(color.SystemCol);
-        }
+        public override void UpdateBackgroundColor(Structs.Color color) => GL.ClearColor(color.SystemCol);
 
         public override void DebugUpdateWireframe(WireFrameMode wireframeMode)
         {
@@ -109,8 +112,8 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            List<GLRenderMesh> renderMeshes = new List<GLRenderMesh>();
-            List<LandEntry> entries = new List<LandEntry>();
+            List<GLRenderMesh> renderMeshes = new();
+            List<LandEntry> entries = new();
 
             foreach(LandEntry le in context.Scene.VisualGeometry)
                 le.Prepare(renderMeshes, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, null);
@@ -141,8 +144,8 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            List<GLRenderMesh> renderMeshes = new List<GLRenderMesh>();
-            List<LandEntry> entries = new List<LandEntry>();
+            List<GLRenderMesh> renderMeshes = new();
+            List<LandEntry> entries = new();
 
             if(!context.RenderCollision)
             {
@@ -155,8 +158,10 @@ namespace SATools.SAModel.Graphics.OpenGL
                 }
             }
             else
+            {
                 foreach(LandEntry le in context.Scene.CollisionGeometry)
                     le.Prepare(renderMeshes, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
+            }
 
             _defaultShader.Use();
             if(context.RenderCollision)
@@ -164,19 +169,24 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             // first the opaque meshes
             RenderExtensions.RenderModels(renderMeshes, false, context.Material);
-            if(context.WireframeMode == WireFrameMode.Overlay)
-                RenderExtensions.RenderModelsWireframe(renderMeshes, false, context.Material);
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
+            GL.Uniform1(13, 1f);
 
             // then the transparent meshes
             RenderExtensions.RenderModels(renderMeshes, true, context.Material);
 
             if(context.WireframeMode == WireFrameMode.Overlay)
-                RenderExtensions.RenderModelsWireframe(renderMeshes, true, context.Material);
+            {
+                _wireFrameShader.Use();
+                GL.Disable(EnableCap.Blend);
+                RenderExtensions.RenderModelsWireframe(renderMeshes);
+                GL.Enable(EnableCap.Blend);
+                _defaultShader.Use();
+            }
 
-            if(context.BoundsMode == BoundsMode.All 
+            if(context.BoundsMode == BoundsMode.All
                 || context.BoundsMode == BoundsMode.Selected && context.ActiveLE != null)
             {
                 GL.Disable(EnableCap.DepthTest);
@@ -187,7 +197,9 @@ namespace SATools.SAModel.Graphics.OpenGL
                 List<LandEntry> boundObjs;
 
                 if(context.BoundsMode == BoundsMode.All)
+                {
                     boundObjs = context.Scene.geometry;
+                }
                 else
                 {
                     boundObjs = new List<LandEntry>
@@ -203,12 +215,13 @@ namespace SATools.SAModel.Graphics.OpenGL
                     GL.UniformMatrix4(10, false, ref world);
                     world = world * _cameraViewMatrix * _cameraProjectionmatrix;
                     GL.UniformMatrix4(12, false, ref world);
-                    context.SphereMesh.Render(null, true, false, context.Material);
+                    context.SphereMesh.Render(true, context.Material);
                 }
 
                 GL.Enable(EnableCap.DepthTest);
             }
             GL.Disable(EnableCap.Blend);
+            GL.Uniform1(13, 0f);
 
             return (uint)renderMeshes.Count;
         }
@@ -222,7 +235,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         }
 
-        unsafe public override void MaterialPostBuffer(Material material)
+        public override unsafe void MaterialPostBuffer(Material material)
         {
             if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture))
             {
@@ -264,15 +277,11 @@ namespace SATools.SAModel.Graphics.OpenGL
                     Matrix4.CreateRotationX(MathHelper.DegreesToRadians(rotation.X));
         }
 
-        public override void SetOrtographicMatrix(float width, float height, float zNear, float zFar)
-        {
-            _cameraProjectionmatrix = Matrix4.CreateOrthographic(width, height, zNear, zFar);
-        }
+        public override void SetOrtographicMatrix(float width, float height, float zNear, float zFar) 
+            => _cameraProjectionmatrix = Matrix4.CreateOrthographic(width, height, zNear, zFar);
 
-        public override void SetPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar)
-        {
-            _cameraProjectionmatrix = Matrix4.CreatePerspectiveFieldOfView(fovy, aspect, zNear, zFar);
-        }
+        public override void SetPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) 
+            => _cameraProjectionmatrix = Matrix4.CreatePerspectiveFieldOfView(fovy, aspect, zNear, zFar);
 
         public override void UpdateDirections(Structs.Vector3 rotation, out Structs.Vector3 up, out Structs.Vector3 forward, out Structs.Vector3 right)
         {
@@ -288,20 +297,14 @@ namespace SATools.SAModel.Graphics.OpenGL
             return new Structs.Vector3(viewPos.X, viewPos.Y, viewPos.Z);
         }
 
-        private Matrix4 GetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation)
-        {
-            return Matrix4.CreateTranslation(-position.ToGL()) * CreateRotationMatrix(rotation);
-        }
+        private Matrix4 GetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation) 
+            => Matrix4.CreateTranslation(-position.ToGL()) * CreateRotationMatrix(rotation);
 
-        public override void SetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation)
-        {
-            _cameraViewMatrix = GetViewMatrix(position, rotation);
-        }
+        public override void SetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation) 
+            => _cameraViewMatrix = GetViewMatrix(position, rotation);
 
-        public override void SetOrbitViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation, Structs.Vector3 orbitOffset)
-        {
-            _cameraViewMatrix = Matrix4.CreateTranslation(orbitOffset.ToGL()) * GetViewMatrix(position, rotation);
-        }
+        public override void SetOrbitViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation, Structs.Vector3 orbitOffset) 
+            => _cameraViewMatrix = Matrix4.CreateTranslation(orbitOffset.ToGL()) * GetViewMatrix(position, rotation);
 
         #endregion
 
@@ -401,7 +404,9 @@ namespace SATools.SAModel.Graphics.OpenGL
                     return true;
                 }
                 else
+                {
                     buffer = _reuse.Dequeue();
+                }
             }
 
             return false;

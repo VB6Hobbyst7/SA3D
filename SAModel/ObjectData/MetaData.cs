@@ -69,7 +69,7 @@ namespace SATools.SAModel.ObjData
             MetaData result = new();
 
             uint tmpAddr = source.ToUInt32(0xC);
-            Dictionary<uint, string> labels = new Dictionary<uint, string>();
+            Dictionary<uint, string> labels = new();
             switch(version)
             {
                 case 0:
@@ -249,9 +249,9 @@ namespace SATools.SAModel.ObjData
             // labels
             if(labels.Count > 0)
             {
-                List<byte> meta = new List<byte>((labels.Count * 8) + 8);
+                List<byte> meta = new((labels.Count * 8) + 8);
                 int straddr = (labels.Count * 8) + 8;
-                List<byte> strbytes = new List<byte>();
+                List<byte> strbytes = new();
                 foreach(KeyValuePair<string, uint> label in labels)
                 {
                     meta.AddRange((label.Value).GetBytes());
@@ -268,9 +268,9 @@ namespace SATools.SAModel.ObjData
             // animation files
             if(AnimFiles != null && AnimFiles.Count > 0)
             {
-                List<byte> meta = new List<byte>((AnimFiles.Count + 1) * 4);
+                List<byte> meta = new((AnimFiles.Count + 1) * 4);
                 int straddr = (AnimFiles.Count + 1) * 4;
-                List<byte> strbytes = new List<byte>();
+                List<byte> strbytes = new();
                 for(int i = 0; i < AnimFiles.Count; i++)
                 {
                     meta.AddRange((straddr + strbytes.Count).GetBytes());
@@ -286,9 +286,9 @@ namespace SATools.SAModel.ObjData
             // morph files
             if(MorphFiles != null && MorphFiles.Count > 0)
             {
-                List<byte> meta = new List<byte>((MorphFiles.Count + 1) * 4);
+                List<byte> meta = new((MorphFiles.Count + 1) * 4);
                 int straddr = (MorphFiles.Count + 1) * 4;
-                List<byte> strbytes = new List<byte>();
+                List<byte> strbytes = new();
                 for(int i = 0; i < MorphFiles.Count; i++)
                 {
                     meta.AddRange((straddr + strbytes.Count).GetBytes());
@@ -304,7 +304,7 @@ namespace SATools.SAModel.ObjData
             // author
             if(!string.IsNullOrEmpty(Author))
             {
-                List<byte> meta = new List<byte>(Author.Length + 1);
+                List<byte> meta = new(Author.Length + 1);
                 meta.AddRange(Encoding.UTF8.GetBytes(Author));
                 meta.Add(0);
                 meta.Align(4);
@@ -314,7 +314,7 @@ namespace SATools.SAModel.ObjData
             // description
             if(!string.IsNullOrEmpty(Description))
             {
-                List<byte> meta = new List<byte>(Description.Length + 1);
+                List<byte> meta = new(Description.Length + 1);
                 meta.AddRange(Encoding.UTF8.GetBytes(Description));
                 meta.Add(0);
                 meta.Align(4);

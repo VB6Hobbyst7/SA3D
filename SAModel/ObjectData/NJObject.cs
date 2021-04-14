@@ -354,7 +354,7 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public NJObject[] GetObjects()
         {
-            List<NJObject> result = new List<NJObject>();
+            List<NJObject> result = new();
             GetObjects(result);
             return result.ToArray();
         }

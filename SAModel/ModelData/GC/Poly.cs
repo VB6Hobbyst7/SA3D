@@ -89,11 +89,11 @@ namespace SATools.SAModel.ModelData.GC
 
             address += 3;
 
-            List<Corner> corners = new List<Corner>();
+            List<Corner> corners = new();
 
             for(ushort i = 0; i < vtxCount; i++)
             {
-                Corner l = new Corner();
+                Corner l = new();
 
                 // reading position, which should always exist
                 if(shortPos)
@@ -167,7 +167,7 @@ namespace SATools.SAModel.ModelData.GC
         public void Write(EndianMemoryStream writer, IndexAttributeFlags indexFlags)
         {
             // has to be big endian
-            BigEndianMemoryStream bWriter = new BigEndianMemoryStream(writer.Stream);
+            BigEndianMemoryStream bWriter = new(writer.Stream);
 
             bWriter.Write((byte)Type);
             bWriter.Write((ushort)Corners.Length);
@@ -218,6 +218,6 @@ namespace SATools.SAModel.ModelData.GC
 
         object ICloneable.Clone() => Clone();
 
-        public Poly Clone() => new Poly(Type, (Corner[])Corners.Clone());
+        public Poly Clone() => new(Type, (Corner[])Corners.Clone());
     }
 }

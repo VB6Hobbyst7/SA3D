@@ -66,12 +66,12 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// The diffuse color
         /// </summary>
-        public Color Diffuse { get; set; }
+        public Color Diffuse { get; set; } = Color.Black;
 
         /// <summary>
         /// The specular color
         /// </summary>
-        public Color Specular { get; set; }
+        public Color Specular { get; set; } = Color.Black;
 
         /// <summary>
         /// The specular exponent
@@ -81,7 +81,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// The Ambient color
         /// </summary>
-        public Color Ambient { get; set; }
+        public Color Ambient { get; set; } = Color.Black;
 
         /// <summary>
         /// The material flags, directly passable to the shader
@@ -94,7 +94,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// Whether to utilize transparency
         /// </summary>
-        public bool UseAlpha;
+        public bool UseAlpha { get; set; }
 
         /// <summary>
         /// Enables face culling

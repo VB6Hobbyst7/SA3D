@@ -72,9 +72,9 @@ namespace SATools.SAModel.Graphics
         {
             _apiAccess.MaterialPreBuffer(this);
 
-            using(ExtendedMemoryStream stream = new ExtendedMemoryStream(_buffer))
+            using(ExtendedMemoryStream stream = new(_buffer))
             {
-                LittleEndianMemoryStream writer = new LittleEndianMemoryStream(stream);
+                LittleEndianMemoryStream writer = new(stream);
 
                 ViewPos.Write(writer, IOType.Float);
                 writer.Write(0);
@@ -85,20 +85,9 @@ namespace SATools.SAModel.Graphics
                 new Vector3(0, 1, 0).Write(writer, IOType.Float);
                 writer.Write(0);
 
-                writer.Write(BufferMaterial.Diffuse.RedF);
-                writer.Write(BufferMaterial.Diffuse.GreenF);
-                writer.Write(BufferMaterial.Diffuse.BlueF);
-                writer.Write(BufferMaterial.Diffuse.AlphaF);
-
-                writer.Write(BufferMaterial.Specular.RedF);
-                writer.Write(BufferMaterial.Specular.GreenF);
-                writer.Write(BufferMaterial.Specular.BlueF);
-                writer.Write(BufferMaterial.Specular.AlphaF);
-
-                writer.Write(BufferMaterial.Ambient.RedF);
-                writer.Write(BufferMaterial.Ambient.GreenF);
-                writer.Write(BufferMaterial.Ambient.BlueF);
-                writer.Write(BufferMaterial.Ambient.AlphaF);
+                WriteColor(writer, BufferMaterial.Diffuse);
+                WriteColor(writer, BufferMaterial.Specular);
+                WriteColor(writer, BufferMaterial.Ambient);
 
                 writer.Write(BufferMaterial.SpecularExponent);
                 int flags = (ushort)BufferMaterial.MaterialFlags;
@@ -106,6 +95,14 @@ namespace SATools.SAModel.Graphics
             }
 
             _apiAccess.MaterialPostBuffer(this);
+        }
+
+        protected static void WriteColor(LittleEndianMemoryStream writer, Color c)
+        {
+            writer.Write(c.RedF);
+            writer.Write(c.GreenF);
+            writer.Write(c.BlueF);
+            writer.Write(c.AlphaF);
         }
     }
 }

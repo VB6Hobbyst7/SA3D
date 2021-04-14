@@ -167,6 +167,9 @@ namespace SATools.SAModel.ObjData.Animation
             }
         }
 
+        private readonly static AnimFlags[] AllAnimFlags
+            = Enum.GetValues<AnimFlags>();
+
         /// <summary>
         /// Creates an empty keyframe storage
         /// </summary>
@@ -334,7 +337,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public Frame GetFrameAt(float frame)
         {
-            Frame result = new Frame()
+            Frame result = new()
             {
                 frame = frame,
             };
@@ -384,12 +387,25 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadVector3Set(byte[] source, uint address, uint count, SortedDictionary<uint, Vector3> dictionary, IOType type)
         {
-            for(int i = 0; i < count; i++)
+            if(type == IOType.BAMS16)
             {
-                uint frame = source.ToUInt32(address);
-                address += 4;
-                dictionary.Add(frame, Vector3.Read(source, ref address, type));
+                for(int i = 0; i < count; i++)
+                {
+                    uint frame = source.ToUInt16(address);
+                    address += 2;
+                    dictionary.Add(frame, Vector3.Read(source, ref address, type));
+                }
             }
+            else
+            {
+                for(int i = 0; i < count; i++)
+                {
+                    uint frame = source.ToUInt32(address);
+                    address += 4;
+                    dictionary.Add(frame, Vector3.Read(source, ref address, type));
+                }
+            }
+
         }
 
         private static void ReadVector3ArraySet(byte[] source, uint address, uint imageBase, uint count, SortedDictionary<uint, Vector3[]> dictionary)
@@ -397,7 +413,7 @@ namespace SATools.SAModel.ObjData.Animation
             uint origAddr = address;
 
             // <address, frame>
-            SortedDictionary<uint, uint> ptrs = new SortedDictionary<uint, uint>();
+            SortedDictionary<uint, uint> ptrs = new();
             for(int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
@@ -464,6 +480,7 @@ namespace SATools.SAModel.ObjData.Animation
             }
         }
 
+
         /// <summary>
         /// Reads a set of keyframes from a byte array
         /// </summary>
@@ -494,9 +511,7 @@ namespace SATools.SAModel.ObjData.Animation
             int channelIndex = 0;
             Keyframes result = new();
 
-            AnimFlags[] allFlags = Enum.GetValues<AnimFlags>();
-
-            foreach(AnimFlags flag in allFlags)
+            foreach(AnimFlags flag in AllAnimFlags)
             {
                 if(!type.HasFlag(flag))
                     continue;
@@ -545,6 +560,9 @@ namespace SATools.SAModel.ObjData.Animation
                             break;
                         case AnimFlags.Point:
                             ReadVector2Set(source, taddr, frameCount, result.Point, IOType.Float);
+                            break;
+                        case AnimFlags.Quaternion:
+                            ReadVector3Set(source, taddr, frameCount, result.Rotation, IOType.Quaternion);
                             break;
                     }
                 }
@@ -606,7 +624,7 @@ namespace SATools.SAModel.ObjData.Animation
                         return;
                     }
                     // <frame, ptr>
-                    Dictionary<uint, uint> ptrs = new Dictionary<uint, uint>();
+                    Dictionary<uint, uint> ptrs = new();
                     foreach(var pair in dict)
                     {
                         ptrs.Add(pair.Key, (uint)writer.Stream.Position + imageBase);

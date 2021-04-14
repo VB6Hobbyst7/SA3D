@@ -99,5 +99,25 @@ namespace SATools.SAModel.Graphics.OpenGL.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Wireframe_frag {
+            get {
+                object obj = ResourceManager.GetObject("Wireframe.frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Wireframe_vert {
+            get {
+                object obj = ResourceManager.GetObject("Wireframe.vert", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

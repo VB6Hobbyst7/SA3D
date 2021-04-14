@@ -381,7 +381,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             get
             {
-                Color col = new Color()
+                Color col = new()
                 {
                     RGBA = _data
                 };

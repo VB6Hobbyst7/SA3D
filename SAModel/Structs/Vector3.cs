@@ -177,6 +177,16 @@ namespace SATools.SAModel.Structs
                     };
                     address += 12;
                     break;
+                case IOType.Quaternion:
+                    result = FromQuaternion(
+                        source.ToSingle(address),
+                        -source.ToSingle(address + 4),
+                        -source.ToSingle(address + 8),
+                        source.ToSingle(address + 12)
+                        );
+
+                    address += 16;
+                    break;
                 default:
                     throw new ArgumentException($"Type {type} not available for struct Vector3");
             }
@@ -251,6 +261,41 @@ namespace SATools.SAModel.Structs
             writer.Write(")");
         }
 
+        public static Vector3 FromQuaternion(float w, float x, float y, float z)
+        {
+            // if the input quaternion is normalized, this is exactly one. Otherwise, this acts as a correction factor for the quaternion's not-normalizedness
+            float unit = (x * x) + (y * y) + (z * z) + (w * w);
+
+            // this will have a magnitude of 0.5 or greater if and only if this is a singularity case
+            float test = x * w - y * z;
+
+            Vector3 v = new();
+
+            if(test > 0.4995f * unit) // singularity at north pole
+            {
+                v.X = Pi / 2;
+                v.Y = 2f * (float)Math.Atan2(y, x);
+            }
+            else if(test < -0.4995f * unit) // singularity at south pole
+            { 
+                v.X = -Pi / 2;
+                v.Y = -2f * (float)Math.Atan2(y, x);
+            }
+            else
+            {
+                v.X = (float)Math.Atan2(2f * w * y + 2f * z * x, 1 - 2f * (x * x + y * y));
+                v.Y = (float)Math.Asin(2f * (w * x - y * z));
+                v.Z = (float)Math.Atan2(2f * w * z + 2f * x * y, 1 - 2f * (z * z + x * x));
+            }
+            v *= Rad2Deg;
+
+            v.X %= 360;
+            v.Y %= 360;
+            v.Z %= 360;
+
+            return v;
+        }
+
         #endregion
 
         #region Arithmetic Operators/Methods
@@ -278,7 +323,7 @@ namespace SATools.SAModel.Structs
         /// <returns></returns>
         public static Vector3 Average(Vector3[] points)
         {
-            Vector3 center = new Vector3();
+            Vector3 center = new();
 
             if(points == null || points.Length == 0)
                 return center;

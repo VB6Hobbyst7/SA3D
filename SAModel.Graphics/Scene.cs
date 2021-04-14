@@ -15,10 +15,10 @@ namespace SATools.SAModel.Graphics
         public double time = 0;
         public float timelineSpeed = 1;
 
-        public readonly List<GameTask> objects = new List<GameTask>();
-        public readonly List<LandEntry> geometry = new List<LandEntry>();
-        public readonly List<ModelData.Attach> attaches = new List<ModelData.Attach>();
-        public readonly List<ModelData.Attach> weightedAttaches = new List<ModelData.Attach>();
+        public readonly List<GameTask> objects = new();
+        public readonly List<LandEntry> geometry = new();
+        public readonly List<ModelData.Attach> attaches = new();
+        public readonly List<ModelData.Attach> weightedAttaches = new();
 
         public LandEntry[] VisualGeometry
         {

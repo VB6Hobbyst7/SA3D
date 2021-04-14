@@ -53,7 +53,11 @@ namespace SATools.SAModel.ModelData
         /// Mesh data ready to draw and able to convert into any other format <br/>
         /// Might Require rebuffer via <see cref="GenBufferMesh"/>
         /// </summary>
-        public BufferMesh[] MeshData { get; set; }
+        public BufferMesh[] MeshData { get; private set; }
+
+        public bool BufferHasOpaque { get; private set; }
+
+        public bool BufferHasTransparent { get; private set; }
 
         protected Attach() { }
 
@@ -127,14 +131,21 @@ namespace SATools.SAModel.ModelData
         /// <summary>
         /// Creates a BufferMesh set which acurately depicts the current model
         /// </summary>
-        public virtual void GenBufferMesh(bool optimize) { }
+        public void GenBufferMesh(bool optimize)
+        {
+            MeshData = buffer(optimize);
+            BufferHasOpaque = MeshData.Any(x => !x.Material?.UseAlpha == true);
+            BufferHasTransparent = MeshData.Any(x => x.Material?.UseAlpha == true);
+        }
+
+        internal virtual BufferMesh[] buffer(bool optimize) { return MeshData; }
 
         public virtual void RecalculateBounds()
             => throw new InvalidOperationException("");
 
         object ICloneable.Clone() => Clone();
 
-        public virtual Attach Clone() => new Attach(MeshData.ContentClone()) { Name = Name };
+        public virtual Attach Clone() => new(MeshData.ContentClone()) { Name = Name };
 
         public override string ToString() => $"{Name} - Buffer";
     }

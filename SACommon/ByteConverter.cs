@@ -165,5 +165,33 @@ namespace SATools.SACommon
             uint tmp = file.ToUInt32(address);
             return tmp == 0 ? 0 : tmp - imageBase;
         }
+
+        public static bool CheckBigEndianInt16(this byte[] file, uint address)
+        {
+            bool bigEndState = BigEndian;
+
+            BigEndian = false;
+            uint little = file.ToUInt16(address);
+            BigEndian = true;
+            uint big = file.ToUInt16(address);
+
+            BigEndian = bigEndState;
+
+            return little > big;
+        }
+
+        public static bool CheckBigEndianInt32(this byte[] file, uint address)
+        {
+            bool bigEndState = BigEndian;
+
+            BigEndian = false;
+            uint little = file.ToUInt32(address);
+            BigEndian = true;
+            uint big = file.ToUInt32(address);
+
+            BigEndian = bigEndState;
+
+            return little > big;
+        }
     }
 }

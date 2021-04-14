@@ -94,7 +94,7 @@ namespace SATools.SAModel.ModelData.GC
             Bounds bounds = Bounds.Read(source, ref address);
 
             // reading vertex data
-            List<VertexSet> vertexData = new List<VertexSet>();
+            List<VertexSet> vertexData = new();
             VertexSet vertexSet = VertexSet.Read(source, vertexAddress, imageBase);
             while(vertexSet.Attribute != VertexAttribute.Null)
             {
@@ -105,7 +105,7 @@ namespace SATools.SAModel.ModelData.GC
 
             IndexAttributeFlags indexFlags = IndexAttributeFlags.HasPosition;
 
-            List<Mesh> opaqueMeshes = new List<Mesh>();
+            List<Mesh> opaqueMeshes = new();
             for(int i = 0; i < opaqueCount; i++)
             {
                 Mesh mesh = Mesh.Read(source, opaqueAddress, imageBase, ref indexFlags);
@@ -115,7 +115,7 @@ namespace SATools.SAModel.ModelData.GC
 
             indexFlags = IndexAttributeFlags.HasPosition;
 
-            List<Mesh> translucentMeshes = new List<Mesh>();
+            List<Mesh> translucentMeshes = new();
             for(int i = 0; i < translucentCount; i++)
             {
                 Mesh mesh = Mesh.Read(source, translucentAddress, imageBase, ref indexFlags);
@@ -198,16 +198,16 @@ namespace SATools.SAModel.ModelData.GC
             return address;
         }
 
-        public override void GenBufferMesh(bool optimize)
+        internal override BufferMesh[] buffer(bool optimize)
         {
-            List<BufferMesh> meshes = new List<BufferMesh>();
+            List<BufferMesh> meshes = new();
 
             List<Vector3> positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position)?.Data.Cast<Vector3>().ToList();
             List<Vector3> normals = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal)?.Data.Cast<Vector3>().ToList();
             List<Color> colors = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0)?.Data.Cast<Color>().ToList();
             List<Vector2> uvs = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0)?.Data.Cast<Vector2>().ToList();
 
-            BufferMaterial material = new BufferMaterial
+            BufferMaterial material = new()
             {
                 Diffuse = Color.White,
                 TextureFiltering = FilterMode.Bilinear,
@@ -250,9 +250,9 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // filtering out the double loops
-                List<BufferVertex> vertices = new List<BufferVertex>();
-                List<BufferCorner> corners = new List<BufferCorner>();
-                List<uint> trianglelist = new List<uint>();
+                List<BufferVertex> vertices = new();
+                List<BufferCorner> corners = new();
+                List<uint> trianglelist = new();
 
                 foreach(Poly p in m.Polys)
                 {
@@ -311,8 +311,8 @@ namespace SATools.SAModel.ModelData.GC
             if(optimize)
             {
                 // all meshes should use the same vertices
-                MeshData = new BufferMesh[meshes.Count];
-                List<BufferVertex> vertices = new List<BufferVertex>();
+                BufferMesh[] meshData = new BufferMesh[meshes.Count];
+                List<BufferVertex> vertices = new();
 
                 int mi = 0;
                 foreach(BufferMesh m in meshes)
@@ -321,7 +321,7 @@ namespace SATools.SAModel.ModelData.GC
 
                     for(ushort i = 0; i < vIDs.Length; i++)
                     {
-                        BufferVertex vtx = new BufferVertex(m.Vertices[i].position, m.Vertices[i].normal, (ushort)vertices.Count);
+                        BufferVertex vtx = new(m.Vertices[i].position, m.Vertices[i].normal, (ushort)vertices.Count);
                         int index = vertices.FindIndex(x => x.EqualPosNrm(vtx));
                         if(index == -1)
                         {
@@ -337,15 +337,16 @@ namespace SATools.SAModel.ModelData.GC
                         m.Corners[i].vertexIndex = vIDs[m.Corners[i].vertexIndex];
                     }
 
-                    MeshData[mi] = m.Optimize(vertices.ToArray(), false);
+                    meshData[mi] = m.Optimize(vertices.ToArray(), false);
                     mi++;
                 }
 
-                var firstMesh = MeshData[0];
-                MeshData[0] = new BufferMesh(vertices.ToArray(), false, firstMesh.Corners, firstMesh.TriangleList, firstMesh.Material);
+                var firstMesh = meshData[0];
+                meshData[0] = new BufferMesh(vertices.ToArray(), false, firstMesh.Corners, firstMesh.TriangleList, firstMesh.Material);
+                return meshData;
             }
             else
-                MeshData = meshes.ToArray();
+                return meshes.ToArray();
         }
 
         public override Attach Clone() => new GCAttach(VertexData.ContentClone(), OpaqueMeshes.ContentClone(), TranslucentMeshes.ContentClone())

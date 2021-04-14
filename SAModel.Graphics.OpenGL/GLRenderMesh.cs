@@ -1,4 +1,4 @@
-﻿using OpenTK;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 namespace SATools.SAModel.Graphics.OpenGL
@@ -6,20 +6,23 @@ namespace SATools.SAModel.Graphics.OpenGL
     public struct GLRenderMesh
     {
         public ModelData.Attach attach;
-        public Matrix4? realWorldMtx;
         public Matrix4 worldMtx;
         public Matrix4 normalMtx;
         public Matrix4 MVP;
-        public bool active;
 
-        public GLRenderMesh(ModelData.Attach attach, Matrix4? realWorldMtx, Matrix4 worldMtx, Matrix4 normalMtx, Matrix4 mVP, bool active)
+        public GLRenderMesh(ModelData.Attach attach, Matrix4 worldMtx, Matrix4 normalMtx, Matrix4 mVP)
         {
             this.attach = attach;
-            this.realWorldMtx = realWorldMtx;
             this.worldMtx = worldMtx;
             this.normalMtx = normalMtx;
             MVP = mVP;
-            this.active = active;
+        }
+
+        public void BufferMatrices()
+        {
+            GL.UniformMatrix4(10, false, ref worldMtx);
+            GL.UniformMatrix4(11, false, ref normalMtx);
+            GL.UniformMatrix4(12, false, ref MVP);
         }
     }
 }

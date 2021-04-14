@@ -36,6 +36,11 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         private const ulong SAANIMVer = SAANIM | (CurrentVersion << 56);
 
+        /// <summary>
+        /// Ninja motion file header
+        /// </summary>
+        private const uint NMDM = 0x4D444D4Eu;
+
         #endregion
 
         /// <summary>
@@ -66,7 +71,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Keyframes based on their model id
         /// </summary>
-        public Dictionary<int, Keyframes> Keyframes = new Dictionary<int, Keyframes>();
+        public Dictionary<int, Keyframes> Keyframes = new();
 
         /// <summary>
         /// Creates a new empty motion
@@ -110,7 +115,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public static Motion Read(byte[] source, ref uint address, uint imageBase, uint modelCount, Dictionary<uint, string> labels, bool shortrot = false)
         {
-            string name = labels.ContainsKey(address) ? labels[address] : "animation_" + address.ToString("X8");
+            string name = labels?.ContainsKey(address) == true ? labels[address] : "animation_" + address.ToString("X8");
             uint Frames = source.ToUInt32(address + 4);
             AnimFlags animtype = (AnimFlags)source.ToUInt16(address + 8);
 
@@ -118,7 +123,7 @@ namespace SATools.SAModel.ObjData.Animation
             InterpolationMode mode = (InterpolationMode)((tmp >> 6) & 0x3);
             int channels = (tmp & 0xF);
 
-            Motion result = new Motion(Frames, modelCount, mode)
+            Motion result = new(Frames, modelCount, mode)
             {
                 Name = name,
                 ShortRot = shortrot
@@ -157,34 +162,47 @@ namespace SATools.SAModel.ObjData.Animation
         {
             bool be = BigEndian;
             BigEndian = false;
+            Motion result = null;
 
-            if((source.ToUInt64(0) & HeaderMask) != SAANIM)
-                return null;
-
-            byte version = source[7];
-            if(version > CurrentVersion)
+            if(source.ToUInt32(0) == NMDM)
             {
-                BigEndian = be;
-                throw new FormatException("Not a valid SAANIM file.");
-            }
+                if(modelCount < 0)
+                    throw new ArgumentException("Cannot open NJM animations without a model!");
 
-            uint aniaddr = source.ToUInt32(8);
-            Dictionary<uint, string> labels = new Dictionary<uint, string>();
-            uint tmpaddr = BitConverter.ToUInt32(source, 0xC);
-            if(tmpaddr != 0)
-                labels.Add(aniaddr, source.GetCString(tmpaddr));
-            if(version > 0)
-                modelCount = BitConverter.ToInt32(source, 0x10);
-            else if(modelCount == -1)
+                BigEndian = source.CheckBigEndianInt32(0xC); 
+                // framecount. as long as that one is not bigger than 65,535 or 18 minutes of animation at 60fps, we good
+                uint aniaddr = 8;
+                result = Read(source, ref aniaddr, ~7u, (uint)modelCount, null, true);
+            }
+            else if((source.ToUInt64(0) & HeaderMask) == SAANIM)
             {
-                BigEndian = be;
-                throw new NotImplementedException("Cannot open version 0 animations without a model!");
-            }
 
-            Motion anim = Read(source, ref aniaddr, 0, (uint)(modelCount & int.MaxValue), labels, modelCount < 0);
+                byte version = source[7];
+                if(version > CurrentVersion)
+                {
+                    BigEndian = be;
+                    throw new FormatException("Not a valid SAANIM file.");
+                }
+
+                uint aniaddr = source.ToUInt32(8);
+                Dictionary<uint, string> labels = new();
+                uint tmpaddr = BitConverter.ToUInt32(source, 0xC);
+                if(tmpaddr != 0)
+                    labels.Add(aniaddr, source.GetCString(tmpaddr));
+                if(version > 0)
+                    modelCount = BitConverter.ToInt32(source, 0x10);
+                else if(modelCount == -1)
+                {
+                    BigEndian = be;
+                    throw new NotImplementedException("Cannot open version 0 animations without a model!");
+                }
+
+                result = Read(source, ref aniaddr, 0, (uint)(modelCount), labels, true);
+
+            }
 
             BigEndian = be;
-            return anim;
+            return result;
         }
 
         /// <summary>
@@ -252,9 +270,9 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public byte[] WriteFile()
         {
-            using(ExtendedMemoryStream stream = new ExtendedMemoryStream())
+            using(ExtendedMemoryStream stream = new())
             {
-                LittleEndianMemoryStream writer = new LittleEndianMemoryStream(stream);
+                LittleEndianMemoryStream writer = new(stream);
 
                 writer.WriteUInt64(SAANIMVer);
                 writer.WriteUInt32(0); // placeholders for motion address and name address

@@ -307,8 +307,6 @@ namespace SATools.SAModel.Graphics
                 RenderMode newRenderMode = Circle(RenderMode, backward);
                 if(newRenderMode == RenderMode.FullBright)
                     RenderMode = RenderMode.Normals;
-                else if(newRenderMode == RenderMode.FullDark)
-                    RenderMode = RenderMode.Falloff;
                 else
                     RenderMode = newRenderMode;
             }

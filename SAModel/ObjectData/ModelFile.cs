@@ -58,20 +58,38 @@ namespace SATools.SAModel.ObjData
         private const ulong SA2BMDLVer = SA2BMDL | (CurrentVersion << 56);
 
         /// <summary>
-        /// NJ meta model header
+        /// NJ header
         /// </summary>
-        private const uint NJCM = 0x4D434A4Eu;
+        private const ushort NJ = (ushort)0x4A4Eu;
 
         /// <summary>
-        /// NJ basic model header
+        /// GJ Header
         /// </summary>
-        private const uint NJBM = 0x4D424A4Eu;
+        private const ushort GJ = (ushort)0x4A47u;
+
+        /// <summary>
+        /// NJ/GJ Chunk model header part
+        /// </summary>
+        private const ushort CM = (ushort)0x4D43u;
+
+        /// <summary>
+        /// NJ/GJ basic model header part
+        /// </summary>
+        private const ushort BM = (ushort)0x4D42u;
+
+        /// <summary>
+        /// NJ/GJ texture list header part
+        /// </summary>
+        private const ushort TL = (ushort)0x4C54u;
+
+        public const string FileFilter = "Ninja Model (*.sa1mdl;*.sa2mdl;*.sa2bmdl;*.nj;*.gj)|*.sa1mdl;*.sa2mdl;*.sa2bmdl;*.nj;*.gj";
+
         #endregion
 
         /// <summary>
         /// Whether the file is an NJ binary
         /// </summary>
-        public bool NJ { get; }
+        public bool NJFile { get; }
 
         /// <summary>
         /// Attach format of the file
@@ -99,7 +117,7 @@ namespace SATools.SAModel.ObjData
             Model = model;
             Animations = new ReadOnlyCollection<Motion>(animations);
             MetaData = metaData;
-            NJ = nj;
+            NJFile = nj;
         }
 
         /// <summary>
@@ -123,80 +141,110 @@ namespace SATools.SAModel.ObjData
 
             AttachFormat? format = null;
             NJObject model;
-            Dictionary<uint, ModelData.Attach> attaches = new Dictionary<uint, ModelData.Attach>();
-            List<Motion> Animations = new List<Motion>();
-            MetaData metaData = new MetaData();
+            Dictionary<uint,Attach> attaches = new();
+            List<Motion> Animations = new();
+            MetaData metaData = new();
             bool nj = false;
 
-            // checking for NJ format first
-            uint header4 = source.ToUInt32(0);
-            switch(header4)
+            ushort NJMagic = source.ToUInt16(0);
+            if(NJMagic == NJ || NJMagic == GJ)
             {
-                case NJBM:
-                    format = AttachFormat.BASIC;
-                    break;
-                case NJCM:
-                    format = AttachFormat.CHUNK;
-                    break;
-            }
+                NJMagic = source.ToUInt16(0x2);
 
-            if(format.HasValue)
-            {
+                uint ninjaOffset = 8u;
+                bool fileEndian = source.CheckBigEndianInt32(0x8u);
+                texlistRetry:
+
+                switch(NJMagic)
+                {
+                    case BM:
+                        format = AttachFormat.BASIC;
+                        break;
+                    case CM:
+                        format = AttachFormat.CHUNK;
+                        break;
+                    case TL:
+                        uint POF0Offset = source.ToUInt32(0x4) + 0x8;
+                        uint POF0Size = source.ToUInt32(POF0Offset + 0x4);
+                        uint texListOffset = POF0Offset + POF0Size + 0x8;
+                        ninjaOffset = texListOffset + 0x8;
+
+                        NJMagic = source.ToUInt16(texListOffset + 0x2);
+
+                        BigEndian = fileEndian;
+
+                        //Get Texture Listings for if that is ever implemented
+                        uint texCount = source.ToUInt32(0xC);
+                        uint texOffset = 0;
+                        List<string> texNames = new();
+
+                        for(int i = 0; i < texCount; i++)
+                        {
+                            uint textAddress = source.ToUInt32(texOffset + 0x10) + 0x8;
+                            texNames.Add(source.GetCString(textAddress, System.Text.Encoding.UTF8));
+                            texOffset += 0xC;
+                        }
+
+                        goto texlistRetry;
+                }
+
+                BigEndian = fileEndian;
+
                 // the addresses start 8 bytes ahead, and since we always subtract the image base from the addresses,
                 // we have to add them this time, so we invert the 8 to add 8 by subtracting
-                model = NJObject.Read(source, 8, ~8u, format.Value, false, new Dictionary<uint, string>(), attaches);
+                model = NJObject.Read(source, ninjaOffset, ~(ninjaOffset - 1), format.Value, false, new(), attaches);
                 nj = true;
-                goto readFile;
             }
-
-            // checking for mdl format
-            ulong header8 = source.ToUInt64(0) & HeaderMask;
-            switch(header8)
+            else
             {
-                case SA1MDL:
-                    format = AttachFormat.BASIC;
-                    break;
-                case SA2MDL:
-                    format = AttachFormat.CHUNK;
-                    break;
-                case SA2BMDL:
-                    format = AttachFormat.GC;
-                    break;
-                default:
+                // checking for mdl format
+                ulong header8 = source.ToUInt64(0) & HeaderMask;
+                switch(header8)
+                {
+                    case SA1MDL:
+                        format = AttachFormat.BASIC;
+                        break;
+                    case SA2MDL:
+                        format = AttachFormat.CHUNK;
+                        break;
+                    case SA2BMDL:
+                        format = AttachFormat.GC;
+                        break;
+                    default:
+                        return null;
+                        //throw new InvalidDataException("File is not a valid model file");
+                }
+
+                // checking the version
+                byte version = source[7];
+                if(version > CurrentVersion)
+                {
+                    BigEndian = be;
                     return null;
-                    //throw new InvalidDataException("File is not a valid model file");
-            }
-
-            // checking the version
-            byte version = source[7];
-            if(version > CurrentVersion)
-            {
-                BigEndian = be;
-                return null;
-                //throw new FormatException("Not a valid SA1LVL/SA2LVL file.");
-            }
-
-            metaData = MetaData.Read(source, version, true);
-            Dictionary<uint, string> labels = new Dictionary<uint, string>(metaData.Labels);
-
-            model = NJObject.Read(source, source.ToUInt32(8), 0, format.Value, false, labels, attaches);
-
-            // reading animations
-            if(filename != null)
-            {
-                string path = Path.GetDirectoryName(filename);
-                try
-                {
-                    foreach(string item in metaData.AnimFiles)
-                        Animations.Add(Motion.ReadFile(Path.Combine(path, item), model.CountAnimated()));
+                    //throw new FormatException("Not a valid SA1LVL/SA2LVL file.");
                 }
-                catch
-                {
-                    Animations.Clear();
-                }
-            }
 
-            readFile:
+                metaData = MetaData.Read(source, version, true);
+                Dictionary<uint, string> labels = new(metaData.Labels);
+
+                model = NJObject.Read(source, source.ToUInt32(8), 0, format.Value, false, labels, attaches);
+
+                // reading animations
+                if(filename != null)
+                {
+                    string path = Path.GetDirectoryName(filename);
+                    try
+                    {
+                        foreach(string item in metaData.AnimFiles)
+                            Animations.Add(Motion.ReadFile(Path.Combine(path, item), model.CountAnimated()));
+                    }
+                    catch
+                    {
+                        Animations.Clear();
+                    }
+                }
+
+            }
 
             BigEndian = be;
             return new(format.Value, model, Animations.ToArray(), metaData, nj);
@@ -244,37 +292,38 @@ namespace SATools.SAModel.ObjData
         /// Writes a model hierarchy (without meta data) to a stream and returns the contents
         /// </summary>
         /// <param name="format">Format of the file</param>
-        /// <param name="NJ">Whether to write an nj binary</param>
+        /// <param name="NJFile">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
-        public static byte[] Write(AttachFormat format, bool NJ, NJObject model) => Write(format, NJ, model, new MetaData());
+        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model) => Write(format, NJFile, model, new MetaData());
 
         /// <summary>
         /// Writes a model hierarchy to stream and returns the contents
         /// </summary>
         /// <param name="format">Format of the file</param>
-        /// <param name="NJ">Whether to write an nj binary</param>
+        /// <param name="NJFile">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
         /// <param name="author">Author of the file</param>
         /// <param name="description">Description of the files contents</param>
         /// <param name="metadata">Other meta data</param>
         /// <param name="animFiles">Animation file paths</param>
-        public static byte[] Write(AttachFormat format, bool NJ, NJObject model, MetaData metaData)
+        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model, MetaData metaData)
         {
 
-            using(ExtendedMemoryStream stream = new ExtendedMemoryStream())
+            using(ExtendedMemoryStream stream = new())
             {
-                LittleEndianMemoryStream writer = new LittleEndianMemoryStream(stream);
+                LittleEndianMemoryStream writer = new(stream);
                 uint imageBase = 0;
 
-                if(NJ)
+                if(NJFile)
                 {
+                    writer.WriteUInt16(NJ);
                     switch(format)
                     {
                         case AttachFormat.BASIC:
-                            writer.WriteUInt32(NJBM);
+                            writer.WriteUInt32(BM);
                             break;
                         case AttachFormat.CHUNK:
-                            writer.WriteUInt32(NJCM);
+                            writer.WriteUInt32(CM);
                             break;
                         default:
                             throw new ArgumentException($"Attach format {format} not supported for NJ binaries");
@@ -302,10 +351,10 @@ namespace SATools.SAModel.ObjData
                     writer.WriteUInt32(0); // labels placeholder
                 }
 
-                Dictionary<string, uint> labels = new Dictionary<string, uint>();
+                Dictionary<string, uint> labels = new();
                 model.WriteHierarchy(writer, imageBase, false, labels);
 
-                if(NJ)
+                if(NJFile)
                 {
                     // replace size
                     writer.Stream.Seek(4, SeekOrigin.Begin);
@@ -348,7 +397,7 @@ namespace SATools.SAModel.ObjData
             outputPath = Path.ChangeExtension(outputPath, ".NJA");
             using(TextWriter writer = File.CreateText(outputPath))
             {
-                List<string> labels = new List<string>();
+                List<string> labels = new();
                 foreach(var atc in attaches)
                 {
                     atc.WriteNJA(writer, DX, labels, textures);

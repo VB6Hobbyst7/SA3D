@@ -78,34 +78,29 @@
         FullBright = 0x03,
 
         /// <summary>
-        /// Everything is black (used for wireframe)
-        /// </summary>
-        FullDark = 0x04,
-
-        /// <summary>
         /// Renders normals
         /// </summary>
-        Normals = 0x05,
+        Normals = 0x04,
 
         /// <summary>
         /// Renders vertex colors
         /// </summary>
-        ColorsWeights = 0x06,
+        ColorsWeights = 0x05,
 
         /// <summary>
         /// Renders uv coordinates
         /// </summary>
-        Texcoords = 0x07,
+        Texcoords = 0x06,
 
         /// <summary>
         /// Renders textures only
         /// </summary>
-        Textures = 0x08,
+        Textures = 0x07,
 
         /// <summary>
         /// Displays the culling side
         /// </summary>
-        CullSide = 0x09
+        CullSide = 0x08
     }
 
     /// <summary>

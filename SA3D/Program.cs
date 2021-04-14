@@ -122,7 +122,7 @@ namespace SATools.SA3D
                     if(motionPath == null)
                         context.Scene.LoadModelFile(file);
                     else
-                        context.Scene.LoadModelFile(file, Motion.ReadFile(motionPath), 60);
+                        context.Scene.LoadModelFile(file, Motion.ReadFile(motionPath, file.Model.CountAnimated()), 30);
                 }
                 else
                 {

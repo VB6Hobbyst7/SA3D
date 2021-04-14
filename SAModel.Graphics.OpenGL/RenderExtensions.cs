@@ -1,5 +1,4 @@
-﻿using OpenTK;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
@@ -14,7 +13,7 @@ using SAVector3 = SATools.SAModel.Structs.Vector3;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
-    struct BufferMeshHandle
+    internal struct BufferMeshHandle
     {
         public readonly int vao;
         public readonly int vbo;
@@ -30,7 +29,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         }
     }
 
-    struct CachedVertex
+    internal struct CachedVertex
     {
         public Vector4 position;
         public Vector3 normal;
@@ -46,31 +45,23 @@ namespace SATools.SAModel.Graphics.OpenGL
     {
         private static readonly CachedVertex[] vertices = new CachedVertex[0xFFFF];
         private static readonly float[] weights = new float[0xFFFF];
-        private static readonly Dictionary<BufferMesh, BufferMeshHandle> meshHandles = new Dictionary<BufferMesh, BufferMeshHandle>();
+        private static readonly Dictionary<BufferMesh, BufferMeshHandle> meshHandles = new();
 
         //private static Random rand;
 
-        public static void ClearWeights()
-        {
-            Array.Clear(weights, 0, weights.Length);
-        }
+        public static void ClearWeights() => Array.Clear(weights, 0, weights.Length);
 
         public static Matrix4 GenMatrix(SAVector3 position, SAVector3 rotation, SAVector3 scale, bool rotateZYX)
         {
             Matrix4 rotMtx;
-            if(rotateZYX)
-            {
-                rotMtx = Matrix4.CreateRotationZ(DegToRad(rotation.Z)) *
-                        Matrix4.CreateRotationY(DegToRad(rotation.Y)) *
-                        Matrix4.CreateRotationX(DegToRad(rotation.X));
-            }
-            else
-            {
-                rotMtx = Matrix4.CreateRotationX(DegToRad(rotation.X)) *
-                        Matrix4.CreateRotationY(DegToRad(rotation.Y)) *
-                        Matrix4.CreateRotationZ(DegToRad(rotation.Z));
-            }
+            var matX = Matrix4.CreateRotationX(DegToRad(rotation.X));
+            var matY = Matrix4.CreateRotationY(DegToRad(rotation.Y));
+            var matZ = Matrix4.CreateRotationZ(DegToRad(rotation.Z));
 
+            if(rotateZYX)
+                rotMtx = matZ * matY * matX;
+            else
+                rotMtx = matX * matY * matZ;
 
             return Matrix4.CreateScale(scale.ToGL()) * rotMtx * Matrix4.CreateTranslation(position.ToGL());
         }
@@ -79,7 +70,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public static Matrix4 LocalMatrix(this LandEntry obj) => GenMatrix(obj.Position, obj.Rotation, obj.Scale, obj.RotateZYX);
 
-        unsafe public static void Buffer(this ModelData.Attach atc, Matrix4? worldMtx, bool active)
+        public static unsafe void Buffer(this Attach atc, Matrix4? worldMtx, bool active)
         {
             if(atc.MeshData == null)
                 throw new InvalidOperationException("Attach \"" + atc.Name + "\" has not been buffered");
@@ -142,9 +133,9 @@ namespace SATools.SAModel.Graphics.OpenGL
                 {
                     int structSize = 36;
                     byte[] vertexData;
-                    using(MemoryStream stream = new MemoryStream(mesh.Corners.Length * structSize))
+                    using(MemoryStream stream = new(mesh.Corners.Length * structSize))
                     {
-                        BinaryWriter writer = new BinaryWriter(stream);
+                        BinaryWriter writer = new(stream);
 
                         foreach(BufferCorner c in mesh.Corners)
                         {
@@ -204,7 +195,9 @@ namespace SATools.SAModel.Graphics.OpenGL
                                 GL.BufferData(BufferTarget.ElementArrayBuffer, mesh.TriangleList.Length * sizeof(uint), (IntPtr)ptr, BufferUsageHint.StaticDraw);
                         }
                         else
+                        {
                             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+                        }
 
 
                         // assigning attribute data
@@ -230,7 +223,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static void DeBuffer(this ModelData.Attach atc)
+        public static void DeBuffer(this Attach atc)
         {
             foreach(BufferMesh mesh in atc.MeshData)
             {
@@ -245,16 +238,10 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static void Render(this ModelData.Attach atc, Matrix4? weightMtx, bool transparent, bool active, Material material)
+        public static void Render(this Attach atc, bool transparent, Material material)
         {
             if(atc.MeshData == null)
                 throw new InvalidOperationException($"Attach {atc.Name} has no buffer meshes");
-
-            // rebuffer weighted models
-            if(weightMtx.HasValue && !transparent)
-            {
-                atc.Buffer(weightMtx, active);
-            }
 
             foreach(BufferMesh m in atc.MeshData)
             {
@@ -263,9 +250,10 @@ namespace SATools.SAModel.Graphics.OpenGL
 
                 if(!meshHandles.TryGetValue(m, out var handle))
                 {
-                    atc.Buffer(null, active);
+                    atc.Buffer(null, false);
                     handle = meshHandles[m];
                 }
+
                 material.BufferMaterial = m.Material;
                 GL.BindVertexArray(handle.vao);
                 GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
@@ -278,18 +266,20 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(parentWorld.HasValue)
                 world *= parentWorld.Value;
 
-            if(obj.Attach != null)
+            if(obj.Attach != null && obj.Attach.MeshData.Length > 0)
             {
                 // if a model is weighted, then the buffered vertex positions/normals will have to be set to world space, which means that world and normal matrix should be identities
                 if(weighted)
                 {
-                    renderMeshes.Add(new GLRenderMesh(obj.Attach, world, Matrix4.Identity, Matrix4.Identity, viewMatrix * projectionMatrix, obj == activeObj));
+                    obj.Attach.Buffer(world, obj == activeObj);
+                    if(obj.Attach.BufferHasOpaque || obj.Attach.BufferHasTransparent)
+                        renderMeshes.Add(new GLRenderMesh(obj.Attach, Matrix4.Identity, Matrix4.Identity, viewMatrix * projectionMatrix));
                 }
                 else
                 {
                     Matrix4 normalMtx = world.Inverted();
                     normalMtx.Transpose();
-                    renderMeshes.Add(new GLRenderMesh(obj.Attach, null, world, normalMtx, world * viewMatrix * projectionMatrix, obj == activeObj));
+                    renderMeshes.Add(new GLRenderMesh(obj.Attach, world, normalMtx, world * viewMatrix * projectionMatrix));
                 }
             }
 
@@ -305,7 +295,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             Matrix4 world = le.LocalMatrix();
             Matrix4 normalMtx = world.Inverted();
             normalMtx.Transpose();
-            renderMeshes.Add(new GLRenderMesh(le.Attach, null, world, normalMtx, world * viewMatrix * projectionMatrix, le == activeLE));
+            renderMeshes.Add(new GLRenderMesh(le.Attach, world, normalMtx, world * viewMatrix * projectionMatrix));
         }
 
         public static void RenderModels(List<GLRenderMesh> renderMeshes, bool transparent, Material material)
@@ -313,92 +303,56 @@ namespace SATools.SAModel.Graphics.OpenGL
             for(int i = 0; i < renderMeshes.Count; i++)
             {
                 GLRenderMesh m = renderMeshes[i];
-                GL.UniformMatrix4(10, false, ref m.worldMtx);
-                GL.UniformMatrix4(11, false, ref m.normalMtx);
-                GL.UniformMatrix4(12, false, ref m.MVP);
-                m.attach.Render(m.realWorldMtx, transparent, m.active, material);
+                if(transparent && !m.attach.BufferHasTransparent
+                    || !transparent && !m.attach.BufferHasOpaque)
+                    continue;
+
+                m.BufferMatrices();
+                m.attach.Render(transparent, material);
             }
         }
 
-        public static void RenderModelsWireframe(List<GLRenderMesh> renderMeshes, bool transparent, DebugMaterial material)
+        public static void RenderModelsWireframe(List<GLRenderMesh> renderMeshes)
         {
-            GL.Uniform1(13, 0.001f); // setting normal offset for wireframe
-            RenderMode old = material.RenderMode;
-            material.RenderMode = RenderMode.FullDark; // drawing the lines black
-            material.BufferMaterial = new BufferMaterial();
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
             for(int i = 0; i < renderMeshes.Count; i++)
             {
                 GLRenderMesh m = renderMeshes[i];
 
-                if(m.attach.MeshData == null)
-                    throw new InvalidOperationException($"Attach {m.attach.Name} has no buffer meshes");
+                if(!m.attach.BufferHasOpaque && !m.attach.BufferHasTransparent)
+                    continue;
 
-                GL.UniformMatrix4(10, false, ref m.worldMtx);
-                GL.UniformMatrix4(11, false, ref m.normalMtx);
-                GL.UniformMatrix4(12, false, ref m.MVP);
+                m.BufferMatrices();
 
                 foreach(BufferMesh bm in m.attach.MeshData)
                 {
-                    if(bm.Material == null || bm.Material.UseAlpha != transparent)
+                    if(bm.Material == null)
                         continue;
 
-                    if(!meshHandles.TryGetValue(bm, out var handle))
-                        throw new InvalidOperationException($"Mesh in {m.attach.Name} not buffered");
-
-                    if(bm.Material.Culling)
-                        GL.Enable(EnableCap.CullFace);
-                    else
-                        GL.Disable(EnableCap.CullFace);
-
+                    var handle = meshHandles[bm];
                     GL.BindVertexArray(handle.vao);
-
-                    if(handle.eao == 0)
-                        GL.DrawArrays(PrimitiveType.Triangles, 0, handle.vertexCount);
-                    else
-                        GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
                 }
             }
 
-            // reset
-            GL.Uniform1(13, 0f);
-            material.RenderMode = old;
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }
 
 
         #region Conversion extensions
 
-        private static CachedVertex ToCache(this BufferVertex vtx)
-        {
-            return new CachedVertex(vtx.position.ToGL4(), vtx.normal.ToGL());
-        }
+        private static CachedVertex ToCache(this BufferVertex vtx) => new(vtx.position.ToGL4(), vtx.normal.ToGL());
 
-        public static Vector3 ToGL(this SAVector3 vec3)
-        {
-            return new Vector3(vec3.X, vec3.Y, vec3.Z);
-        }
+        public static Vector3 ToGL(this SAVector3 vec3) => new(vec3.X, vec3.Y, vec3.Z);
 
-        public static Vector4 ToGL4(this SAVector3 vec3)
-        {
-            return new Vector4(vec3.X, vec3.Y, vec3.Z, 1);
-        }
+        public static Vector4 ToGL4(this SAVector3 vec3) => new(vec3.X, vec3.Y, vec3.Z, 1);
 
-        public static SAVector3 ToSA(this Vector3 vec3)
-        {
-            return new Structs.Vector3(vec3.X, vec3.Y, vec3.Z);
-        }
+        public static SAVector3 ToSA(this Vector3 vec3) => new(vec3.X, vec3.Y, vec3.Z);
 
-        public static Vector2 ToGL(this SAVector2 vec2)
-        {
-            return new Vector2(vec2.X, vec2.Y);
-        }
+        public static Vector2 ToGL(this SAVector2 vec2) => new(vec2.X, vec2.Y);
 
-        public static SAVector2 ToSA(this Vector2 vec2)
-        {
-            return new Structs.Vector2(vec2.X, vec2.Y);
-        }
+        public static SAVector2 ToSA(this Vector2 vec2) => new(vec2.X, vec2.Y);
 
 
         public static BlendingFactor ToGLBlend(this BlendMode instr)
@@ -425,7 +379,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static TextureMinFilter ToGLMinFilter(this ModelData.FilterMode filter)
+        public static TextureMinFilter ToGLMinFilter(this FilterMode filter)
         {
             switch(filter)
             {
@@ -439,7 +393,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static TextureMagFilter ToGLMagFilter(this ModelData.FilterMode filter)
+        public static TextureMagFilter ToGLMagFilter(this FilterMode filter)
         {
             switch(filter)
             {

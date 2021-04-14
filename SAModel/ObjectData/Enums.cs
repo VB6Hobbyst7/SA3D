@@ -110,7 +110,8 @@ namespace SATools.SAModel.ObjData
         LightColor = 0x200,
         Intensity = 0x400,
         Spot = 0x800,
-        Point = 0x1000
+        Point = 0x1000,
+        Quaternion = 0x2000
     }
 
     public enum InterpolationMode

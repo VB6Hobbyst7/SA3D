@@ -2,6 +2,8 @@
 
 out vec4 FragColor;
 
+layout(location = 13) uniform float glblend;
+
 // vertex data
 in vec3 fragpos;
 in vec3 normal;
@@ -20,12 +22,11 @@ in vec4 col0;
 #define SMOOTH		0x01000000
 #define FALLOFF		0x02000000
 #define FULLBRIGHT	0x03000000
-#define FULLDARK	0x04000000
-#define NORMALS		0x05000000
-#define COLORS		0x06000000
-#define TEXCOORDS	0x07000000
-#define Textures	0x08000000
-#define Culling		0x09000000
+#define NORMALS		0x04000000
+#define COLORS		0x05000000
+#define TEXCOORDS	0x06000000
+#define Textures	0x07000000
+#define Culling		0x08000000
 
 layout(std140, binding = 0) uniform Material
 {
@@ -68,9 +69,7 @@ void main()
 {
 	vec4 col = vec4(0);
 	int lightingMode = flags & LIGHTINGMASK;
-	if(lightingMode == FULLDARK)
-		col = vec4(0,0,0,1);
-	else if(lightingMode == FULLBRIGHT)
+	if(lightingMode == FULLBRIGHT)
 		col = vec4(1,1,1,1);
 	else if(lightingMode == NORMALS)
 		col = (vec4(normal, 1) + vec4(1)) / 2 ;
@@ -120,6 +119,6 @@ void main()
 			col.a = alpha;
 		}
 	}
-	if(col.a == 0) discard;
-	FragColor =  col;
+	if(col.a == 0 && glblend == 1) discard;
+	FragColor = col;
 }

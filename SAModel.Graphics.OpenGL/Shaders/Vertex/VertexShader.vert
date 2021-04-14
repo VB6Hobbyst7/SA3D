@@ -8,7 +8,6 @@ layout(location = 3) in vec2 aUV0;
 layout(location = 10) uniform mat4 world;
 layout(location = 11) uniform mat4 normalMtx;
 layout(location = 12) uniform mat4 mvp;
-layout(location = 13) uniform float offset;
 
 out vec3 fragpos;
 out vec3 normal;
@@ -21,7 +20,6 @@ void main()
 	col0 = aCol0;
 
 	gl_Position = mvp * vec4(aPosition, 1);
-	gl_Position.z -= offset;
 
 	normal = normalize(mat3(normalMtx) * aNormal);
 	fragpos = vec3(world * vec4(aPosition, 1));

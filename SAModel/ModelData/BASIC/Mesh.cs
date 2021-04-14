@@ -183,7 +183,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
 
             // creating the mesh
-            Mesh result = new Mesh(polyType, polyName, polys, normalName, colorName, uvName, materialID)
+            Mesh result = new(polyType, polyName, polys, normalName, colorName, uvName, materialID)
             {
                 PolyAttributes = source.ToUInt32(address + 8)
             };

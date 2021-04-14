@@ -1,5 +1,4 @@
-﻿using OpenTK;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using SATools.SAModel.Structs;
 using System;
@@ -17,7 +16,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// <summary>
         /// Used to store the different uniforms in the shader
         /// </summary>
-        struct UniformType
+        private struct UniformType
         {
             /// <summary>
             /// The uniform location in the shader
@@ -134,13 +133,15 @@ namespace SATools.SAModel.Graphics.OpenGL
                     samplerInt++;
                 }
                 else
+                {
                     _uniformLocations.Add(key, new UniformType(location, t));
+                }
             }
         }
 
         private string CorrectString(string input)
             => input.Trim(bomTrimmer) + "\n\0";
-        
+
 
         /// <summary>
         /// Binds a uniform buffer to a uniform block of a shader
@@ -268,14 +269,8 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Uniform4(_uniformLocations[name].location, data.SystemCol);
         }
 
-        public void Use()
-        {
-            GL.UseProgram(_handle);
-        }
+        public void Use() => GL.UseProgram(_handle);
 
-        public static void UnUse()
-        {
-            GL.UseProgram(0);
-        }
+        public static void UnUse() => GL.UseProgram(0);
     }
 }

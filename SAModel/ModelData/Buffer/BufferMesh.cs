@@ -108,7 +108,7 @@ namespace SATools.SAModel.ModelData.Buffer
         private BufferMesh Optimize(BufferVertex[] vertices, bool ownsVertices, bool useVertices)
         {
             // filter degenerate triangles
-            List<uint> triangles = new List<uint>();
+            List<uint> triangles = new();
             if(!useVertices)
             {
                 for(int i = 0; i < TriangleList.Length; i += 3)
@@ -138,7 +138,7 @@ namespace SATools.SAModel.ModelData.Buffer
             triangles.ForEach(x => removedCorners[(int)x] = true);
 
             // filtering the double Corners
-            List<BufferCorner> distCorners = new List<BufferCorner>();
+            List<BufferCorner> distCorners = new();
             uint[] cIDs = new uint[Corners.Length];
             for(int i = 0; i < Corners.Length; i++)
             {
@@ -239,7 +239,7 @@ namespace SATools.SAModel.ModelData.Buffer
 
         object ICloneable.Clone() => Clone();
 
-        public BufferMesh Clone() => new BufferMesh((BufferVertex[])Vertices.Clone(), ContinueWeight, (BufferCorner[])Corners.Clone(), (uint[])TriangleList.Clone(), Material.Clone());
+        public BufferMesh Clone() => new((BufferVertex[])Vertices.Clone(), ContinueWeight, (BufferCorner[])Corners.Clone(), (uint[])TriangleList.Clone(), Material.Clone());
 
     }
 }

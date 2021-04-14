@@ -6,7 +6,7 @@ namespace SATools.SACommon
 {
     public static class StringExtensions
     {
-        private static readonly Random rand = new Random();
+        private static readonly Random rand = new();
 
         public static string ToCHex(this short i)
         {
@@ -41,7 +41,7 @@ namespace SATools.SACommon
             if(str == null)
                 return "NULL";
             Encoding enc = Encoding.GetEncoding(932);
-            StringBuilder result = new StringBuilder("\"");
+            StringBuilder result = new("\"");
             foreach(char item in str)
             {
                 switch(item)
@@ -149,7 +149,7 @@ namespace SATools.SACommon
 
         public static string MakeIdentifier(this string s)
         {
-            StringBuilder result = new StringBuilder(s.Length + 1);
+            StringBuilder result = new(s.Length + 1);
             foreach(char item in s)
             {
                 if((item >= '0' & item <= '9') | (item >= 'A' & item <= 'Z') | (item >= 'a' & item <= 'z') | item == '_')

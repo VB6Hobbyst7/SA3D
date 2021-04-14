@@ -48,7 +48,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             VertexChunks = vertexChunks;
             PolyChunks = polyChunks;
-            List<Vector3> pos = new List<Vector3>();
+            List<Vector3> pos = new();
             if(VertexChunks != null)
                 foreach(VertexChunk cnk in VertexChunks)
                     foreach(ChunkVertex vtx in cnk.Vertices)
@@ -76,7 +76,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 hasWeight = VertexChunks != null && VertexChunks.Any(a => a.HasWeight);
                 return;
             }
-            List<int> ids = new List<int>();
+            List<int> ids = new();
             if(VertexChunks != null)
                 foreach(var vc in VertexChunks)
                 {
@@ -110,7 +110,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 vertexAddress -= imagebase;
                 vertexName = labels.ContainsKey(vertexAddress) ? labels[vertexAddress] : "vertex_" + vertexAddress.ToString("X8");
 
-                List<VertexChunk> chunks = new List<VertexChunk>();
+                List<VertexChunk> chunks = new();
                 VertexChunk cnk = VertexChunk.Read(source, ref vertexAddress);
                 while(cnk != null)
                 {
@@ -120,7 +120,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 vertexChunks = chunks.ToArray();
             }
 
-            uint polyAddress = source.ToUInt32(address + 4);
+            uint polyAddress = source.ToUInt32(address += 4);
             string polyName = "poly_" + GenerateIdentifier();
             PolyChunk[] polyChunks = null;
             if(polyAddress != 0)
@@ -128,7 +128,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 polyAddress -= imagebase;
                 polyName = labels.ContainsKey(polyAddress) ? labels[polyAddress] : "poly_" + polyAddress.ToString("X8");
 
-                List<PolyChunk> chunks = new List<PolyChunk>();
+                List<PolyChunk> chunks = new();
                 PolyChunk cnk = PolyChunk.Read(source, ref polyAddress);
                 while(cnk != null && cnk.Type != ChunkType.End)
                 {
@@ -138,7 +138,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 polyChunks = chunks.ToArray();
 
             }
-            address += 8;
+            address += 4;
             return new ChunkAttach(vertexChunks, polyChunks)
             {
                 Name = name,
@@ -201,9 +201,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             base.WriteNJA(writer, DX, labels, textures);
         }
 
-        public override void GenBufferMesh(bool optimize)
+        internal override BufferMesh[] buffer(bool optimize)
         {
-            List<BufferMesh> meshes = new List<BufferMesh>();
+            List<BufferMesh> meshes = new();
 
             BufferVertex[] vertices = null;
             bool continueWeight = false;
@@ -214,7 +214,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     VertexChunk cnk = VertexChunks[i];
 
-                    List<BufferVertex> vertexList = new List<BufferVertex>();
+                    List<BufferVertex> vertexList = new();
                     if(!cnk.HasWeight)
                     {
                         for(int j = 0; j < cnk.Vertices.Length; j++)
@@ -242,7 +242,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
 
 
-            List<PolyChunk> active = new List<PolyChunk>();
+            List<PolyChunk> active = new();
 
             if(PolyChunks != null)
             {
@@ -277,7 +277,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             if(active.Count > 0)
             {
-                BufferMaterial material = new BufferMaterial()
+                BufferMaterial material = new()
                 {
                     Diffuse = Color.White,
                     Ambient = Color.White,
@@ -361,8 +361,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                             material.UseAlpha = stripCnk.UseAlpha;
                             material.Culling = !stripCnk.DoubleSide;
 
-                            List<BufferCorner> corners = new List<BufferCorner>();
-                            List<uint> triangles = new List<uint>();
+                            List<BufferCorner> corners = new();
+                            List<uint> triangles = new();
 
                             foreach(var s in stripCnk.Strips)
                             {
@@ -410,7 +410,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
             }
 
-            MeshData = meshes.ToArray();
+            return meshes.ToArray();
         }
 
 

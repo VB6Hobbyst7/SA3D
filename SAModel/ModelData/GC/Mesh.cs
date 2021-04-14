@@ -67,7 +67,7 @@ namespace SATools.SAModel.ModelData.GC
             int primitives_size = source.ToInt32(address + 12);
 
             // reading the parameters
-            List<Parameter> parameters = new List<Parameter>();
+            List<Parameter> parameters = new();
             for(int i = 0; i < parameters_count; i++)
             {
                 parameters.Add(Parameter.Read(source, parameters_addr));
@@ -80,7 +80,7 @@ namespace SATools.SAModel.ModelData.GC
                 indexFlags = flags.Value;
 
             // reading the primitives
-            List<Poly> primitives = new List<Poly>();
+            List<Poly> primitives = new();
             uint end_pos = (uint)(primitives_addr + primitives_size);
 
             while(primitives_addr < end_pos)
@@ -141,7 +141,7 @@ namespace SATools.SAModel.ModelData.GC
 
         object ICloneable.Clone() => Clone();
 
-        public Mesh Clone() => new Mesh(Parameters.ContentClone(), Polys.ContentClone());
+        public Mesh Clone() => new(Parameters.ContentClone(), Polys.ContentClone());
 
         public override string ToString() => (IndexFlags.HasValue ? ((uint)IndexFlags.Value).ToString() : "null") + $" - {Parameters.Length} - {Polys.Length}";
     }

@@ -74,7 +74,7 @@ namespace SATools.SAModel.Structs
             /// <returns></returns>
             public Edge Connect(Vertex other)
             {
-                Edge e = new Edge(this, other);
+                Edge e = new(this, other);
                 edges.Add(other, e);
                 other.edges.Add(this, e);
                 return e;
@@ -159,7 +159,7 @@ namespace SATools.SAModel.Structs
             {
                 get
                 {
-                    List<Triangle> result = new List<Triangle>();
+                    List<Triangle> result = new();
                     foreach(Triangle t in neighbours)
                         if(!t.used)
                             result.Add(t);
@@ -438,9 +438,9 @@ namespace SATools.SAModel.Structs
         /// <returns></returns>
         public static int[][] Strip(int[] triList, bool doSwaps, bool concat)
         {
-            Mesh mesh = new Mesh(triList);
+            Mesh mesh = new(triList);
             int written = 0;
-            List<int[]> strips = new List<int[]>();
+            List<int[]> strips = new();
 
             int triCount = mesh.triangles.Length;
 
@@ -529,7 +529,8 @@ namespace SATools.SAModel.Structs
                     nextVert = sharedVerts[1];
                 }
 
-                List<int> strip = new List<int> { prevVert.index, currentVert.index, nextVert.index };
+                List<int> strip = new()
+                { prevVert.index, currentVert.index, nextVert.index };
                 written++;
 
                 prevVert = nextVert;
@@ -636,7 +637,7 @@ namespace SATools.SAModel.Structs
 
             if(concat) // TODO strippifier Concat is broken
             {
-                List<int> tResult = new List<int>(strips[0]);
+                List<int> tResult = new(strips[0]);
                 if(strips.Count > 1)
                 {
                     for(int i = 1; i < strips.Count; i++)

@@ -2,11 +2,6 @@
 using OpenTK.Wpf;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Structs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -17,8 +12,8 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// Return Type: BOOL->int  
         ///X: int  
         ///Y: int  
-        [System.Runtime.InteropServices.DllImportAttribute("user32.dll", EntryPoint = "SetCursorPos")]
-        [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SetCursorPos")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
         public static extern bool SetCursorPos(int X, int Y);
     }
 
@@ -30,7 +25,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private Vector2 _center;
 
-        private Context _context;
+        private readonly Context _context;
 
         public GLControl(Context context, GAPIAInputBridge inputBridge) : base()
         {
@@ -122,7 +117,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 _inputBridge.UpdateCursorPos(posV2, _center);
             else
                 _inputBridge.UpdateCursorPos(posV2, null);
-            
+
         }
 
         protected override void OnMouseLeave(MouseEventArgs e)
@@ -152,10 +147,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             _inputBridge.MouseButtonReleased(e.ChangedButton);
         }
 
-        private Point ToScreenPos(Vector2 relative)
-        {
-            return PointToScreen(new Point(relative.X, relative.Y));
-        }
+        private Point ToScreenPos(Vector2 relative) => PointToScreen(new Point(relative.X, relative.Y));
         #endregion
     }
 }

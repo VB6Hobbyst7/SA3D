@@ -403,10 +403,10 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteLine();
         }
 
-        public override void GenBufferMesh(bool optimize)
+        internal override BufferMesh[] buffer(bool optimize)
         {
-            List<BufferMesh> meshes = new List<BufferMesh>();
-            List<BufferVertex> vertices = new List<BufferVertex>();
+            List<BufferMesh> meshes = new();
+            List<BufferVertex> vertices = new();
 
             for(ushort i = 0; i < Positions.Length; i++)
                 vertices.Add(new BufferVertex(Positions[i], Normals[i], i));
@@ -457,8 +457,8 @@ namespace SATools.SAModel.ModelData.BASIC
                     bMat.SetFlag(MaterialFlags.normalMapping, mat.EnvironmentMap);
                 }
 
-                List<BufferCorner> corners = new List<BufferCorner>();
-                List<uint> triangles = new List<uint>();
+                List<BufferCorner> corners = new();
+                List<uint> triangles = new();
                 int polyIndex = 0;
 
                 foreach(Poly p in mesh.Polys)
@@ -515,7 +515,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 }
             }
 
-            MeshData = meshes.ToArray();
+            return meshes.ToArray();
         }
 
         public override string ToString() => $"{Name} - BASIC";

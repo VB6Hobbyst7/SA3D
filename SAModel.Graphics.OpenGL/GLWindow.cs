@@ -1,6 +1,4 @@
-﻿using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using SATools.SAModel.Graphics.APIAccess;
@@ -8,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Key = System.Windows.Input.Key;
-using TKey = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
 using MouseButton = System.Windows.Input.MouseButton;
+using TKey = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
 using TMouseButton = OpenTK.Windowing.GraphicsLibraryFramework.MouseButton;
 
 namespace SATools.SAModel.Graphics.OpenGL
@@ -139,7 +137,8 @@ namespace SATools.SAModel.Graphics.OpenGL
             { TKey.Menu, Key.None }
         };
 
-        private static readonly Dictionary<TMouseButton, MouseButton> MouseButtonMap = new() {
+        private static readonly Dictionary<TMouseButton, MouseButton> MouseButtonMap = new()
+        {
             { TMouseButton.Left, MouseButton.Left },
             { TMouseButton.Middle, MouseButton.Middle },
             { TMouseButton.Right, MouseButton.Right },

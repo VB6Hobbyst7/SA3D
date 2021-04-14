@@ -47,7 +47,7 @@ namespace SATools.SA3D.ViewModel
         /// </summary>
         private void OpenFile()
         {
-            OpenFileDialog ofd = new OpenFileDialog()
+            OpenFileDialog ofd = new()
             {
                 Filter = "SA3D File(*.*mdl, *.nj, *.*lvl)|*.SA1MDL;*.SA2MDL;*.SA2BMDL;*.NJ;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
             };

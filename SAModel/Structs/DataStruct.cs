@@ -23,6 +23,11 @@ namespace SATools.SAModel.Structs
         BAMS32,
 
         /// <summary>
+        /// Float quaternion (only reading and writing)
+        /// </summary>
+        Quaternion,
+
+        /// <summary>
         /// ARGB Color; Each channel takes a byte
         /// </summary>
         ARGB8_32,

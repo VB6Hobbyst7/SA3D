@@ -117,7 +117,7 @@ namespace SATools.SAModel.ModelData.GC
             int count = source.ToUInt16(address + 2);
             uint tmpaddr = source.ToUInt32(address + 8) - imageBase;
 
-            List<IDataStructOut> data = new List<IDataStructOut>();
+            List<IDataStructOut> data = new();
 
             switch(attribute)
             {
@@ -188,7 +188,7 @@ namespace SATools.SAModel.ModelData.GC
 
         object ICloneable.Clone() => Clone();
 
-        public VertexSet Clone() => new VertexSet(Attribute, DataType, StructType, (IDataStructOut[])Data.Clone());
+        public VertexSet Clone() => new(Attribute, DataType, StructType, (IDataStructOut[])Data.Clone());
 
         public override string ToString() => $"{Attribute}: {Data.Length}";
     }

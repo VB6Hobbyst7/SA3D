@@ -190,7 +190,7 @@ namespace SATools.SAModel.ObjData
             }
 
             MetaData metaData = MetaData.Read(source, version, false);
-            Dictionary<uint, string> labels = new Dictionary<uint, string>(metaData.Labels);
+            Dictionary<uint, string> labels = new(metaData.Labels);
 
             LandTable table;
             uint ltblAddress = source.ToUInt32(8);
@@ -229,11 +229,11 @@ namespace SATools.SAModel.ObjData
             float radius;
             uint flags = 0;
 
-            List<LandEntry> geometry = new List<LandEntry>();
+            List<LandEntry> geometry = new();
             string geomName;
-            List<LandEntryMotion> anim = new List<LandEntryMotion>();
+            List<LandEntryMotion> anim = new();
             string animName;
-            Dictionary<uint, ModelData.Attach> attaches = new Dictionary<uint, ModelData.Attach>();
+            Dictionary<uint, ModelData.Attach> attaches = new();
             string texName = "";
             uint texListPtr;
 
@@ -351,9 +351,9 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public byte[] WriteFile()
         {
-            using(ExtendedMemoryStream stream = new ExtendedMemoryStream())
+            using(ExtendedMemoryStream stream = new())
             {
-                LittleEndianMemoryStream writer = new LittleEndianMemoryStream(stream);
+                LittleEndianMemoryStream writer = new(stream);
 
                 // writing indicator
                 switch(Format)
@@ -372,7 +372,7 @@ namespace SATools.SAModel.ObjData
 
                 writer.WriteUInt64(0); // placeholders for landtable address and meta address
 
-                Dictionary<string, uint> labels = new Dictionary<string, uint>();
+                Dictionary<string, uint> labels = new();
 
                 uint ltblAddress = Write(writer, 0, labels);
                 writer.Stream.Seek(8, SeekOrigin.Begin);
@@ -395,13 +395,13 @@ namespace SATools.SAModel.ObjData
         public uint Write(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
         {
             // sort the landentries
-            List<ModelData.Attach> attaches = new List<ModelData.Attach>();
+            List<ModelData.Attach> attaches = new();
 
             ushort visCount = 0;
             if(Format > LandtableFormat.SADX)
             {
-                List<LandEntry> visual = new List<LandEntry>();
-                List<LandEntry> basic = new List<LandEntry>();
+                List<LandEntry> visual = new();
+                List<LandEntry> basic = new();
 
                 foreach(LandEntry le in Geometry)
                 {

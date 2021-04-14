@@ -130,7 +130,7 @@ namespace SATools.SACommon
 
         public static void FixRELPointers(byte[] file, uint imageBase = 0)
         {
-            OSModuleHeader header = new OSModuleHeader(file, 0);
+            OSModuleHeader header = new(file, 0);
             OSSectionInfo[] sections = new OSSectionInfo[header.info.numSections];
             for(uint i = 0; i < header.info.numSections; i++)
                 sections[i] = new OSSectionInfo(file, header.info.sectionInfoOffset + (i * 8));
@@ -144,7 +144,7 @@ namespace SATools.SACommon
                     reladdr = imports[i].offset;
                     break;
                 }
-            OSRel rel = new OSRel(file, reladdr);
+            OSRel rel = new(file, reladdr);
             uint dataaddr = 0;
             unchecked
             {

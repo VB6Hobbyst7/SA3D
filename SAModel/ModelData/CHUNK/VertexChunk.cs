@@ -174,7 +174,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             for(int i = 0; i < vertices.Length; i++)
             {
-                ChunkVertex vtx = new ChunkVertex
+                ChunkVertex vtx = new()
                 {
                     Position = Vector3.Read(source, ref address, IOType.Float)
                 };
