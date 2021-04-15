@@ -9,17 +9,10 @@
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
 	<DebugType>embedded</DebugType>
-	<Version>0.2.2</Version>
+	<Version>0.2.3</Version>
 	<Authors>Justin113D</Authors>
 	<Company>X-Hax</Company>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SAArchive\SAArchive.csproj" />
     <ProjectReference Include="..\SAModel.Graphics.OpenGL\SAModel.Graphics.OpenGL.csproj" />
     <ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
     <ProjectReference Include="..\SAModel\SAModel.csproj" />
@@ -43,6 +37,11 @@
 	  <None Remove="Icons\logo.ico" />
 	  <None Remove="Icons\RecordDot_redNoHalo_16x.png" />
 	  <None Remove="Icons\Refresh_16x.png" />
+	  <None Remove="Icons\TreeIcons\Animation.png" />
+	  <None Remove="Icons\TreeIcons\Model.png" />
+	  <None Remove="Icons\TreeIcons\Object.png" />
+	  <None Remove="Icons\TreeIcons\Texture.png" />
+	  <None Remove="Icons\TreeIcons\Textures.png" />
 	</ItemGroup>
 
 </Project>

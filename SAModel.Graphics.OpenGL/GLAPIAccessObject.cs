@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.OpenGL.Properties;
 using SATools.SAModel.ModelData.Buffer;
@@ -36,6 +37,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             // Material
             _materialHandle = GL.GenBuffer();
+            _materialTextureHandle = GL.GenTexture();
 
             // loading the shader
             string vertexShader = Encoding.UTF8.GetString(Resources.VertexShader);
@@ -116,14 +118,16 @@ namespace SATools.SAModel.Graphics.OpenGL
             List<LandEntry> entries = new();
 
             foreach(LandEntry le in context.Scene.VisualGeometry)
-                le.Prepare(renderMeshes, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, null);
+                le.Prepare(renderMeshes, context.Scene.LandTextureSet, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, null);
             foreach(GameTask tsk in context.Scene.objects)
             {
                 tsk.Display();
-                tsk.obj.Prepare(renderMeshes, _cameraViewMatrix, _cameraProjectionmatrix, null, null, tsk.obj.HasWeight);
+                if(tsk is DisplayTask dtsk)
+                    dtsk.Model.Prepare(renderMeshes, dtsk.TextureSet,  _cameraViewMatrix, _cameraProjectionmatrix, null, null, dtsk.Model.HasWeight);
             }
 
             _defaultShader.Use();
+            GL.BindTexture(TextureTarget.Texture2D, _materialTextureHandle);
 
             // first the opaque meshes
             RenderExtensions.RenderModels(renderMeshes, false, context.Material);
@@ -150,17 +154,18 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(!context.RenderCollision)
             {
                 foreach(LandEntry le in context.Scene.VisualGeometry)
-                    le.Prepare(renderMeshes, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
+                    le.Prepare(renderMeshes, context.Scene.LandTextureSet, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
                 foreach(GameTask tsk in context.Scene.objects)
                 {
                     tsk.Display();
-                    tsk.obj.Prepare(renderMeshes, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveNJO, null, tsk.obj.HasWeight);
+                    if(tsk is DisplayTask dtsk)
+                        dtsk.Model.Prepare(renderMeshes, dtsk.TextureSet, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveNJO, null, dtsk.Model.HasWeight);
                 }
             }
             else
             {
                 foreach(LandEntry le in context.Scene.CollisionGeometry)
-                    le.Prepare(renderMeshes, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
+                    le.Prepare(renderMeshes, null, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
             }
 
             _defaultShader.Use();
@@ -230,6 +235,10 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private int _materialHandle;
 
+        private int _materialTextureHandle;
+
+        private Texture bufferedTexture;
+
         public override void MaterialPreBuffer(Material material)
         {
 
@@ -237,14 +246,24 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override unsafe void MaterialPostBuffer(Material material)
         {
-            if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture))
+            if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture) && material.BufferTextureSet != null)
             {
-                /* TODO bind texture here using textureID and the correct texture list
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMinFilter());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMagFilter());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)material.BufferMaterial.WrapModeU());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)material.BufferMaterial.WrapModeV());
-				*/
+
+                Texture newBufferTexture = material.BufferTextureSet.Textures[(int)material.BufferMaterial.TextureIndex];
+                if(newBufferTexture != bufferedTexture)
+                {
+                    bufferedTexture = newBufferTexture;
+                    Bitmap texture = bufferedTexture.TextureBitmap;
+
+                    BitmapData data = texture.LockBits(new Rectangle(0, 0, texture.Width, texture.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                    texture.UnlockBits(data);
+
+                }
             }
 
             if(material.BufferMaterial.UseAlpha)
@@ -412,7 +431,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             return false;
         }
 
-        private UIBuffer GenUIBuffer()
+        private static UIBuffer GenUIBuffer()
         {
             int vaoHandle = GL.GenVertexArray();
             int vboHandle = GL.GenBuffer();
@@ -443,7 +462,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             };
         }
 
-        private unsafe void UpdateTransforms(float[] transformBuffer)
+        private static unsafe void UpdateTransforms(float[] transformBuffer)
         {
             fixed(float* ptr = transformBuffer)
             {
@@ -451,7 +470,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        private void UpdateTexture(Bitmap texture)
+        private static void UpdateTexture(Bitmap texture)
         {
             BitmapData data = texture.LockBits(new Rectangle(0, 0, texture.Width, texture.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);

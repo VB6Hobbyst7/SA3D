@@ -1,5 +1,6 @@
 ﻿using SATools.SA3D.ViewModel;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SATools.SA3D.XAML
 {
@@ -10,14 +11,19 @@ namespace SATools.SA3D.XAML
     {
         public WndMain()
         {
-            DataContext = new MainViewModel();
+            DataContext = new VmMain(App.Context);
             InitializeComponent();
 
-            var c = ((MainViewModel)DataContext).RenderContext.AsControl();
+            var c = ((VmMain)DataContext).RenderContext.AsControl();
 
             maingrid.Children.Add(c);
         }
 
         private void ControlSettings_Click(object sender, RoutedEventArgs e) => new WndControlSettings().ShowDialog();
+
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            ((VmObjectTree)((TreeView)sender).DataContext).Selected = (VmTreeItem)e.NewValue;
+        }
     }
 }

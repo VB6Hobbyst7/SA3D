@@ -1,4 +1,5 @@
-﻿using SATools.SAModel.ObjData;
+﻿using SATools.SAArchive;
+using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace SATools.SAModel.Graphics
 
         public readonly Camera cam;
         public double time = 0;
-        public float timelineSpeed = 1;
+
+        public TextureSet LandTextureSet { get; set; }
 
         public readonly List<GameTask> objects = new();
         public readonly List<LandEntry> geometry = new();
@@ -35,11 +37,11 @@ namespace SATools.SAModel.Graphics
             this.cam = cam;
         }
 
-        public void LoadModelFile(ObjData.ModelFile file)
+        public void AddDisplayTask(DisplayTask task)
         {
-            objects.Add(new DisplayTask(file.Model));
-            NJObject[] objs = file.Model.GetObjects();
-            if(file.Model.HasWeight)
+            objects.Add(task);
+            NJObject[] objs = task.Model.GetObjects();
+            if(task.Model.HasWeight)
             {
                 foreach(NJObject obj in objs)
                 {
@@ -68,18 +70,6 @@ namespace SATools.SAModel.Graphics
 
         }
 
-        public void LoadModelFile(ObjData.ModelFile file, Motion motion, float animSpeed)
-        {
-            LoadModelFile(file);
-            DisplayTask tsk = objects.Last() as DisplayTask;
-
-            int mdlCount = tsk.obj.GetObjects().Length;
-            if(motion.ModelCount > mdlCount)
-                throw new ArgumentException($"Motion not compatible with model! \n Motion model count: {motion.ModelCount} \n Model count: {mdlCount}");
-            tsk.motion = motion;
-            tsk.animSpeed = animSpeed;
-        }
-
         public void LoadLandtable(ObjData.LandTable table)
         {
             foreach(LandEntry le in table.Geometry)
@@ -99,7 +89,7 @@ namespace SATools.SAModel.Graphics
             time += delta;
             foreach(GameTask tsk in objects)
             {
-                tsk.Update(time);
+                tsk.Update(delta, time);
             }
         }
     }

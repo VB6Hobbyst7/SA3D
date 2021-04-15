@@ -1,4 +1,5 @@
-﻿using SATools.SAModel.Graphics;
+﻿using SATools.SAArchive;
+using SATools.SAModel.Graphics;
 using SATools.SAModel.Graphics.OpenGL;
 using SATools.SAModel.ObjData.Animation;
 using System;
@@ -25,6 +26,8 @@ namespace SATools.SA3D
 
         private static void Run(string[] args)
         {
+            DAT test = DAT.Read("F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure DX\\system\\sounddata\\se\\V_KNUCKLES_E_BANK06.dat");
+
             // when running from cmd, attach to the cmd console
 
             string path = "";
@@ -46,6 +49,9 @@ namespace SATools.SA3D
 
                         output += "  Options:\n";
                         output += "   -h --help           Help \n\n";
+
+                        output += "   -tex --textures\n";
+                        output += "       Loads a texture archive.\n\n";
 
                         output += "   -mtn --motion\n";
                         output += "       Loads a motion file and attaches it to the loaded model.\n\n\n";
@@ -70,7 +76,9 @@ namespace SATools.SA3D
             }
 
             DebugContext context = new(default, new GLAPIAccessObject());
+
             string motionPath = null;
+            string texturePath = null;
             bool standalone = false;
             int width = 1280;
             int height = 720;
@@ -93,6 +101,18 @@ namespace SATools.SA3D
                     case "--standalone":
                         standalone = true;
                         break;
+                    case "-tex":
+                    case "--textures":
+                        i++;
+                        texturePath = args[i];
+
+                        texturePath = Path.Combine(Environment.CurrentDirectory, texturePath);
+                        if(!File.Exists(path))
+                        {
+                            Console.WriteLine("Texture filepath does not lead to a file!");
+                            return;
+                        }
+                        break;
                     case "-mtn":
                     case "--motion":
                         i++;
@@ -108,6 +128,7 @@ namespace SATools.SA3D
                 }
             }
 
+            // loading the model file
             if(path != null)
             {
                 string ext = Path.GetExtension(path);
@@ -118,11 +139,23 @@ namespace SATools.SA3D
                 }
                 else if(ext.EndsWith("mdl") || ext.EndsWith("nj"))
                 {
+                    TextureSet textures = null;
+
+                    if(texturePath != null)
+                    {
+                        textures = Archive.ReadFile(texturePath).ToTextureSet();
+                    }
+
                     var file = SAModel.ObjData.ModelFile.Read(path);
-                    if(motionPath == null)
-                        context.Scene.LoadModelFile(file);
-                    else
-                        context.Scene.LoadModelFile(file, Motion.ReadFile(motionPath, file.Model.CountAnimated()), 30);
+                    DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
+                    
+                    if(motionPath != null)
+                    {
+                        task.Motions.Add(Motion.ReadFile(motionPath, file.Model.CountAnimated()));
+                        task.PlayBackSpeed = 60;
+                    }
+
+                    context.Scene.AddDisplayTask(task);
                 }
                 else
                 {

@@ -136,8 +136,7 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public static ModelFile Read(byte[] source, string filename = null)
         {
-            bool be = BigEndian;
-            BigEndian = false;
+            PushBigEndian(false);
 
             AttachFormat? format = null;
             NJObject model;
@@ -171,7 +170,7 @@ namespace SATools.SAModel.ObjData
 
                         NJMagic = source.ToUInt16(texListOffset + 0x2);
 
-                        BigEndian = fileEndian;
+                        PushBigEndian(fileEndian);
 
                         //Get Texture Listings for if that is ever implemented
                         uint texCount = source.ToUInt32(0xC);
@@ -184,11 +183,12 @@ namespace SATools.SAModel.ObjData
                             texNames.Add(source.GetCString(textAddress, System.Text.Encoding.UTF8));
                             texOffset += 0xC;
                         }
+                        PopEndian();
 
                         goto texlistRetry;
                 }
 
-                BigEndian = fileEndian;
+                PushBigEndian(fileEndian);
 
                 // the addresses start 8 bytes ahead, and since we always subtract the image base from the addresses,
                 // we have to add them this time, so we invert the 8 to add 8 by subtracting
@@ -219,7 +219,7 @@ namespace SATools.SAModel.ObjData
                 byte version = source[7];
                 if(version > CurrentVersion)
                 {
-                    BigEndian = be;
+                    PopEndian();
                     return null;
                     //throw new FormatException("Not a valid SA1LVL/SA2LVL file.");
                 }
@@ -246,7 +246,7 @@ namespace SATools.SAModel.ObjData
 
             }
 
-            BigEndian = be;
+            PopEndian();
             return new(format.Value, model, Animations.ToArray(), metaData, nj);
         }
 

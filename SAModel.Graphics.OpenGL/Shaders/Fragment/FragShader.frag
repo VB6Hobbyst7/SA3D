@@ -10,6 +10,8 @@ in vec3 normal;
 in vec2 uv0;
 in vec4 col0;
 
+uniform sampler2D texture0;
+
 // flag values
 #define FLAT			0x01
 #define NO_AMBIENT		0x02
@@ -25,7 +27,7 @@ in vec4 col0;
 #define NORMALS		0x04000000
 #define COLORS		0x05000000
 #define TEXCOORDS	0x06000000
-#define Textures	0x07000000
+#define TEXTURES	0x07000000
 #define Culling		0x08000000
 
 layout(std140, binding = 0) uniform Material
@@ -77,6 +79,8 @@ void main()
 		col = col0;
 	else if(lightingMode == TEXCOORDS)
 		col = vec4(mod(uv0, 1), 1, 1);
+	else if(lightingMode == TEXTURES)
+		col = texture(texture0, uv0);
 	else if(lightingMode == Culling)
 	{
 		if(gl_FrontFacing)
@@ -96,17 +100,24 @@ void main()
 				viewDirection = normalize(viewPos - fragpos);
 			}
 
+			vec4 tex = vec4(1,1,1,1);
+			if((flags & USE_TEXTURE) != 0)
+			{
+				tex = texture(texture0, uv0);
+				alpha = tex.a;
+			}
+
 			// checking ambient flag
 			if((flags & NO_AMBIENT) == 0)
 			{
-				col += ambient;
+				col += ambient * tex;
 				alpha *= ambient.a;
 			}
 
 			// checking the diffuse flag
 			if((flags & NO_DIFFUSE) == 0)
 			{
-				col += diffuse * lighting(viewDirection);
+				col += tex * diffuse * lighting(viewDirection);
 				alpha *= diffuse.a;
 			}
 

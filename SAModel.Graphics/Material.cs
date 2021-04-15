@@ -1,5 +1,6 @@
 ﻿using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
@@ -19,6 +20,8 @@ namespace SATools.SAModel.Graphics
         protected readonly IGAPIAMaterial _apiAccess;
 
         protected BufferMaterial _bufferMaterial;
+
+        public TextureSet BufferTextureSet { get; set; }
 
         /// <summary>
         /// Active material
@@ -90,7 +93,12 @@ namespace SATools.SAModel.Graphics
                 WriteColor(writer, BufferMaterial.Ambient);
 
                 writer.Write(BufferMaterial.SpecularExponent);
-                int flags = (ushort)BufferMaterial.MaterialFlags;
+
+                var matFlags = BufferMaterial.MaterialFlags;
+                if(BufferTextureSet == null)
+                    matFlags &= ~MaterialFlags.useTexture;
+
+                int flags = (ushort)matFlags;
                 writer.Write(flags);
             }
 

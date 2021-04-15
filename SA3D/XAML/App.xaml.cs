@@ -1,4 +1,5 @@
 ﻿using SATools.SAModel.Graphics;
+using SATools.SAModel.ObjData;
 using System.Windows;
 
 namespace SATools.SA3D.XAML
@@ -13,6 +14,9 @@ namespace SATools.SA3D.XAML
         public App(DebugContext context)
         {
             Context = context;
+            InitializeComponent();
+            MainWindow = new WndMain();
+            MainWindow.Show();
         }
     }
 }

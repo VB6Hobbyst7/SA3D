@@ -160,8 +160,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public static Motion ReadFile(byte[] source, int modelCount = -1)
         {
-            bool be = BigEndian;
-            BigEndian = false;
+            PushBigEndian(false);
             Motion result = null;
 
             if(source.ToUInt32(0) == NMDM)
@@ -169,10 +168,11 @@ namespace SATools.SAModel.ObjData.Animation
                 if(modelCount < 0)
                     throw new ArgumentException("Cannot open NJM animations without a model!");
 
-                BigEndian = source.CheckBigEndianInt32(0xC); 
+                PushBigEndian(source.CheckBigEndianInt32(0xC));
                 // framecount. as long as that one is not bigger than 65,535 or 18 minutes of animation at 60fps, we good
                 uint aniaddr = 8;
                 result = Read(source, ref aniaddr, ~7u, (uint)modelCount, null, true);
+                PopEndian();
             }
             else if((source.ToUInt64(0) & HeaderMask) == SAANIM)
             {
@@ -180,7 +180,7 @@ namespace SATools.SAModel.ObjData.Animation
                 byte version = source[7];
                 if(version > CurrentVersion)
                 {
-                    BigEndian = be;
+                    PopEndian();
                     throw new FormatException("Not a valid SAANIM file.");
                 }
 
@@ -193,15 +193,15 @@ namespace SATools.SAModel.ObjData.Animation
                     modelCount = BitConverter.ToInt32(source, 0x10);
                 else if(modelCount == -1)
                 {
-                    BigEndian = be;
+                    PopEndian();
                     throw new NotImplementedException("Cannot open version 0 animations without a model!");
                 }
 
-                result = Read(source, ref aniaddr, 0, (uint)(modelCount), labels, true);
+                result = Read(source, ref aniaddr, 0, (uint)(modelCount), labels, false);
 
             }
 
-            BigEndian = be;
+            PopEndian();
             return result;
         }
 

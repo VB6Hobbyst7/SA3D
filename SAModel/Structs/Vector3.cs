@@ -273,13 +273,13 @@ namespace SATools.SAModel.Structs
 
             if(test > 0.4995f * unit) // singularity at north pole
             {
-                v.X = Pi / 2;
-                v.Y = 2f * (float)Math.Atan2(y, x);
+                v.Y = Pi / 2;
+                v.X = 2f * (float)Math.Atan2(y, x);
             }
             else if(test < -0.4995f * unit) // singularity at south pole
             { 
-                v.X = -Pi / 2;
-                v.Y = -2f * (float)Math.Atan2(y, x);
+                v.Y = -Pi / 2;
+                v.X = -2f * (float)Math.Atan2(y, x);
             }
             else
             {

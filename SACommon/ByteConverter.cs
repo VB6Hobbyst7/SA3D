@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -10,8 +11,26 @@ namespace SATools.SACommon
     [DebuggerNonUserCode]
     public static class ByteConverter
     {
-        public static bool BigEndian { get; set; }
+        private static Stack<bool> endianStack = new Stack<bool>();
+
+        /// <summary>
+        /// Whether bytes should be written in big endian. Set with <see cref="PushBigEndian(bool)"/> and free afterwards with <see cref="PopEndian"/>
+        /// </summary>
+        public static bool BigEndian { get; private set; }
         public static bool Reverse { get; set; }
+
+        /// <summary>
+        /// Sets an endian. Dont forget to free it afterwards as well using <see cref="PopEndian"/>
+        /// </summary>
+        /// <param name="bigEndian">New bigendian mode</param>
+        public static void PushBigEndian(bool bigEndian)
+        {
+            endianStack.Push(BigEndian);
+            BigEndian = bigEndian;
+        }
+
+        public static void PopEndian() 
+            => BigEndian = endianStack.Pop();
 
         public static byte[] GetBytes(this ushort value)
         {

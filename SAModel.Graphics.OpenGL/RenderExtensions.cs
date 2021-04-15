@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using SATools.SAArchive;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
@@ -260,7 +261,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static void Prepare(this NJObject obj, List<GLRenderMesh> renderMeshes, Matrix4 viewMatrix, Matrix4 projectionMatrix, NJObject activeObj, Matrix4? parentWorld, bool weighted)
+        public static void Prepare(this NJObject obj, List<GLRenderMesh> renderMeshes, TextureSet textureSet, Matrix4 viewMatrix, Matrix4 projectionMatrix, NJObject activeObj, Matrix4? parentWorld, bool weighted)
         {
             Matrix4 world = obj.LocalMatrix();
             if(parentWorld.HasValue)
@@ -273,21 +274,21 @@ namespace SATools.SAModel.Graphics.OpenGL
                 {
                     obj.Attach.Buffer(world, obj == activeObj);
                     if(obj.Attach.BufferHasOpaque || obj.Attach.BufferHasTransparent)
-                        renderMeshes.Add(new GLRenderMesh(obj.Attach, Matrix4.Identity, Matrix4.Identity, viewMatrix * projectionMatrix));
+                        renderMeshes.Add(new GLRenderMesh(obj.Attach, textureSet, Matrix4.Identity, Matrix4.Identity, viewMatrix * projectionMatrix));
                 }
                 else
                 {
                     Matrix4 normalMtx = world.Inverted();
                     normalMtx.Transpose();
-                    renderMeshes.Add(new GLRenderMesh(obj.Attach, world, normalMtx, world * viewMatrix * projectionMatrix));
+                    renderMeshes.Add(new GLRenderMesh(obj.Attach, textureSet, world, normalMtx, world * viewMatrix * projectionMatrix));
                 }
             }
 
             for(int i = 0; i < obj.ChildCount; i++)
-                obj[i].Prepare(renderMeshes, viewMatrix, projectionMatrix, activeObj, world, weighted);
+                obj[i].Prepare(renderMeshes, textureSet, viewMatrix, projectionMatrix, activeObj, world, weighted);
         }
 
-        public static void Prepare(this LandEntry le, List<GLRenderMesh> renderMeshes, List<LandEntry> entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix, LandEntry activeLE)
+        public static void Prepare(this LandEntry le, List<GLRenderMesh> renderMeshes, TextureSet textureSet, List<LandEntry> entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix, LandEntry activeLE)
         {
             if(!camera.CanRender(le.ModelBounds) || entries.Contains(le))
                 return;
@@ -295,7 +296,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             Matrix4 world = le.LocalMatrix();
             Matrix4 normalMtx = world.Inverted();
             normalMtx.Transpose();
-            renderMeshes.Add(new GLRenderMesh(le.Attach, world, normalMtx, world * viewMatrix * projectionMatrix));
+            renderMeshes.Add(new GLRenderMesh(le.Attach, textureSet, world, normalMtx, world * viewMatrix * projectionMatrix));
         }
 
         public static void RenderModels(List<GLRenderMesh> renderMeshes, bool transparent, Material material)
@@ -306,7 +307,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 if(transparent && !m.attach.BufferHasTransparent
                     || !transparent && !m.attach.BufferHasOpaque)
                     continue;
-
+                material.BufferTextureSet = m.textureSet;
                 m.BufferMatrices();
                 m.attach.Render(transparent, material);
             }

@@ -1,4 +1,5 @@
-﻿using SATools.SAModel.Graphics.UI;
+﻿using SATools.SAArchive;
+using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.Structs;
 using System.Collections.Generic;
 using System.Drawing;

@@ -8,15 +8,9 @@
 		<AssemblyName>SAModel.Graphics.OpenGL</AssemblyName>
 		<DebugType>embedded</DebugType>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="OpenTK" Version="4.6.3" />

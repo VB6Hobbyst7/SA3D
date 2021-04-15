@@ -6,11 +6,12 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:vm="clr-namespace:SATools.SA3D.ViewModel"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance vm:MainViewModel}"
+        d:DataContext="{d:DesignInstance vm:VmMain}"
         Title="SA3D" Width="1280" Height="720"
         Icon="/SA3D;component/Icons/logo.ico">
 
     <Window.Resources>
+        <vm:TreeItemTypeConverter x:Key="TreeItemTypeConverter"/>
         <Image x:Key="ico_Export" Source="/SA3D;component/Icons/Export_16x.png" x:Shared="false"/>
         <Image x:Key="ico_Import" Source="/SA3D;component/Icons/Import_16x.png" x:Shared="false"/>
         <Image x:Key="ico_NewFile" Source="/SA3D;component/Icons/NewFile_16x.png" x:Shared="false"/>
@@ -79,24 +80,31 @@
             <TabControl Grid.Column="2">
                 <TabItem Header="Geometry">
                 </TabItem>
-                <TabItem Header="Models" DataContext="{Binding NJObjectTreeVM}" IsEnabled="{Binding IsEnabled, Mode=OneWay}" IsSelected="{Binding IsSelected, Mode=TwoWay}">
-                    <TreeView ItemsSource="{Binding NJObjects}">
+                <TabItem Header="Objects" DataContext="{Binding ObjectTree}">
+                    <TreeView ItemsSource="{Binding Objects}" SelectedItemChanged="TreeView_SelectedItemChanged">
+
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="{x:Type TreeViewItem}">
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWayToSource}"/>
                             </Style>
                         </TreeView.ItemContainerStyle>
 
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                <Label Content="{Binding Name}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Image Grid.Column="0" Source="{Binding ItemType, Converter={StaticResource TreeItemTypeConverter}}" SnapsToDevicePixels="True"/>
+                                    <Label Grid.Column="1" Content="{Binding ItemName}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"/>
+                                </Grid>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
 
                     </TreeView>
                 </TabItem>
-                <TabItem Header="Objects"/>
             </TabControl>
         </Grid>
 

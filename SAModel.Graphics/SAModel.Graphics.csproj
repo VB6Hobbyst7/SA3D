@@ -6,16 +6,10 @@
 	  <UseWPF>true</UseWPF>
 	  <AssemblyName>SAModel.Graphics</AssemblyName>
 	  <RootNamespace>SATools.SAModel.Graphics</RootNamespace>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
 
   <ItemGroup>
     <None Remove="debugFont.ttf" />
@@ -27,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SAArchive\SAArchive.csproj" />
     <ProjectReference Include="..\SACommon\SACommon.csproj" />
     <ProjectReference Include="..\SAModel\SAModel.csproj" />
   </ItemGroup>

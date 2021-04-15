@@ -5,6 +5,8 @@
     <RootNamespace>SATools.SACommon</RootNamespace>
 	  <AssemblyName>SACommon</AssemblyName>
 	  <DebugType>embedded</DebugType>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
 
 </Project>

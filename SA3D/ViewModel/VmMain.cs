@@ -1,8 +1,7 @@
 ﻿using Microsoft.Win32;
 using SATools.SA3D.ViewModel.Base;
-using SATools.SA3D.XAML;
+using SATools.SA3D.ViewModel.TreeItems;
 using SATools.SAModel.Graphics;
-using SATools.SAModel.Graphics.OpenGL;
 using System;
 using System.IO;
 using System.Windows;
@@ -20,7 +19,7 @@ namespace SATools.SA3D.ViewModel
     /// <summary>
     /// Main view model used to control the entire application
     /// </summary>
-    public class MainViewModel : BaseViewModel
+    public class VmMain : BaseViewModel
     {
         // <summary>
         // Application mode
@@ -30,22 +29,23 @@ namespace SATools.SA3D.ViewModel
         /// <summary>
         /// Render context being displayed
         /// </summary>
-        public DebugContext RenderContext => App.Context;
+        public DebugContext RenderContext { get; }
 
-        public RelayCommand OpenFileRC { get; }
+        public RelayCommand Cmd_OpenFile
+            => new(Open3DFile);
 
-        public NJObjectTreeVM NJObjectTreeVM { get; }
+        public VmObjectTree ObjectTree { get; }
 
-        public MainViewModel()
+        public VmMain(DebugContext renderContext)
         {
-            NJObjectTreeVM = new NJObjectTreeVM(this);
-            OpenFileRC = new RelayCommand(OpenFile);
+            RenderContext = renderContext;
+            ObjectTree = new VmObjectTree(this);
         }
 
         /// <summary>
         /// Opens and loads a model/level file
         /// </summary>
-        private void OpenFile()
+        private void Open3DFile()
         {
             OpenFileDialog ofd = new()
             {
@@ -62,8 +62,9 @@ namespace SATools.SA3D.ViewModel
                     if(mdlFile != null)
                     {
                         //_applicationMode = Mode.Model;
-                        RenderContext.Scene.LoadModelFile(mdlFile);
-                        NJObjectTreeVM.Refresh();
+                        DebugTask task = new(mdlFile.Model, null, Path.GetFileNameWithoutExtension(ofd.FileName));
+                        RenderContext.Scene.AddDisplayTask(task);
+                        ObjectTree.Objects.Add(new(null, new VmObject(task, mdlFile)));
                         return;
                     }
                 }

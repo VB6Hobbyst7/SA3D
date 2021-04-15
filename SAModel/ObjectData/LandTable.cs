@@ -168,8 +168,7 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public static LandTable ReadFile(byte[] source)
         {
-            bool be = BigEndian;
-            BigEndian = false;
+            PushBigEndian(false);
 
             ulong header = source.ToUInt64(0) & HeaderMask;
             byte version = source[7];
@@ -180,7 +179,7 @@ namespace SATools.SAModel.ObjData
                 case SA2BLVL:
                     if(version > CurrentVersion)
                     {
-                        BigEndian = be;
+                        PopEndian();
                         return null;
                         //throw new FormatException("Not a valid SA1LVL/SA2LVL file.");
                     }
@@ -210,7 +209,7 @@ namespace SATools.SAModel.ObjData
             }
             table.MetaData = metaData;
 
-            BigEndian = be;
+            PopEndian();
             return table;
         }
 

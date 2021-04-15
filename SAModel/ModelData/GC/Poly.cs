@@ -67,8 +67,7 @@ namespace SATools.SAModel.ModelData.GC
         /// <param name="indexFlags">How the indices of the loops are structured</param>
         public static Poly Read(byte[] source, ref uint address, IndexAttributeFlags indexFlags)
         {
-            bool wasBigEndian = BigEndian;
-            BigEndian = true;
+            PushBigEndian(true);
 
             PolyType type = (PolyType)source[address];
             ushort vtxCount = source.ToUInt16(address + 1);
@@ -155,7 +154,7 @@ namespace SATools.SAModel.ModelData.GC
                 corners.Add(l);
             }
 
-            BigEndian = wasBigEndian;
+            PopEndian();
             return new Poly(type, corners.ToArray());
         }
 

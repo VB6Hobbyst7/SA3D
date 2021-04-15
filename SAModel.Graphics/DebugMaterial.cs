@@ -35,7 +35,12 @@ namespace SATools.SAModel.Graphics
                 WriteColor(writer, BufferMaterial.Ambient);
 
                 writer.Write(BufferMaterial.SpecularExponent);
-                int flags = (ushort)BufferMaterial.MaterialFlags | ((int)RenderMode << 24);
+
+                var matFlags = BufferMaterial.MaterialFlags;
+                if(BufferTextureSet == null)
+                    matFlags &= ~ModelData.Buffer.MaterialFlags.useTexture;
+
+                int flags = (ushort)matFlags | ((int)RenderMode << 24);
                 writer.Write(flags);
             }
 

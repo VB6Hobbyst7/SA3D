@@ -1,18 +1,26 @@
-﻿using SATools.SAModel.ObjData;
+﻿using SATools.SAArchive;
+using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
+using System.Collections.Generic;
 
 namespace SATools.SAModel.Graphics
 {
     public abstract class GameTask
     {
-        public NJObject obj;
+        public string Name { get; }
+
+        public GameTask(string name)
+        {
+            Name = name;
+        }
+
         // texture list
         public virtual void Start()
         {
 
         }
 
-        public virtual void Update(double time)
+        public virtual void Update(double delta, double time)
         {
 
         }
@@ -30,26 +38,59 @@ namespace SATools.SAModel.Graphics
     }
 
     /// <summary>
-    /// An empty task, which is just used to display a model
+    /// The base class for when displaying a model
     /// </summary>
     public class DisplayTask : GameTask
     {
-        public Motion motion;
-        public float animSpeed;
+        public NJObject Model { get; }
 
-        public DisplayTask(NJObject obj)
+        public TextureSet TextureSet { get; }
+
+        public DisplayTask(NJObject obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? obj.Name : name)
         {
-            this.obj = obj;
+            Model = obj;
+            TextureSet = textureSet;
+        }
+    }
+
+    /// <summary>
+    /// Used for debugging animations
+    /// </summary>
+    public class DebugTask : DisplayTask
+    {
+        /// <summary>
+        /// Loaded motions
+        /// </summary>
+        public List<Motion> Motions;
+
+        /// <summary>
+        /// Current running motion
+        /// </summary>
+        public int MotionIndex { get; set; }
+
+        /// <summary>
+        /// Frames per second
+        /// </summary>
+        public float PlayBackSpeed { get; set; }
+
+        public float Time { get; set; }
+
+        public DebugTask(NJObject obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
+        {
+            Motions = new();
         }
 
-        public void UpdateAnim(double time)
+        public void UpdateAnim(double delta)
         {
-            if(motion == null)
+            if(Motions.Count == 0)
                 return;
 
-            float f = (float)(time % (motion.Frames - 1));
+            Motion motion = Motions[MotionIndex];
 
-            NJObject[] models = obj.GetObjects();
+            Time += (float)(delta * PlayBackSpeed);
+            Time %= motion.Frames - 1;
+
+            NJObject[] models = Model.GetObjects();
             for(int i = 0; i < models.Length; i++)
             {
                 if(motion.Keyframes.ContainsKey(i))
@@ -57,7 +98,7 @@ namespace SATools.SAModel.Graphics
                     NJObject mdl = models[i];
                     if(!mdl.Animate)
                         continue;
-                    Frame frame = motion.Keyframes[i].GetFrameAt(f);
+                    Frame frame = motion.Keyframes[i].GetFrameAt(Time);
                     if(frame.position.HasValue)
                         mdl.Position = frame.position.Value;
                     if(frame.rotation.HasValue)
@@ -68,10 +109,10 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        public override void Update(double time)
+        public override void Update(double delta, double time)
         {
-            base.Update(time);
-            UpdateAnim(time * animSpeed);
+            base.Update(delta, time);
+            UpdateAnim(delta);
         }
     }
 }

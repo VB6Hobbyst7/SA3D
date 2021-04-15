@@ -1,4 +1,6 @@
-﻿namespace SATools.SAModel.Graphics.APIAccess
+﻿using SATools.SAArchive;
+
+namespace SATools.SAModel.Graphics.APIAccess
 {
     /// <summary>
     /// Graphics API Access for <see cref="Material"/>
