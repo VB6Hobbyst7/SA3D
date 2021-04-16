@@ -26,8 +26,6 @@ namespace SATools.SA3D
 
         private static void Run(string[] args)
         {
-            DAT test = DAT.Read("F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure DX\\system\\sounddata\\se\\V_KNUCKLES_E_BANK06.dat");
-
             // when running from cmd, attach to the cmd console
 
             string path = "";
@@ -131,20 +129,24 @@ namespace SATools.SA3D
             // loading the model file
             if(path != null)
             {
+                TextureSet textures = null;
+
+                if(texturePath != null)
+                {
+                    textures = Archive.ReadFile(texturePath).ToTextureSet();
+                }
+
                 string ext = Path.GetExtension(path);
                 if(ext.EndsWith("lvl"))
                 {
                     var ltbl = SAModel.ObjData.LandTable.ReadFile(path);
                     context.Scene.LoadLandtable(ltbl);
+                    if(textures != null)
+                        context.Scene.LandTextureSet = textures;
                 }
                 else if(ext.EndsWith("mdl") || ext.EndsWith("nj"))
                 {
-                    TextureSet textures = null;
 
-                    if(texturePath != null)
-                    {
-                        textures = Archive.ReadFile(texturePath).ToTextureSet();
-                    }
 
                     var file = SAModel.ObjData.ModelFile.Read(path);
                     DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
