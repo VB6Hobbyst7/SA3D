@@ -15,8 +15,6 @@ namespace SATools.SAModel.Graphics
 
         public override void ReBuffer()
         {
-            _apiAccess.MaterialPreBuffer(this);
-
             using(ExtendedMemoryStream stream = new(_buffer))
             {
                 LittleEndianMemoryStream writer = new(stream);

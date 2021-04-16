@@ -33,12 +33,12 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Viewport(default, context.Resolution);
             GL.ClearColor(context.BackgroundColor.SystemCol);
             GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Lequal);
             GL.Enable(EnableCap.Multisample);
             //GL.Enable(EnableCap.FramebufferSrgb); srgb doesnt work for glcontrol, so we'll just leave it out
 
             // Material
             _materialHandle = GL.GenBuffer();
-            _materialTextureHandle = GL.GenTexture();
 
             // loading the shader
             string vertexShader = Encoding.UTF8.GetString(Resources.VertexShader);
@@ -132,7 +132,6 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
 
             _defaultShader.Use();
-            GL.BindTexture(TextureTarget.Texture2D, _materialTextureHandle);
 
             // first the opaque meshes
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
@@ -142,11 +141,14 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
+            GL.Uniform1(13, 0.001f);
+
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
             transparent.RenderLandentries(context.Material);
 
             RenderExtensions.RenderModels(renderMeshes, true, context.Material);
             GL.Disable(EnableCap.Blend);
+            GL.Uniform1(13, 0f);
         }
 
         public override uint RenderDebug(DebugContext context)
@@ -192,7 +194,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
-            GL.Uniform1(13, 1f);
+            GL.Uniform1(13, 0.001f);
 
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
             transparent.RenderLandentries(context.Material);
@@ -235,35 +237,49 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private int _materialHandle;
 
-        private int _materialTextureHandle;
-
-        private Texture bufferedTexture;
-
-        public override void MaterialPreBuffer(Material material)
+        private readonly List<int> _textureHandles = new();
+        private readonly List<Texture> _bufferedTextures = new();
+        
+        public override void BufferTextureSet(TextureSet textures)
         {
+            while(_textureHandles.Count < textures.Textures.Count)
+            {
+                _textureHandles.Add(GL.GenTexture());
+                _bufferedTextures.Add(null);
+            }
+            
+            for(int i = 0; i < textures.Textures.Count; i++)
+            {
+                if(_bufferedTextures[i] == textures.Textures[i])
+                    return;
 
+                GL.BindTexture(TextureTarget.Texture2D, _textureHandles[i]);
+
+                var texture = textures.Textures[i].TextureBitmap;
+
+                BitmapData data = texture.LockBits(new Rectangle(0, 0, texture.Width, texture.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                texture.UnlockBits(data);
+
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+                _bufferedTextures[i] = textures.Textures[i];
+            }
         }
 
         public override unsafe void MaterialPostBuffer(Material material)
         {
             if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture) && material.BufferTextureSet != null)
             {
+                int textureIndex = (int)material.BufferMaterial.TextureIndex;
+                if(textureIndex < _textureHandles.Count)
+                    GL.BindTexture(TextureTarget.Texture2D, _textureHandles[textureIndex]);
+
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMinFilter());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMagFilter());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)material.BufferMaterial.WrapModeU());
 				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)material.BufferMaterial.WrapModeV());
 
-                Texture newBufferTexture = material.BufferTextureSet.Textures[(int)material.BufferMaterial.TextureIndex];
-                if(newBufferTexture != bufferedTexture)
-                {
-                    bufferedTexture = newBufferTexture;
-                    Bitmap texture = bufferedTexture.TextureBitmap;
-
-                    BitmapData data = texture.LockBits(new Rectangle(0, 0, texture.Width, texture.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                    texture.UnlockBits(data);
-
-                }
             }
 
             if(material.BufferMaterial.UseAlpha)

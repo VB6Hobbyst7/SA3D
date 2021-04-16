@@ -21,7 +21,19 @@ namespace SATools.SAModel.Graphics
 
         protected BufferMaterial _bufferMaterial;
 
-        public TextureSet BufferTextureSet { get; set; }
+        protected TextureSet _bufferTextureSet;
+
+        public TextureSet BufferTextureSet
+        {
+            get => _bufferTextureSet;
+            set
+            {
+                if(_bufferTextureSet == value)
+                    return;
+                _bufferTextureSet = value;
+                _apiAccess.BufferTextureSet(value);
+            }
+        }
 
         /// <summary>
         /// Active material
@@ -73,8 +85,6 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public virtual void ReBuffer()
         {
-            _apiAccess.MaterialPreBuffer(this);
-
             using(ExtendedMemoryStream stream = new(_buffer))
             {
                 LittleEndianMemoryStream writer = new(stream);

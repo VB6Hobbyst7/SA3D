@@ -84,8 +84,8 @@ namespace SATools.SAModel.Graphics.APIAccess
         public abstract void DebugUpdateRenderMode(RenderMode renderMode);
 
         // Material
-        public abstract void MaterialPreBuffer(Material material);
         public abstract void MaterialPostBuffer(Material material);
+        public abstract void BufferTextureSet(TextureSet textures);
 
         // Camera
         public abstract void SetOrbitViewMatrix(Vector3 position, Vector3 rotation, Vector3 orbitOffset);

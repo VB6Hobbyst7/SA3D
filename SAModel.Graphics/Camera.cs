@@ -10,6 +10,8 @@ namespace SATools.SAModel.Graphics
     /// </summary>
     public sealed class Camera
     {
+        public const float NearPlane = 1f;
+
         private readonly IGAPIACamera _apiAccess;
 
         private Vector3 _position;
@@ -115,7 +117,7 @@ namespace SATools.SAModel.Graphics
             }
             set
             {
-                _distance = Math.Min(_viewDist, Math.Max(0.0001f, value));
+                _distance = Math.Min(_viewDist, Math.Max(NearPlane, value));
                 UpdateViewMatrix();
                 UpdateProjectionMatrix();
             }
@@ -220,11 +222,11 @@ namespace SATools.SAModel.Graphics
         {
             if(_orthographic && _orbiting)
             {
-                _apiAccess.SetOrtographicMatrix(_distance * _aspect, _distance, 0.1f, _viewDist);
+                _apiAccess.SetOrtographicMatrix(_distance * _aspect, _distance, NearPlane, _viewDist);
             }
             else
             {
-                _apiAccess.SetPerspectiveMatrix(_fov, _aspect, 0.1f, _viewDist);
+                _apiAccess.SetPerspectiveMatrix(_fov, _aspect, NearPlane, _viewDist);
             }
         }
 

@@ -517,30 +517,23 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public static TextureMinFilter ToGLMinFilter(this FilterMode filter)
         {
-            switch(filter)
+            return filter switch
             {
-                case ModelData.FilterMode.PointSampled:
-                    return TextureMinFilter.Nearest;
-                case ModelData.FilterMode.Bilinear:
-                case ModelData.FilterMode.Trilinear:
-                    return TextureMinFilter.Linear;
-                default:
-                    throw new InvalidCastException($"{filter} has no corresponding OpenGL filter");
-            }
+                FilterMode.PointSampled => TextureMinFilter.NearestMipmapNearest,
+                FilterMode.Bilinear => TextureMinFilter.NearestMipmapLinear,
+                FilterMode.Trilinear => TextureMinFilter.LinearMipmapLinear,
+                _ => throw new InvalidCastException($"{filter} has no corresponding OpenGL filter"),
+            };
         }
 
         public static TextureMagFilter ToGLMagFilter(this FilterMode filter)
         {
-            switch(filter)
+            return filter switch
             {
-                case ModelData.FilterMode.PointSampled:
-                    return TextureMagFilter.Nearest;
-                case ModelData.FilterMode.Bilinear:
-                case ModelData.FilterMode.Trilinear:
-                    return TextureMagFilter.Linear;
-                default:
-                    throw new InvalidCastException($"{filter} has no corresponding OpenGL filter");
-            }
+                FilterMode.PointSampled => TextureMagFilter.Nearest,
+                FilterMode.Bilinear or FilterMode.Trilinear => TextureMagFilter.Linear,
+                _ => throw new InvalidCastException($"{filter} has no corresponding OpenGL filter"),
+            };
         }
 
         public static TextureWrapMode WrapModeU(this BufferMaterial mat)

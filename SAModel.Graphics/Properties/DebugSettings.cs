@@ -274,7 +274,7 @@ namespace SATools.SAModel.Graphics.Properties {
 
         [UserScopedSetting()]
         [SettingsKey("Circle Backwards", "Hold this button when using a hotkey for circling options to circle in the other direction")]
-        [DefaultSettingValue("<Key>RightAlt</Key>")]
+        [DefaultSettingValue("<Key>RightShift</Key>")]
         public Key CircleBackward
         {
             get => (Key)this[nameof(CircleBackward)];
