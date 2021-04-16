@@ -15,6 +15,7 @@ using System.Text;
 using System.Windows;
 using TKVector3 = OpenTK.Mathematics.Vector3;
 using UIElement = SATools.SAModel.Graphics.UI.UIElement;
+using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.Graphics.OpenGL.BufferMeshHandle, System.Collections.Generic.List<SATools.SAModel.Graphics.OpenGL.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -64,6 +65,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.BindVertexArray(0);
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+
         }
 
         protected override void InternalAsWindow(Context context)
@@ -115,10 +117,8 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             List<GLRenderMesh> renderMeshes = new();
-            List<LandEntry> entries = new();
+            var (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
 
-            foreach(LandEntry le in context.Scene.VisualGeometry)
-                le.Prepare(renderMeshes, context.Scene.LandTextureSet, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, null);
             foreach(GameTask tsk in context.Scene.objects)
             {
                 tsk.Display();
@@ -130,10 +130,16 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.BindTexture(TextureTarget.Texture2D, _materialTextureHandle);
 
             // first the opaque meshes
+            context.Material.BufferTextureSet = context.Scene.LandTextureSet;
+            opaque.RenderLandentries(context.Material);
+
             RenderExtensions.RenderModels(renderMeshes, false, context.Material);
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
+            context.Material.BufferTextureSet = context.Scene.LandTextureSet;
+            transparent.RenderLandentries(context.Material);
+
             RenderExtensions.RenderModels(renderMeshes, true, context.Material);
             GL.Disable(EnableCap.Blend);
         }
@@ -149,12 +155,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             List<GLRenderMesh> renderMeshes = new();
-            List<LandEntry> entries = new();
+            LandEntryRenderBatch opaque;
+            LandEntryRenderBatch transparent;
 
             if(!context.RenderCollision)
             {
-                foreach(LandEntry le in context.Scene.VisualGeometry)
-                    le.Prepare(renderMeshes, context.Scene.LandTextureSet, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
+                (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
+
                 foreach(GameTask tsk in context.Scene.objects)
                 {
                     tsk.Display();
@@ -164,8 +171,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
             else
             {
-                foreach(LandEntry le in context.Scene.CollisionGeometry)
-                    le.Prepare(renderMeshes, null, entries, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveLE);
+                (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.CollisionGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
             }
 
             _defaultShader.Use();
@@ -173,15 +179,21 @@ namespace SATools.SAModel.Graphics.OpenGL
                 context.Material.RenderMode = RenderMode.FullBright;
 
             // first the opaque meshes
+            context.Material.BufferTextureSet = context.Scene.LandTextureSet;
+            opaque.RenderLandentries(context.Material);
+
             RenderExtensions.RenderModels(renderMeshes, false, context.Material);
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
             GL.Uniform1(13, 1f);
 
-            // then the transparent meshes
+            context.Material.BufferTextureSet = context.Scene.LandTextureSet;
+            transparent.RenderLandentries(context.Material);
+
             RenderExtensions.RenderModels(renderMeshes, true, context.Material);
 
+            // then additional stuff
             if(context.WireframeMode == WireFrameMode.Overlay)
             {
                 _wireFrameShader.Use();
@@ -225,11 +237,13 @@ namespace SATools.SAModel.Graphics.OpenGL
 
                 GL.Enable(EnableCap.DepthTest);
             }
+            
             GL.Disable(EnableCap.Blend);
             GL.Uniform1(13, 0f);
 
             return (uint)renderMeshes.Count;
         }
+
 
         #region Material
 

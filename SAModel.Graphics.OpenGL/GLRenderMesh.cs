@@ -4,21 +4,17 @@ using SATools.SAArchive;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
-    public struct GLRenderMesh
+    internal struct RenderMatrices
     {
-        public ModelData.Attach attach;
-        public TextureSet textureSet;
         public Matrix4 worldMtx;
         public Matrix4 normalMtx;
         public Matrix4 MVP;
 
-        public GLRenderMesh(ModelData.Attach attach, TextureSet textureSet, Matrix4 worldMtx, Matrix4 normalMtx, Matrix4 mVP)
+        public RenderMatrices(Matrix4 worldMtx, Matrix4 normalMtx, Matrix4 mvp)
         {
-            this.attach = attach;
-            this.textureSet = textureSet;
             this.worldMtx = worldMtx;
             this.normalMtx = normalMtx;
-            MVP = mVP;
+            MVP = mvp;
         }
 
         public void BufferMatrices()
@@ -27,5 +23,22 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.UniformMatrix4(11, false, ref normalMtx);
             GL.UniformMatrix4(12, false, ref MVP);
         }
+    }
+
+    internal struct GLRenderMesh
+    {
+        public ModelData.Attach attach;
+        public TextureSet textureSet;
+        public RenderMatrices matrices;
+
+        public GLRenderMesh(ModelData.Attach attach, TextureSet textureSet, Matrix4 worldMtx, Matrix4 normalMtx, Matrix4 mvp)
+        {
+            this.attach = attach;
+            this.textureSet = textureSet;
+            matrices = new(worldMtx, normalMtx, mvp);
+        }
+
+        public void BufferMatrices() 
+            => matrices.BufferMatrices();
     }
 }

@@ -90,7 +90,7 @@ void main()
 	else
 	{
 		if((flags & FLAT) != 0)
-			col = col0;
+			col = col0 * texture(texture0, uv0);
 		else
 		{
 			float alpha = 1;

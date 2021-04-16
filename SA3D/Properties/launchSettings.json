@@ -2,7 +2,7 @@
   "profiles": {
     "SA3D": {
       "commandName": "Project",
-      "commandLineArgs": "\"F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure 2\\Projects\\Ripping\\resource\\gd_PC\\sonicmdl\\0.sa2mdl\" -mtn \"F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure 2\\Projects\\Ripping\\resource\\gd_PC\\sonicmtn\\119.saanim\" -tex \"F:\\Userfiles\\temp\\sonictex.pak\""
+      "commandLineArgs": "\"F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure 2\\Projects\\Ripping\\Levels\\City Escape\\LandTable.sa2blvl\" -tex \"F:\\Userfiles\\temp\\landtx13.pak\""
     }
   }
 }

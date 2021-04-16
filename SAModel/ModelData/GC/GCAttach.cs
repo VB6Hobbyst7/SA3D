@@ -232,15 +232,22 @@ namespace SATools.SAModel.ModelData.GC
                             material.Ambient = ambientCol.AmbientColor;
                             break;
                         case ParameterType.Texture:
+                            material.SetFlag(MaterialFlags.useTexture, true);
                             TextureParameter tex = param as TextureParameter;
                             material.TextureIndex = tex.TextureID;
                             material.MirrorU = tex.Tiling.HasFlag(GCTileMode.MirrorU);
                             material.MirrorV = tex.Tiling.HasFlag(GCTileMode.MirrorV);
-                            material.WrapU = tex.Tiling.HasFlag(GCTileMode.WrapU);
-                            material.WrapV = tex.Tiling.HasFlag(GCTileMode.WrapV);
 
-                            //material.WrapU &= tex.Tile.HasFlag(GCTileMode.Unk_1);
-                            //material.WrapV &= tex.Tile.HasFlag(GCTileMode.Unk_1);
+                            if(tex.Tiling.HasFlag(GCTileMode.Unk_1))
+                            {
+                                material.WrapU = tex.Tiling.HasFlag(GCTileMode.WrapU);
+                                material.WrapV = tex.Tiling.HasFlag(GCTileMode.WrapV);
+                            }
+                            else
+                            {
+                                material.WrapU = true;
+                                material.WrapV = true;
+                            }
                             break;
                         case ParameterType.TexCoordGen:
                             TexCoordGenParameter gen = param as TexCoordGenParameter;
@@ -256,9 +263,12 @@ namespace SATools.SAModel.ModelData.GC
 
                 foreach(Poly p in m.Polys)
                 {
-                    uint[] indices = new uint[p.Corners.Length];
+                    // inverted culling is done manually in the gc strips, so we have to account for that
+                    bool rev = p.Corners[0].PositionIndex != p.Corners[1].PositionIndex;
+                    int offset = rev ? 0 : 1;
+                    uint[] indices = new uint[p.Corners.Length - offset];
 
-                    for(int i = 0; i < p.Corners.Length; i++)
+                    for(int i = offset; i < p.Corners.Length; i++)
                     {
                         Corner c = p.Corners[i];
                         indices[i] = (uint)corners.Count;
@@ -269,10 +279,19 @@ namespace SATools.SAModel.ModelData.GC
 
                     // converting indices to triangles
                     if(p.Type == PolyType.Triangles)
+                    {
+                        // gc has inverted culling, dont even ask me
+                        for(int i = 0; i < indices.Length; i += 3)
+                        {
+                            uint index = indices[i];
+                            indices[i] = indices[i + 1];
+                            indices[i + 1] = index;
+                        }
                         trianglelist.AddRange(indices);
+
+                    }
                     else if(p.Type == PolyType.TriangleStrip)
                     {
-                        bool rev = true;
                         uint[] newIndices = new uint[(indices.Length - 2) * 3];
                         for(int i = 0; i < indices.Length - 2; i++)
                         {
@@ -287,6 +306,7 @@ namespace SATools.SAModel.ModelData.GC
                                 newIndices[index] = indices[i + 1];
                                 newIndices[index + 1] = indices[i];
                             }
+
                             newIndices[index + 2] = indices[i + 2];
                             rev = !rev;
                         }
@@ -296,7 +316,7 @@ namespace SATools.SAModel.ModelData.GC
                         throw new Exception($"Primitive type {p.Type} not a valid triangle format");
                 }
 
-                return new BufferMesh(vertices.ToArray(), false, corners.ToArray(), trianglelist.ToArray(), (BufferMaterial)material.Clone());
+                return new BufferMesh(vertices.ToArray(), false, corners.ToArray(), trianglelist.ToArray(), material.Clone());
             }
 
             material.UseAlpha = false;

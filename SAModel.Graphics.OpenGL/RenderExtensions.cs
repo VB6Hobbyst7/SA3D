@@ -11,6 +11,7 @@ using static SATools.SACommon.MathHelper;
 using Color = SATools.SAModel.Structs.Color;
 using SAVector2 = SATools.SAModel.Structs.Vector2;
 using SAVector3 = SATools.SAModel.Structs.Vector3;
+using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.Graphics.OpenGL.BufferMeshHandle, System.Collections.Generic.List<SATools.SAModel.Graphics.OpenGL.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -20,13 +21,15 @@ namespace SATools.SAModel.Graphics.OpenGL
         public readonly int vbo;
         public readonly int eao;
         public readonly int vertexCount;
+        public readonly BufferMaterial material;
 
-        public BufferMeshHandle(int vao, int vbo, int eao, int vertexCount)
+        public BufferMeshHandle(int vao, int vbo, int eao, int vertexCount, BufferMaterial material)
         {
             this.vao = vao;
             this.vbo = vbo;
             this.eao = eao;
             this.vertexCount = vertexCount;
+            this.material = material;
         }
     }
 
@@ -40,6 +43,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             this.position = position;
             this.normal = normal;
         }
+    }
+
+    internal struct LandEntryMatrices
+    {
+        public Matrix4 worldMtx;
+        public Matrix4 normalMtx;
+        public Matrix4 MVP;
     }
 
     public static class RenderExtensions
@@ -218,7 +228,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                         GL.EnableVertexAttribArray(3);
                         GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, structSize, 28);
 
-                        meshHandles.Add(mesh, new BufferMeshHandle(vao, vbo, eao, vtxCount));
+                        meshHandles.Add(mesh, new BufferMeshHandle(vao, vbo, eao, vtxCount, mesh.Material));
                     }
                 }
             }
@@ -261,7 +271,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static void Prepare(this NJObject obj, List<GLRenderMesh> renderMeshes, TextureSet textureSet, Matrix4 viewMatrix, Matrix4 projectionMatrix, NJObject activeObj, Matrix4? parentWorld, bool weighted)
+        internal static void Prepare(this NJObject obj, List<GLRenderMesh> renderMeshes, TextureSet textureSet, Matrix4 viewMatrix, Matrix4 projectionMatrix, NJObject activeObj, Matrix4? parentWorld, bool weighted)
         {
             Matrix4 world = obj.LocalMatrix();
             if(parentWorld.HasValue)
@@ -288,7 +298,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 obj[i].Prepare(renderMeshes, textureSet, viewMatrix, projectionMatrix, activeObj, world, weighted);
         }
 
-        public static void Prepare(this LandEntry le, List<GLRenderMesh> renderMeshes, TextureSet textureSet, List<LandEntry> entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix, LandEntry activeLE)
+        internal static void Prepare(this LandEntry le, List<GLRenderMesh> renderMeshes, TextureSet textureSet, List<LandEntry> entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix, LandEntry activeLE)
         {
             if(!camera.CanRender(le.ModelBounds) || entries.Contains(le))
                 return;
@@ -299,7 +309,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             renderMeshes.Add(new GLRenderMesh(le.Attach, textureSet, world, normalMtx, world * viewMatrix * projectionMatrix));
         }
 
-        public static void RenderModels(List<GLRenderMesh> renderMeshes, bool transparent, Material material)
+        internal static void RenderModels(List<GLRenderMesh> renderMeshes, bool transparent, Material material)
         {
             for(int i = 0; i < renderMeshes.Count; i++)
             {
@@ -313,7 +323,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public static void RenderModelsWireframe(List<GLRenderMesh> renderMeshes)
+        internal static void RenderModelsWireframe(List<GLRenderMesh> renderMeshes)
         {
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
@@ -340,6 +350,96 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }
 
+        internal static (LandEntryRenderBatch opaque, LandEntryRenderBatch transparent) PrepareLandEntries(LandEntry[] entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix)
+        {
+            Dictionary<Attach, List<LandEntry>> toRender = new();
+
+            foreach(LandEntry le in entries)
+            {
+                if(!camera.CanRender(le.ModelBounds))
+                    continue;
+                if(toRender.TryGetValue(le.Attach, out List<LandEntry> list))
+                {
+                    list.Add(le);
+                }
+                else
+                {
+                    toRender.Add(le.Attach, new() { le });
+                }
+            }
+
+            LandEntryRenderBatch opaque = new();
+            LandEntryRenderBatch transparent = new();
+
+            foreach(var t in toRender)
+            {
+                List<RenderMatrices> matrices = new();
+                foreach(LandEntry le in t.Value)
+                {
+                    Matrix4 world = le.LocalMatrix();
+                    Matrix4 normalMtx = world.Inverted();
+                    normalMtx.Transpose();
+
+                    matrices.Add(new RenderMatrices(world, normalMtx, world * viewMatrix * projectionMatrix));
+                }
+
+                foreach(BufferMesh bm in t.Key.MeshData)
+                {
+                    if(bm.Material == null)
+                        continue;
+
+                    if(!meshHandles.TryGetValue(bm, out var handle))
+                    {
+                        t.Key.Buffer(null, false);
+                        handle = meshHandles[bm];
+                    }
+
+                    int index = bm.Material.HasFlag(MaterialFlags.useTexture) ? (int)bm.Material.TextureIndex : -1;
+
+                    Dictionary<BufferMeshHandle, List<RenderMatrices>> buffers;
+                    if(bm.Material.UseAlpha)
+                    {
+                        if(!transparent.TryGetValue(index, out buffers))
+                        {
+                            buffers = new();
+                            transparent.Add(index, buffers);
+                        }
+                    }
+                    else
+                    {
+                        if(!opaque.TryGetValue(index, out buffers))
+                        {
+                            buffers = new();
+                            opaque.Add(index, buffers);
+                        }
+                    }
+                    buffers.Add(handle, matrices);                    
+
+
+                }
+            }
+
+            return (opaque, transparent);
+        }
+
+        internal static void RenderLandentries(this LandEntryRenderBatch geometry, Material material)
+        {
+            foreach(var g in geometry)
+            {
+                foreach(var t in g.Value)
+                {
+                    BufferMeshHandle m = t.Key;
+                    material.BufferMaterial = m.material;
+                    GL.BindVertexArray(m.vao);
+
+                    foreach(var mtx in t.Value)
+                    {
+                        mtx.BufferMatrices();
+                        GL.DrawElements(BeginMode.Triangles, m.vertexCount, DrawElementsType.UnsignedInt, 0);
+                    }
+                }
+            }
+        }
 
         #region Conversion extensions
 
