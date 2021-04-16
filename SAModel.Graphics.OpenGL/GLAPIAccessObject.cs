@@ -25,8 +25,8 @@ namespace SATools.SAModel.Graphics.OpenGL
     public sealed class GLAPIAccessObject : GAPIAccessObject
     {
         private Shader _defaultShader;
-
         private Shader _wireFrameShader;
+        private Shader _boundsShader;
 
         public override void GraphicsInit(Context context)
         {
@@ -50,6 +50,11 @@ namespace SATools.SAModel.Graphics.OpenGL
             vertexShader = Encoding.UTF8.GetString(Resources.Wireframe_vert);
             fragShader = Encoding.UTF8.GetString(Resources.Wireframe_frag);
             _wireFrameShader = new Shader(vertexShader, fragShader);
+
+            // bounds
+            vertexShader = Encoding.UTF8.GetString(Resources.Bounds_vert);
+            fragShader = Encoding.UTF8.GetString(Resources.Bounds_frag);
+            _boundsShader = new Shader(vertexShader, fragShader);
 
             // canvas
             vertexShader = Encoding.UTF8.GetString(Resources.DefaultUI_vert);
@@ -117,7 +122,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             List<GLRenderMesh> renderMeshes = new();
-            var (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
+            var (opaque, transparent, _) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
 
             foreach(GameTask tsk in context.Scene.objects)
             {
@@ -157,10 +162,11 @@ namespace SATools.SAModel.Graphics.OpenGL
             List<GLRenderMesh> renderMeshes = new();
             LandEntryRenderBatch opaque;
             LandEntryRenderBatch transparent;
+            List<LandEntry> landEntriesRendered;
 
             if(!context.RenderCollision)
             {
-                (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
+                (opaque, transparent, landEntriesRendered) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
 
                 foreach(GameTask tsk in context.Scene.objects)
                 {
@@ -171,7 +177,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
             else
             {
-                (opaque, transparent) = RenderExtensions.PrepareLandEntries(context.Scene.CollisionGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
+                (opaque, transparent, landEntriesRendered) = RenderExtensions.PrepareLandEntries(context.Scene.CollisionGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
             }
 
             _defaultShader.Use();
@@ -198,7 +204,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             {
                 _wireFrameShader.Use();
                 GL.Disable(EnableCap.Blend);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+
+                opaque.RenderLandentriesWireframe();
+                transparent.RenderLandentriesWireframe();
                 RenderExtensions.RenderModelsWireframe(renderMeshes);
+
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GL.Enable(EnableCap.Blend);
                 _defaultShader.Use();
             }
@@ -206,36 +218,10 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(context.BoundsMode == BoundsMode.All
                 || context.BoundsMode == BoundsMode.Selected && context.ActiveLE != null)
             {
-                GL.Disable(EnableCap.DepthTest);
-                context.Material.RenderMode = RenderMode.Falloff;
-                Matrix4 normal = Matrix4.Identity;
-                GL.UniformMatrix4(11, false, ref normal);
-
-                List<LandEntry> boundObjs;
-
-                if(context.BoundsMode == BoundsMode.All)
-                {
-                    boundObjs = context.Scene.geometry;
-                }
-                else
-                {
-                    boundObjs = new List<LandEntry>
-                    {
-                        context.ActiveLE
-                    };
-                }
-
-                foreach(LandEntry le in boundObjs)
-                {
-                    Bounds b = le.ModelBounds;
-                    Matrix4 world = Matrix4.CreateScale(b.Radius) * Matrix4.CreateTranslation(b.Position.ToGL());
-                    GL.UniformMatrix4(10, false, ref world);
-                    world = world * _cameraViewMatrix * _cameraProjectionmatrix;
-                    GL.UniformMatrix4(12, false, ref world);
-                    context.SphereMesh.Render(true, context.Material);
-                }
-
-                GL.Enable(EnableCap.DepthTest);
+                _boundsShader.Use();
+                _boundsShader.SetUniform("viewPos", context.Camera.Realposition);
+                _boundsShader.SetUniform("viewDir", context.Camera.Orthographic ? context.Camera.ViewDir : default);
+                RenderExtensions.RenderBounds(landEntriesRendered, context.SphereMesh, _cameraViewMatrix, _cameraProjectionmatrix);
             }
             
             GL.Disable(EnableCap.Blend);
@@ -497,3 +483,4 @@ namespace SATools.SAModel.Graphics.OpenGL
     }
 
 }
+

@@ -45,13 +45,6 @@ namespace SATools.SAModel.Graphics.OpenGL
         }
     }
 
-    internal struct LandEntryMatrices
-    {
-        public Matrix4 worldMtx;
-        public Matrix4 normalMtx;
-        public Matrix4 MVP;
-    }
-
     public static class RenderExtensions
     {
         private static readonly CachedVertex[] vertices = new CachedVertex[0xFFFF];
@@ -325,8 +318,6 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         internal static void RenderModelsWireframe(List<GLRenderMesh> renderMeshes)
         {
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-
             for(int i = 0; i < renderMeshes.Count; i++)
             {
                 GLRenderMesh m = renderMeshes[i];
@@ -346,12 +337,11 @@ namespace SATools.SAModel.Graphics.OpenGL
                     GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
                 }
             }
-
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }
 
-        internal static (LandEntryRenderBatch opaque, LandEntryRenderBatch transparent) PrepareLandEntries(LandEntry[] entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix)
+        internal static (LandEntryRenderBatch opaque, LandEntryRenderBatch transparent, List<LandEntry> rendered) PrepareLandEntries(LandEntry[] entries, Camera camera, Matrix4 viewMatrix, Matrix4 projectionMatrix)
         {
+            List<LandEntry> rendered = new();
             Dictionary<Attach, List<LandEntry>> toRender = new();
 
             foreach(LandEntry le in entries)
@@ -366,6 +356,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 {
                     toRender.Add(le.Attach, new() { le });
                 }
+                rendered.Add(le);
             }
 
             LandEntryRenderBatch opaque = new();
@@ -380,7 +371,8 @@ namespace SATools.SAModel.Graphics.OpenGL
                     Matrix4 normalMtx = world.Inverted();
                     normalMtx.Transpose();
 
-                    matrices.Add(new RenderMatrices(world, normalMtx, world * viewMatrix * projectionMatrix));
+                    RenderMatrices rm = new(world, normalMtx, world * viewMatrix * projectionMatrix);
+                    matrices.Add(rm);
                 }
 
                 foreach(BufferMesh bm in t.Key.MeshData)
@@ -419,7 +411,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 }
             }
 
-            return (opaque, transparent);
+            return (opaque, transparent, rendered);
         }
 
         internal static void RenderLandentries(this LandEntryRenderBatch geometry, Material material)
@@ -439,6 +431,49 @@ namespace SATools.SAModel.Graphics.OpenGL
                     }
                 }
             }
+        }
+
+        internal static void RenderLandentriesWireframe(this LandEntryRenderBatch geometry)
+        {
+            foreach(var g in geometry)
+            {
+                foreach(var t in g.Value)
+                {
+                    BufferMeshHandle m = t.Key;
+                    GL.BindVertexArray(m.vao);
+
+                    foreach(var mtx in t.Value)
+                    {
+                        mtx.BufferMatrices();
+                        GL.DrawElements(BeginMode.Triangles, m.vertexCount, DrawElementsType.UnsignedInt, 0);
+                    }
+                }
+            }
+        }
+
+        internal static void RenderBounds(List<LandEntry> entries, Attach sphere, Matrix4 cameraViewMatrix, Matrix4 cameraProjectionmatrix)
+        {
+            GL.Disable(EnableCap.DepthTest);
+            Matrix4 normal = Matrix4.Identity;
+            GL.UniformMatrix4(11, false, ref normal);
+
+            var handle = meshHandles[sphere.MeshData[0]];
+            GL.BindVertexArray(handle.vao);
+
+            foreach(LandEntry le in entries)
+            {
+                var b = le.ModelBounds;
+
+                Matrix4 world = Matrix4.CreateScale(b.Radius) * Matrix4.CreateTranslation(b.Position.ToGL());
+                GL.UniformMatrix4(10, false, ref world);
+
+                world = world * cameraViewMatrix * cameraProjectionmatrix;
+                GL.UniformMatrix4(12, false, ref world);
+
+                GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
+            }
+
+            GL.Enable(EnableCap.DepthTest);
         }
 
         #region Conversion extensions
