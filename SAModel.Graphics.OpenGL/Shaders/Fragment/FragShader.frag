@@ -23,12 +23,11 @@ uniform sampler2D texture0;
 #define LIGHTINGMASK 0xFF000000
 #define SMOOTH		0x01000000
 #define FALLOFF		0x02000000
-#define FULLBRIGHT	0x03000000
-#define NORMALS		0x04000000
-#define COLORS		0x05000000
-#define TEXCOORDS	0x06000000
-#define TEXTURES	0x07000000
-#define Culling		0x08000000
+#define NORMALS		0x03000000
+#define COLORS		0x04000000
+#define TEXCOORDS	0x05000000
+#define TEXTURES	0x06000000
+#define Culling		0x07000000
 
 layout(std140, binding = 0) uniform Material
 {
@@ -71,9 +70,7 @@ void main()
 {
 	vec4 col = vec4(0);
 	int lightingMode = flags & LIGHTINGMASK;
-	if(lightingMode == FULLBRIGHT)
-		col = vec4(1,1,1,1);
-	else if(lightingMode == NORMALS)
+	if(lightingMode == NORMALS)
 		col = (vec4(normal, 1) + vec4(1)) / 2 ;
 	else if(lightingMode == COLORS)
 		col = col0;
@@ -89,22 +86,21 @@ void main()
 	}
 	else
 	{
+		vec4 tex = vec4(1);
+		if((flags & USE_TEXTURE) != 0)
+		{
+			tex = texture(texture0, uv0);
+		}
+
 		if((flags & FLAT) != 0)
-			col = col0 * texture(texture0, uv0);
+			col = col0 * tex;
 		else
 		{
-			float alpha = 1;
+			float alpha = tex.a;
 			vec3 viewDirection = viewDir;
 			if(viewDir.x == 0 && viewDir.y == 0 && viewDir.z == 0)
 			{
 				viewDirection = normalize(viewPos - fragpos);
-			}
-
-			vec4 tex = vec4(1,1,1,1);
-			if((flags & USE_TEXTURE) != 0)
-			{
-				tex = texture(texture0, uv0);
-				alpha = tex.a;
 			}
 
 			// checking ambient flag

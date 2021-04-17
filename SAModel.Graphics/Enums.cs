@@ -73,34 +73,29 @@
         Falloff = 0x02,
 
         /// <summary>
-        /// Everything is white (used for collisions)
-        /// </summary>
-        FullBright = 0x03,
-
-        /// <summary>
         /// Renders normals
         /// </summary>
-        Normals = 0x04,
+        Normals = 0x03,
 
         /// <summary>
         /// Renders vertex colors
         /// </summary>
-        ColorsWeights = 0x05,
+        ColorsWeights = 0x04,
 
         /// <summary>
         /// Renders uv coordinates
         /// </summary>
-        Texcoords = 0x06,
+        Texcoords = 0x05,
 
         /// <summary>
         /// Renders textures only
         /// </summary>
-        Textures = 0x07,
+        Textures = 0x06,
 
         /// <summary>
         /// Displays the culling side
         /// </summary>
-        CullSide = 0x08
+        CullSide = 0x07
     }
 
     /// <summary>
@@ -122,5 +117,18 @@
         /// Draws all bounds
         /// </summary>
         All
+    }
+
+    public enum ObjectRelationsMode
+    {
+        /// <summary>
+        /// No object relations shown
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Draws lines between object locations
+        /// </summary>
+        Lines
     }
 }

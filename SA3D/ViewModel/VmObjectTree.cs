@@ -22,6 +22,7 @@ namespace SATools.SA3D.ViewModel
                 _selected = value;
 
                 _selected.Data.Select(_selected.Parent, _mainVM);
+                OnPropertyChanged(nameof(Selected));
             }
         }
 

@@ -154,7 +154,7 @@ namespace SATools.SA3D
                     if(motionPath != null)
                     {
                         task.Motions.Add(Motion.ReadFile(motionPath, file.Model.CountAnimated()));
-                        task.PlayBackSpeed = 60;
+                        task.AnimationSpeed = 60;
                     }
 
                     context.Scene.AddDisplayTask(task);

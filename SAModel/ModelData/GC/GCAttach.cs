@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
 namespace SATools.SAModel.ModelData.GC
@@ -198,7 +198,7 @@ namespace SATools.SAModel.ModelData.GC
             return address;
         }
 
-        internal override BufferMesh[] buffer(bool optimize)
+        internal override BufferMesh[] Buffer(bool optimize)
         {
             List<BufferMesh> meshes = new();
 
@@ -271,7 +271,7 @@ namespace SATools.SAModel.ModelData.GC
                     for(int i = offset; i < p.Corners.Length; i++)
                     {
                         Corner c = p.Corners[i];
-                        indices[i] = (uint)corners.Count;
+                        indices[i - offset] = (uint)corners.Count;
                         corners.Add(new BufferCorner((ushort)vertices.Count, colors?[c.Color0Index] ?? Color.White, uvs?[c.UV0Index] ?? new Vector2()));
                         vertices.Add(new BufferVertex(positions[c.PositionIndex], normals?[c.NormalIndex] ?? Vector3.UnitY, (ushort)vertices.Count));
                     }
@@ -341,11 +341,11 @@ namespace SATools.SAModel.ModelData.GC
 
                     for(ushort i = 0; i < vIDs.Length; i++)
                     {
-                        BufferVertex vtx = new(m.Vertices[i].position, m.Vertices[i].normal, (ushort)vertices.Count);
+                        BufferVertex vtx = new(m.Vertices[i].Position, m.Vertices[i].Normal, (ushort)vertices.Count);
                         int index = vertices.FindIndex(x => x.EqualPosNrm(vtx));
                         if(index == -1)
                         {
-                            vIDs[i] = vtx.index;
+                            vIDs[i] = vtx.Index;
                             vertices.Add(vtx);
                         }
                         else
@@ -354,7 +354,7 @@ namespace SATools.SAModel.ModelData.GC
 
                     for(int i = 0; i < m.Corners.Length; i++)
                     {
-                        m.Corners[i].vertexIndex = vIDs[m.Corners[i].vertexIndex];
+                        m.Corners[i].VertexIndex = vIDs[m.Corners[i].VertexIndex];
                     }
 
                     meshData[mi] = m.Optimize(vertices.ToArray(), false);

@@ -155,6 +155,7 @@ namespace SATools.SAModel.Graphics
             Input = new Input(apiAccessObject.InputBridge);
             Scene = new Scene(Camera);
             _backgroundColor = new Color(0x60, 0x60, 0x60);
+            Scene.OnAttachLoadedEvent += apiAccessObject.OnAttachLoad;
         }
 
         /// <summary>

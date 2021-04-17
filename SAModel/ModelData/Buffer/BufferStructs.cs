@@ -1,5 +1,6 @@
 ﻿using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.Structs;
+using System;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.Buffer
@@ -12,22 +13,22 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// Position of the vertex
         /// </summary>
-        public Vector3 position;
+        public Vector3 Position { get; set; }
 
         /// <summary>
         /// Normal of the vertex
         /// </summary>
-        public Vector3 normal;
+        public Vector3 Normal { get; set; }
 
         /// <summary>
         /// Index of the vertex for the buffer array
         /// </summary>
-        public ushort index;
+        public ushort Index { get; set; }
 
         /// <summary>
         /// Weight of the vertex
         /// </summary>
-        public float weight;
+        public float Weight { get; set; }
 
         /// <summary>
         /// Creates a new buffer vertex
@@ -37,10 +38,10 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="index">Buffer index</param>
         public BufferVertex(Vector3 position, Vector3 normal, ushort index)
         {
-            this.position = position;
-            this.normal = normal;
-            this.index = index;
-            weight = 1;
+            this.Position = position;
+            this.Normal = normal;
+            this.Index = index;
+            Weight = 1;
         }
 
         /// <summary>
@@ -52,10 +53,10 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="weight">Weight of the vertex</param>
         public BufferVertex(Vector3 position, Vector3 normal, ushort index, float weight)
         {
-            this.position = position;
-            this.normal = normal;
-            this.index = index;
-            this.weight = weight;
+            this.Position = position;
+            this.Normal = normal;
+            this.Index = index;
+            this.Weight = weight;
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <returns></returns>
         public bool EqualPosNrm(BufferVertex other)
         {
-            return position == other.position && normal == other.normal;
+            return Position == other.Position && Normal == other.Normal;
         }
 
         /// <summary>
@@ -74,10 +75,10 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="writer">Output stream</param>
         public void Write(EndianMemoryStream writer)
         {
-            position.Write(writer, IOType.Float);
-            normal.Write(writer, IOType.Float);
-            writer.WriteUInt16(index);
-            writer.WriteUInt16((ushort)(weight * ushort.MaxValue));
+            Position.Write(writer, IOType.Float);
+            Normal.Write(writer, IOType.Float);
+            writer.WriteUInt16(Index);
+            writer.WriteUInt16((ushort)(Weight * ushort.MaxValue));
         }
 
         /// <summary>
@@ -99,27 +100,27 @@ namespace SATools.SAModel.ModelData.Buffer
 
         public override string ToString()
         {
-            return weight != 1 ? $"{index}: \t{position}; \t{normal}" : $"{index}: \t{position}; \t{normal}; \t{weight}";
+            return Weight != 1 ? $"{Index}: \t{Position}; \t{Normal}" : $"{Index}: \t{Position}; \t{Normal}; \t{Weight}";
         }
 
         public static BufferVertex operator +(BufferVertex l, BufferVertex r)
         {
             return new BufferVertex()
             {
-                position = l.position + r.position,
-                normal = l.normal + r.normal,
-                index = l.index,
-                weight = 1
+                Position = l.Position + r.Position,
+                Normal = l.Normal + r.Normal,
+                Index = l.Index,
+                Weight = 1
             };
         }
         public static BufferVertex operator *(BufferVertex l, float r)
         {
             return new BufferVertex()
             {
-                position = l.position * r,
-                normal = l.normal * r,
-                index = l.index,
-                weight = l.weight
+                Position = l.Position * r,
+                Normal = l.Normal * r,
+                Index = l.Index,
+                Weight = l.Weight
             };
         }
         public static BufferVertex operator *(float l, BufferVertex r) => r * l;
@@ -129,22 +130,22 @@ namespace SATools.SAModel.ModelData.Buffer
     /// <summary>
     /// A single corner in a triangle
     /// </summary>
-    public struct BufferCorner
+    public struct BufferCorner : IEquatable<BufferCorner>
     {
         /// <summary>
         /// Buffer index for the vertex
         /// </summary>
-        public ushort vertexIndex;
+        public ushort VertexIndex { get; set; }
 
         /// <summary>
         /// Color of the corner
         /// </summary>
-        public Color color;
+        public Color Color { get; set; }
 
         /// <summary>
         /// UV of the corner
         /// </summary>
-        public Vector2 uv;
+        public Vector2 Uv { get; set; }
 
         /// <summary>
         /// Creates a new buffer corner
@@ -154,9 +155,9 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="uv">Texture coordinate</param>
         public BufferCorner(ushort vertexIndex, Color color, Vector2 uv)
         {
-            this.vertexIndex = vertexIndex;
-            this.color = color;
-            this.uv = uv;
+            this.VertexIndex = vertexIndex;
+            this.Color = color;
+            this.Uv = uv;
         }
 
         /// <summary>
@@ -165,9 +166,9 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="writer">Output stream</param>
         public void Write(EndianMemoryStream writer)
         {
-            writer.WriteUInt16(vertexIndex);
-            color.Write(writer, IOType.ARGB8_32);
-            uv.Write(writer, IOType.Float);
+            writer.WriteUInt16(VertexIndex);
+            Color.Write(writer, IOType.ARGB8_32);
+            Uv.Write(writer, IOType.Float);
         }
 
         /// <summary>
@@ -188,25 +189,21 @@ namespace SATools.SAModel.ModelData.Buffer
 
         public override string ToString()
         {
-            return $"{vertexIndex}: \t{color}; \t{uv}";
+            return $"{VertexIndex}: \t{Color}; \t{Uv}";
         }
 
         public override bool Equals(object obj)
         {
             return obj is BufferCorner corner &&
-                   vertexIndex == corner.vertexIndex &&
-                   color == corner.color &&
-                   uv == corner.uv;
+                   VertexIndex == corner.VertexIndex &&
+                   Color == corner.Color &&
+                   Uv == corner.Uv;
         }
 
-        public override int GetHashCode()
-        {
-            var hashCode = 381559495;
-            hashCode = hashCode * -1521134295 + vertexIndex.GetHashCode();
-            hashCode = hashCode * -1521134295 + color.GetHashCode();
-            hashCode = hashCode * -1521134295 + uv.GetHashCode();
-            return hashCode;
-        }
+        public override int GetHashCode() 
+            => System.HashCode.Combine(VertexIndex, Color, Uv);
+        bool IEquatable<BufferCorner>.Equals(BufferCorner other)
+            => Equals(other);
 
         public static bool operator ==(BufferCorner l, BufferCorner r) => l.Equals(r);
         public static bool operator !=(BufferCorner l, BufferCorner r) => !l.Equals(r);

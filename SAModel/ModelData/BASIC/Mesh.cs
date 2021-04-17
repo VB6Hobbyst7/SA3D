@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
 namespace SATools.SAModel.ModelData.BASIC

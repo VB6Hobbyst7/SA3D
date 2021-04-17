@@ -1,7 +1,10 @@
 ﻿using Microsoft.Win32;
 using SATools.SA3D.ViewModel.Base;
 using SATools.SA3D.ViewModel.TreeItems;
+using SATools.SAArchive;
 using SATools.SAModel.Graphics;
+using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjData.Animation;
 using System;
 using System.IO;
 using System.Windows;
@@ -31,7 +34,7 @@ namespace SATools.SA3D.ViewModel
         /// </summary>
         public DebugContext RenderContext { get; }
 
-        public RelayCommand Cmd_OpenFile
+        public RelayCommand Cmd_Open3DFile
             => new(Open3DFile);
 
         public VmObjectTree ObjectTree { get; }
@@ -40,6 +43,15 @@ namespace SATools.SA3D.ViewModel
         {
             RenderContext = renderContext;
             ObjectTree = new VmObjectTree(this);
+        }
+
+        public void AddModel(NJObject model, TextureSet textures, Motion[] motions)
+        {
+            DebugTask dbtsk = new(model, textures);
+            if(motions != null)
+                dbtsk.Motions.AddRange(motions);
+            RenderContext.Scene.AddDisplayTask(dbtsk);
+            ObjectTree.Objects.Add(new(null, new VmObject(dbtsk, null)));
         }
 
         /// <summary>

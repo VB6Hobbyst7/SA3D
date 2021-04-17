@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.MathHelper;
@@ -106,6 +107,11 @@ namespace SATools.SAModel.ObjData.Animation
         /// Whether any keyframes exist in this keyframe set
         /// </summary>
         public bool HasKeyframes => Frames.Any(x => x.Count() > 0);
+
+        /// <summary>
+        /// Whether the keyframes read were a quaternion. Used for properly calculating rotation keyframes
+        /// </summary>
+        public bool WasQuaternion { get; set; }
 
         /// <summary>
         /// Returns the last keyframe number across all sets / maximum keyframe size
@@ -280,6 +286,36 @@ namespace SATools.SAModel.ObjData.Animation
                 return Vector3.Lerp(before, next, interpolation);
         }
 
+        private static Vector3 RotationAtFrame(SortedDictionary<uint, Vector3> keyframes, float frame, bool wasQuaternion)
+        {
+            float interpolation = GetNearestFrames(keyframes, frame, out Vector3 before, out Vector3 next);
+            if(interpolation == 0)
+                return before;
+
+            if(!wasQuaternion)
+                return Vector3.Lerp(before, next, interpolation);
+
+            Vector3 result = default;
+            result.X = LerpShorterAngle(before.X, next.X, interpolation);
+            result.Y = LerpShorterAngle(before.Y, next.Y, interpolation);
+            result.Z = LerpShorterAngle(before.Z, next.Z, interpolation);
+            return result;
+
+        }
+
+        private static float LerpShorterAngle(float a, float b, float t)
+        {
+            float dif = Math.Abs(a - b);
+            if(dif < 180)
+                return Lerp(a, b, t);
+
+            dif = 360 - dif;
+
+            if(a < 0)
+                return Lerp(a, a - dif, t);
+            else return Lerp(a, a + dif, t);
+        }
+
         private static Vector3[] ValueAtFrame(SortedDictionary<uint, Vector3[]> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Vector3[] before, out Vector3[] next);
@@ -346,7 +382,7 @@ namespace SATools.SAModel.ObjData.Animation
                 result.position = ValueAtFrame(Position, frame);
 
             if(Rotation.Count > 0)
-                result.rotation = ValueAtFrame(Rotation, frame);
+                result.rotation = RotationAtFrame(Rotation, frame, WasQuaternion);
 
             if(Scale.Count > 0)
                 result.scale = ValueAtFrame(Scale, frame);
@@ -563,6 +599,7 @@ namespace SATools.SAModel.ObjData.Animation
                             break;
                         case AnimFlags.Quaternion:
                             ReadVector3Set(source, taddr, frameCount, result.Rotation, IOType.Quaternion);
+                            result.WasQuaternion = true;
                             break;
                     }
                 }

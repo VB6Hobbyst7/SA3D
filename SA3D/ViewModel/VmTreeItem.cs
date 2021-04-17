@@ -66,7 +66,7 @@ namespace SATools.SA3D.ViewModel
                 if(value && !loaded)
                 {
                     Children.Clear();
-                    Data.Expand(Parent, Children);
+                    Data.Expand(this, Children);
                     loaded = true;
                 }
 

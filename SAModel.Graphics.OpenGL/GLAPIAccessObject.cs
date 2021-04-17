@@ -2,20 +2,20 @@
 using OpenTK.Mathematics;
 using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.Graphics.OpenGL.Properties;
+using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
-using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
 using System.Windows;
+using static SATools.SAModel.Graphics.OpenGL.GlobalBuffers;
+using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.Graphics.OpenGL.BufferMeshHandle, System.Collections.Generic.List<SATools.SAModel.Graphics.OpenGL.RenderMatrices>>>;
+using SAVector3 = SATools.SAModel.Structs.Vector3;
 using TKVector3 = OpenTK.Mathematics.Vector3;
 using UIElement = SATools.SAModel.Graphics.UI.UIElement;
-using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.Graphics.OpenGL.BufferMeshHandle, System.Collections.Generic.List<SATools.SAModel.Graphics.OpenGL.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -24,10 +24,6 @@ namespace SATools.SAModel.Graphics.OpenGL
     /// </summary>
     public sealed class GLAPIAccessObject : GAPIAccessObject
     {
-        private Shader _defaultShader;
-        private Shader _wireFrameShader;
-        private Shader _boundsShader;
-
         public override void GraphicsInit(Context context)
         {
             GL.Viewport(default, context.Resolution);
@@ -35,42 +31,17 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Lequal);
             GL.Enable(EnableCap.Multisample);
+            
             //GL.Enable(EnableCap.FramebufferSrgb); srgb doesnt work for glcontrol, so we'll just leave it out
 
-            // Material
-            _materialHandle = GL.GenBuffer();
-
-            // loading the shader
-            string vertexShader = Encoding.UTF8.GetString(Resources.VertexShader);
-            string fragShader = Encoding.UTF8.GetString(Resources.FragShader);
-            _defaultShader = new Shader(vertexShader, fragShader);
-            _defaultShader.BindUniformBlock("Material", 0, _materialHandle);
-
-            // wireframe
-            vertexShader = Encoding.UTF8.GetString(Resources.Wireframe_vert);
-            fragShader = Encoding.UTF8.GetString(Resources.Wireframe_frag);
-            _wireFrameShader = new Shader(vertexShader, fragShader);
-
-            // bounds
-            vertexShader = Encoding.UTF8.GetString(Resources.Bounds_vert);
-            fragShader = Encoding.UTF8.GetString(Resources.Bounds_frag);
-            _boundsShader = new Shader(vertexShader, fragShader);
-
-            // canvas
-            vertexShader = Encoding.UTF8.GetString(Resources.DefaultUI_vert);
-            fragShader = Encoding.UTF8.GetString(Resources.DefaultUI_frag);
-            _uiShader = new Shader(vertexShader, fragShader);
+            InitializeBuffers();
+            InitializeShaders();
 
             // for debug
             if(context.GetType() == typeof(DebugContext))
             {
                 ((DebugContext)context).SphereMesh.Buffer(null, false);
             }
-
-            GL.BindVertexArray(0);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
         }
 
         protected override void InternalAsWindow(Context context)
@@ -117,7 +88,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             context.Material.ViewPos = context.Camera.Realposition;
             context.Material.ViewDir = context.Camera.Orthographic ? context.Camera.ViewDir : default;
 
-            RenderExtensions.ClearWeights();
+            ClearWeights();
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -128,10 +99,10 @@ namespace SATools.SAModel.Graphics.OpenGL
             {
                 tsk.Display();
                 if(tsk is DisplayTask dtsk)
-                    dtsk.Model.Prepare(renderMeshes, dtsk.TextureSet,  _cameraViewMatrix, _cameraProjectionmatrix, null, null, dtsk.Model.HasWeight);
+                    dtsk.Model.Prepare(renderMeshes, dtsk.TextureSet, _cameraViewMatrix, _cameraProjectionmatrix, null, null, dtsk.Model.HasWeight);
             }
 
-            _defaultShader.Use();
+            DefaultShader.Use();
 
             // first the opaque meshes
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
@@ -155,12 +126,12 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             context.Material.ViewPos = context.Camera.Realposition;
             context.Material.ViewDir = context.Camera.Orthographic ? context.Camera.ViewDir : default;
-            context.Material.RenderMode = context.RenderMode;
 
-            RenderExtensions.ClearWeights();
+            ClearWeights();
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            List<NJObject> objects = new();
             List<GLRenderMesh> renderMeshes = new();
             LandEntryRenderBatch opaque;
             LandEntryRenderBatch transparent;
@@ -168,25 +139,30 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             if(!context.RenderCollision)
             {
+                DefaultShader.Use();
                 (opaque, transparent, landEntriesRendered) = RenderExtensions.PrepareLandEntries(context.Scene.VisualGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
 
                 foreach(GameTask tsk in context.Scene.objects)
                 {
                     tsk.Display();
                     if(tsk is DisplayTask dtsk)
+                    {
+                        objects.Add(dtsk.Model);
                         dtsk.Model.Prepare(renderMeshes, dtsk.TextureSet, _cameraViewMatrix, _cameraProjectionmatrix, context.ActiveNJO, null, dtsk.Model.HasWeight);
+                    }
                 }
             }
             else
             {
+                CollisionShader.Use();
                 (opaque, transparent, landEntriesRendered) = RenderExtensions.PrepareLandEntries(context.Scene.CollisionGeometry, context.Camera, _cameraViewMatrix, _cameraProjectionmatrix);
             }
 
-            _defaultShader.Use();
-            if(context.RenderCollision)
-                context.Material.RenderMode = RenderMode.FullBright;
-
             // first the opaque meshes
+            GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
+            GL.Uniform1(13, 0f);
+
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
             opaque.RenderLandentries(context.Material);
 
@@ -194,7 +170,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             // then transparent meshes
             GL.Enable(EnableCap.Blend);
-            GL.Uniform1(13, 0.001f);
+            GL.Uniform1(13, 1f);
 
             context.Material.BufferTextureSet = context.Scene.LandTextureSet;
             transparent.RenderLandentries(context.Material);
@@ -204,7 +180,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             // then additional stuff
             if(context.WireframeMode == WireFrameMode.Overlay)
             {
-                _wireFrameShader.Use();
+                WireFrameShader.Use();
                 GL.Disable(EnableCap.Blend);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 
@@ -213,57 +189,59 @@ namespace SATools.SAModel.Graphics.OpenGL
                 RenderExtensions.RenderModelsWireframe(renderMeshes);
 
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                GL.Enable(EnableCap.Blend);
-                _defaultShader.Use();
             }
 
             if(context.BoundsMode == BoundsMode.All
                 || context.BoundsMode == BoundsMode.Selected && context.ActiveLE != null)
             {
-                _boundsShader.Use();
-                _boundsShader.SetUniform("viewPos", context.Camera.Realposition);
-                _boundsShader.SetUniform("viewDir", context.Camera.Orthographic ? context.Camera.ViewDir : default);
+                BoundsShader.SetUniform("viewPos", context.Camera.Realposition);
+                BoundsShader.SetUniform("viewDir", context.Camera.Orthographic ? context.Camera.ViewDir : default);
                 RenderExtensions.RenderBounds(landEntriesRendered, context.SphereMesh, _cameraViewMatrix, _cameraProjectionmatrix);
             }
-            
-            GL.Disable(EnableCap.Blend);
-            GL.Uniform1(13, 0f);
+
+            if(context.ObjectRelationsMode == ObjectRelationsMode.Lines)
+                RenderExtensions.DrawModelRelationship(objects, _cameraViewMatrix, _cameraProjectionmatrix);
 
             return (uint)renderMeshes.Count;
         }
 
+        public override void OnAttachLoad(Attach attach)
+        {
+            if(!attach.HasWeight)
+                attach.Buffer(null, false);
+        }
 
         #region Material
 
-        private int _materialHandle;
-
-        private readonly List<int> _textureHandles = new();
-        private readonly List<Texture> _bufferedTextures = new();
-        
         public override void BufferTextureSet(TextureSet textures)
         {
-            while(_textureHandles.Count < textures.Textures.Count)
-            {
-                _textureHandles.Add(GL.GenTexture());
-                _bufferedTextures.Add(null);
-            }
-            
+            if(textures == null)
+                return;
+
+            // Add new Buffer handles for as many texture as needed
+            while(TextureHandles.Count < textures.Textures.Count)
+                TextureHandles.Add((GL.GenTexture(), null));
+
             for(int i = 0; i < textures.Textures.Count; i++)
             {
-                if(_bufferedTextures[i] == textures.Textures[i])
+                (int handle, Texture tex) = TextureHandles[i];
+                Texture newTexture = textures.Textures[i];
+
+                // no need to buffer the texture if the contents are still the same
+                if(tex == newTexture)
                     return;
 
-                GL.BindTexture(TextureTarget.Texture2D, _textureHandles[i]);
+                GL.BindTexture(TextureTarget.Texture2D, handle);
 
-                var texture = textures.Textures[i].TextureBitmap;
-
+                // buffer the texture data
+                var texture = newTexture.TextureBitmap;
                 BitmapData data = texture.LockBits(new Rectangle(0, 0, texture.Width, texture.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
                 texture.UnlockBits(data);
-
                 GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
-                _bufferedTextures[i] = textures.Textures[i];
+                // tell the handle that this texture was buffered
+                TextureHandles[i] = (handle, newTexture);
             }
         }
 
@@ -272,25 +250,29 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture) && material.BufferTextureSet != null)
             {
                 int textureIndex = (int)material.BufferMaterial.TextureIndex;
-                if(textureIndex < _textureHandles.Count)
-                    GL.BindTexture(TextureTarget.Texture2D, _textureHandles[textureIndex]);
+                if(textureIndex < TextureHandles.Count)
+                    GL.BindTexture(TextureTarget.Texture2D, TextureHandles[textureIndex].Item1);
 
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMinFilter());
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMagFilter());
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)material.BufferMaterial.WrapModeU());
-				GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)material.BufferMaterial.WrapModeV());
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMinFilter());
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMagFilter());
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)material.BufferMaterial.WrapModeU());
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)material.BufferMaterial.WrapModeV());
+                GL.TexParameter(TextureTarget.Texture2D, (TextureParameterName)All.TextureMaxAnisotropyExt, material.BufferMaterial.AnisotropicFiltering ? 4 : 0);
 
             }
 
+            // if the texture uses alpha, update the blend modes
             if(material.BufferMaterial.UseAlpha)
                 GL.BlendFunc(material.BufferMaterial.SourceBlendMode.ToGLBlend(), material.BufferMaterial.DestinationBlendmode.ToGLBlend());
 
+            // update the cull mode
             if(material.BufferMaterial.Culling)// && RenderMode != RenderMode.CullSide)
                 GL.Enable(EnableCap.CullFace);
             else
                 GL.Disable(EnableCap.CullFace);
 
-            GL.BindBuffer(BufferTarget.UniformBuffer, _materialHandle);
+            // update the material data buffer
+            GL.BindBuffer(BufferTarget.UniformBuffer, MaterialHandle);
             fixed(byte* ptr = material.Buffer.ToArray())
             {
                 GL.BufferData(BufferTarget.UniformBuffer, material.Buffer.Count, (IntPtr)ptr, BufferUsageHint.StreamDraw);
@@ -302,77 +284,53 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         #region Camera
 
+        /// <summary>
+        /// Camera view matrix
+        /// </summary>
         private Matrix4 _cameraViewMatrix;
+
+        /// <summary>
+        /// Camera projection matrix
+        /// </summary>
         private Matrix4 _cameraProjectionmatrix;
 
-        private Matrix4 CreateRotationMatrix(Structs.Vector3 rotation)
-        {
-            return Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(rotation.Z)) *
-                    Matrix4.CreateRotationY(MathHelper.DegreesToRadians(rotation.Y)) *
-                    Matrix4.CreateRotationX(MathHelper.DegreesToRadians(rotation.X));
-        }
-
-        public override void SetOrtographicMatrix(float width, float height, float zNear, float zFar) 
+        public override void SetOrtographicMatrix(float width, float height, float zNear, float zFar)
             => _cameraProjectionmatrix = Matrix4.CreateOrthographic(width, height, zNear, zFar);
 
-        public override void SetPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) 
+        public override void SetPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar)
             => _cameraProjectionmatrix = Matrix4.CreatePerspectiveFieldOfView(fovy, aspect, zNear, zFar);
 
-        public override void UpdateDirections(Structs.Vector3 rotation, out Structs.Vector3 up, out Structs.Vector3 forward, out Structs.Vector3 right)
+        public override void UpdateDirections(SAVector3 rotation, out SAVector3 up, out SAVector3 forward, out SAVector3 right)
         {
-            Matrix4 mtx = CreateRotationMatrix(rotation);
+            Matrix4 mtx = rotation.CreateRotationMatrix(true);
             forward = new TKVector3(mtx * -Vector4.UnitZ).ToSA().Normalized();
             up = new TKVector3(mtx * Vector4.UnitY).ToSA().Normalized();
             right = new TKVector3(mtx * -Vector4.UnitX).ToSA().Normalized();
         }
 
-        public override Structs.Vector3 ToViewPos(Structs.Vector3 position)
+        public override SAVector3 ToViewPos(SAVector3 position)
         {
             Vector4 viewPos = (position.ToGL4() * _cameraViewMatrix);
-            return new Structs.Vector3(viewPos.X, viewPos.Y, viewPos.Z);
+            return new SAVector3(viewPos.X, viewPos.Y, viewPos.Z);
         }
 
-        private Matrix4 GetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation) 
-            => Matrix4.CreateTranslation(-position.ToGL()) * CreateRotationMatrix(rotation);
+        public override void SetViewMatrix(SAVector3 position, SAVector3 rotation)
+            => _cameraViewMatrix = Converters.CreateViewMatrix(position, rotation);
 
-        public override void SetViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation) 
-            => _cameraViewMatrix = GetViewMatrix(position, rotation);
-
-        public override void SetOrbitViewMatrix(Structs.Vector3 position, Structs.Vector3 rotation, Structs.Vector3 orbitOffset) 
-            => _cameraViewMatrix = Matrix4.CreateTranslation(orbitOffset.ToGL()) * GetViewMatrix(position, rotation);
+        public override void SetOrbitViewMatrix(SAVector3 position, SAVector3 rotation, SAVector3 orbitOffset)
+            => _cameraViewMatrix = Matrix4.CreateTranslation(orbitOffset.ToGL()) * Converters.CreateViewMatrix(position, rotation);
 
         #endregion
 
         #region Canvas
 
-        private class UIBuffer
-        {
-            public int vaoHandle;
-            public int vboHandle;
-            public int texHandle;
-            public bool used;
-        }
-
-        private Shader _uiShader;
-
         private PolygonMode _lastPolygonMode;
-
-        /// <summary>
-        /// Buffers that can be repurposed
-        /// </summary>
-        private readonly Queue<UIBuffer> _reuse = new();
-
-        /// <summary>
-        /// Buffers that were used in the last cycle
-        /// </summary>
-        private readonly Dictionary<Guid, UIBuffer> _buffers = new();
-
 
         public override void CanvasPreDraw(int width, int height)
         {
             _lastPolygonMode = (PolygonMode)GL.GetInteger(GetPName.PolygonMode);
 
-            _uiShader.Use();
+            UIShader.Use();
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
@@ -380,13 +338,13 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void CanvasPostDraw()
         {
-            foreach(var b in _buffers.Where(x => !x.Value.used).ToArray())
+            foreach(var b in UIBuffers.Where(x => !x.Value.used).ToArray())
             {
-                _reuse.Enqueue(b.Value);
-                _buffers.Remove(b.Key);
+                UIReuse.Enqueue(b.Value);
+                UIBuffers.Remove(b.Key);
             }
 
-            foreach(var b in _buffers)
+            foreach(var b in UIBuffers)
                 b.Value.used = false;
 
             GL.Disable(EnableCap.Blend);
@@ -407,75 +365,16 @@ namespace SATools.SAModel.Graphics.OpenGL
                 GL.BindVertexArray(buffer.vaoHandle);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, buffer.vboHandle);
                 GL.BindTexture(TextureTarget.Texture2D, buffer.texHandle);
+
                 if(element.UpdatedTransforms || forceUpdateTransforms)
-                {
                     UpdateTransforms(element.GetTransformBuffer(width, height));
 
-                }
                 if(element.UpdatedTexture)
-                {
                     UpdateTexture(element.GetBufferTexture());
-                }
             }
 
             buffer.used = true;
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
-        }
-
-        /// <summary>
-        /// Returns true if the buffer is not reused
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        private bool GetUIBuffer(Guid id, out UIBuffer buffer)
-        {
-            if(!_buffers.TryGetValue(id, out buffer))
-            {
-                if(_reuse.Count == 0)
-                {
-                    buffer = GenUIBuffer();
-                    _buffers.Add(id, buffer);
-                    return true;
-                }
-                else
-                {
-                    buffer = _reuse.Dequeue();
-                }
-            }
-
-            return false;
-        }
-
-        private static UIBuffer GenUIBuffer()
-        {
-            int vaoHandle = GL.GenVertexArray();
-            int vboHandle = GL.GenBuffer();
-            GL.BindVertexArray(vaoHandle);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vboHandle);
-
-            // assigning attribute data
-            // position
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 16, 0);
-
-            // uv
-            GL.EnableVertexAttribArray(3);
-            GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, 16, 8);
-
-            int texHandle = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, texHandle);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
-
-            return new UIBuffer()
-            {
-                vaoHandle = vaoHandle,
-                vboHandle = vboHandle,
-                texHandle = texHandle
-            };
         }
 
         private static unsafe void UpdateTransforms(float[] transformBuffer)

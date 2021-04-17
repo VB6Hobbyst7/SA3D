@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace SATools.SA3D.XAML
+namespace SATools.SA3D.XAML.UserControls
 {
     /// <summary>
     /// Interaction logic for UcSettingsCategory.xaml

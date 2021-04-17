@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
 namespace SATools.SAModel.ModelData.CHUNK
@@ -201,7 +201,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             base.WriteNJA(writer, DX, labels, textures);
         }
 
-        internal override BufferMesh[] buffer(bool optimize)
+        internal override BufferMesh[] Buffer(bool optimize)
         {
             List<BufferMesh> meshes = new();
 

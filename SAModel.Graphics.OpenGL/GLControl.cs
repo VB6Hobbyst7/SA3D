@@ -65,7 +65,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 _context.IsFocused = IsFocused;
                 _context.Update(time.TotalSeconds);
 
-                if(_mouseLocked)
+                if(_mouseLocked && IsFocused)
                 {
                     var p = ToScreenPos(_center);
                     NativeMethods.SetCursorPos((int)p.X, (int)p.Y);

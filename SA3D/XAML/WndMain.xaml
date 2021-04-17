@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:vm="clr-namespace:SATools.SA3D.ViewModel"
+        xmlns:uc="clr-namespace:SATools.SA3D.XAML.UserControls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:VmMain}"
         Title="SA3D" Width="1280" Height="720"
@@ -29,20 +30,20 @@
         <Menu Grid.Row="0" Margin="5,2,5,2" Background="Transparent">
             <MenuItem Header="File">
                 <MenuItem Header="New" InputGestureText="Ctrl+N" Icon="{StaticResource ico_NewFile}">
-                    <MenuItem Header="Model"/>
-                    <MenuItem Header="Level"/>
+                    <MenuItem Header="Model" IsEnabled="false"/>
+                    <MenuItem Header="Level" IsEnabled="false"/>
                     <MenuItem Header="Project">
                         <MenuItem Header="SA1/SADX" IsEnabled="false"/>
                         <MenuItem Header="SA2" IsEnabled="false"/>
                     </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Open" InputGestureText="Ctrl+O" Icon="{StaticResource ico_OpenFile}" Command="{Binding OpenFileRC}"/>
-                <MenuItem Header="Save" InputGestureText="Ctrl+S" Icon="{StaticResource ico_Save}"/>
-                <MenuItem Header="Save as..." InputGestureText="Ctrl+Shift+S" Icon="{StaticResource ico_SaveAs}" />
+                <MenuItem Header="Open" InputGestureText="Ctrl+O" Icon="{StaticResource ico_OpenFile}" Command="{Binding Cmd_Open3DFile}"/>
+                <MenuItem Header="Save" InputGestureText="Ctrl+S" IsEnabled="false" Icon="{StaticResource ico_Save}"/>
+                <MenuItem Header="Save as..." InputGestureText="Ctrl+Shift+S" IsEnabled="false" Icon="{StaticResource ico_SaveAs}" />
                 <Separator/>
                 <MenuItem Header="Import" InputGestureText="Ctrl+I" Icon="{StaticResource ico_Import}">
                     <MenuItem Header="Buffer" IsEnabled="false"/>
-                    <MenuItem Header="GLTF" IsEnabled="False"/>
+                    <MenuItem Header="GLTF" Click="ImportGLTF"/>
                     <MenuItem Header="Model file" IsEnabled="false"/>
                 </MenuItem>
                 <MenuItem Header="Export" InputGestureText="Ctrl+E" Icon="{StaticResource ico_Export}">
@@ -51,8 +52,8 @@
                     <MenuItem Header="Model file" IsEnabled="false"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Load Animation" Icon="{StaticResource ico_OpenFile}"/>
-                <MenuItem Header="Load Texture file" Icon="{StaticResource ico_OpenFile}"/>
+                <MenuItem Header="Load Animation" IsEnabled="false" Icon="{StaticResource ico_OpenFile}"/>
+                <MenuItem Header="Load Texture file" IsEnabled="false" Icon="{StaticResource ico_OpenFile}"/>
             </MenuItem>
             <MenuItem Header="Edit">
                 <MenuItem Header="File info" IsEnabled="false"/>
@@ -64,7 +65,7 @@
                 <MenuItem Header="Controls" Click="ControlSettings_Click"/>
             </MenuItem>
             <MenuItem Header="Help">
-                <MenuItem Header="Wiki"/>
+                <MenuItem Header="Wiki" IsEnabled="false"/>
             </MenuItem>
         </Menu>
 
@@ -81,29 +82,43 @@
                 <TabItem Header="Geometry">
                 </TabItem>
                 <TabItem Header="Objects" DataContext="{Binding ObjectTree}">
-                    <TreeView ItemsSource="{Binding Objects}" SelectedItemChanged="TreeView_SelectedItemChanged">
 
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="{x:Type TreeViewItem}">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="5"/>
+                            <RowDefinition Height="200"/>
+                        </Grid.RowDefinitions>
 
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
+                        <TreeView ItemsSource="{Binding Objects}" SelectedItemChanged="TreeView_SelectedItemChanged">
 
-                                    <Image Grid.Column="0" Source="{Binding ItemType, Converter={StaticResource TreeItemTypeConverter}}" SnapsToDevicePixels="True"/>
-                                    <Label Grid.Column="1" Content="{Binding ItemName}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"/>
-                                </Grid>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
 
-                    </TreeView>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Image Grid.Column="0" Source="{Binding ItemType, Converter={StaticResource TreeItemTypeConverter}}" SnapsToDevicePixels="True"/>
+                                        <Label Grid.Column="1" Content="{Binding ItemName}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"/>
+                                    </Grid>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+
+                        </TreeView>
+
+                        <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+
+                        <uc:UcTreeItemInspector Grid.Row="2" DataContext="{Binding Selected}"/>
+
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>

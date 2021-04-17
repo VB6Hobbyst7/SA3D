@@ -264,8 +264,17 @@ namespace SATools.SAModel.Graphics.Properties {
         }
 
         [UserScopedSetting()]
-        [SettingsKey("Display Bounds", "Displays geometry bounds")]
+        [SettingsKey("Circle Object Relations", "Draws lines between object locations")]
         [DefaultSettingValue("<Key>F8</Key>")]
+        public Key CircleObjectRelations
+        {
+            get => (Key)this[nameof(CircleObjectRelations)];
+            set => this[nameof(CircleObjectRelations)] = value;
+        }
+
+        [UserScopedSetting()]
+        [SettingsKey("Display Bounds", "Displays geometry bounds")]
+        [DefaultSettingValue("<Key>F9</Key>")]
         public Key DisplayBounds
         {
             get => (Key)this[nameof(DisplayBounds)];

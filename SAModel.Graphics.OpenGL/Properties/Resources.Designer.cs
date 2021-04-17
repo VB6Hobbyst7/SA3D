@@ -83,6 +83,26 @@ namespace SATools.SAModel.Graphics.OpenGL.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] Collision_frag {
+            get {
+                object obj = ResourceManager.GetObject("Collision.frag", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Collision_vert {
+            get {
+                object obj = ResourceManager.GetObject("Collision.vert", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] DefaultUI_frag {
             get {
                 object obj = ResourceManager.GetObject("DefaultUI.frag", resourceCulture);

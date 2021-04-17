@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
 namespace SATools.SAModel.ModelData.BASIC
@@ -403,7 +403,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteLine();
         }
 
-        internal override BufferMesh[] buffer(bool optimize)
+        internal override BufferMesh[] Buffer(bool optimize)
         {
             List<BufferMesh> meshes = new();
             List<BufferVertex> vertices = new();

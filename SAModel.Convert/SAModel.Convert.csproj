@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>SATools.SAModel.Convert</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpGLTF.Core" Version="1.0.0-alpha0022" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SAArchive\SAArchive.csproj" />
+    <ProjectReference Include="..\SAModel\SAModel.csproj" />
+  </ItemGroup>
+
+</Project>

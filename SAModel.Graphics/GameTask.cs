@@ -71,9 +71,9 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Frames per second
         /// </summary>
-        public float PlayBackSpeed { get; set; }
+        public float AnimationSpeed { get; set; } = 1;
 
-        public float Time { get; set; }
+        public float AnimationTimestamp { get; set; }
 
         public DebugTask(NJObject obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
         {
@@ -87,8 +87,8 @@ namespace SATools.SAModel.Graphics
 
             Motion motion = Motions[MotionIndex];
 
-            Time += (float)(delta * PlayBackSpeed);
-            Time %= motion.Frames - 1;
+            AnimationTimestamp += (float)(delta * AnimationSpeed * motion.PlaybackSpeed);
+            AnimationTimestamp %= motion.Frames - 1;
 
             NJObject[] models = Model.GetObjects();
             for(int i = 0; i < models.Length; i++)
@@ -98,7 +98,7 @@ namespace SATools.SAModel.Graphics
                     NJObject mdl = models[i];
                     if(!mdl.Animate)
                         continue;
-                    Frame frame = motion.Keyframes[i].GetFrameAt(Time);
+                    Frame frame = motion.Keyframes[i].GetFrameAt(AnimationTimestamp);
                     if(frame.position.HasValue)
                         mdl.Position = frame.position.Value;
                     if(frame.rotation.HasValue)

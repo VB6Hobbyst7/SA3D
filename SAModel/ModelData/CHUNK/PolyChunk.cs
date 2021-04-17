@@ -2,7 +2,7 @@
 using SATools.SAModel.Structs;
 using System;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 
 namespace SATools.SAModel.ModelData.CHUNK
 {

@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace SATools.SA3D.XAML
+namespace SATools.SA3D.XAML.UserControls
 {
     /// <summary>
     /// Interaction logic for WndControlSettings.xaml

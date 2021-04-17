@@ -43,14 +43,25 @@ namespace SATools.SAModel.ModelData.Buffer
         public bool ContinueWeight { get; }
 
         /// <summary>
+        /// Vertex offset for when writing vertices into the buffer
+        /// </summary>
+        public ushort VertexWriteOffset { get; set; }
+
+        /// <summary>
+        /// Vertex offset for the polycorners' vertex indices
+        /// </summary>
+        public ushort VertexReadOffset { get; set; }
+
+        /// <summary>
         /// Creates a new Buffermesh from only vertex data (used for deforming models)
         /// </summary>
         /// <param name="vertices">Vertex data</param>
         /// <param name="continueWeight">Weight state</param>
-        public BufferMesh(BufferVertex[] vertices, bool continueWeight)
+        public BufferMesh(BufferVertex[] vertices, bool continueWeight, ushort vertexWriteOffset = 0)
         {
             Vertices = vertices ?? throw new ArgumentNullException("Vertices", "Vertices can't be null");
             ContinueWeight = continueWeight;
+            VertexWriteOffset = vertexWriteOffset;
         }
 
         /// <summary>
@@ -61,12 +72,13 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="corners">Triangle corner data</param>
         /// <param name="triangleList">Triangle index list</param>
         /// <param name="material">Material</param>
-        public BufferMesh(BufferVertex[] vertices, bool continueWeight, BufferCorner[] corners, uint[] triangleList, BufferMaterial material)
-            : this(vertices, continueWeight)
+        public BufferMesh(BufferVertex[] vertices, bool continueWeight, BufferCorner[] corners, uint[] triangleList, BufferMaterial material, ushort vertexWriteOffset = 0, ushort vertexReadOffset = 0)
+            : this(vertices, continueWeight, vertexWriteOffset)
         {
             Corners = corners ?? throw new ArgumentNullException("Corners", "Corners can't be null");
             TriangleList = triangleList ?? throw new ArgumentNullException("TriangleList", "Triangle list can't be null");
             Material = material ?? throw new ArgumentNullException("Material", "Material can't be null");
+            VertexReadOffset = vertexReadOffset;
         }
 
         /// <summary>
@@ -75,11 +87,12 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="corners">Triangle corner data</param>
         /// <param name="triangleList">Triangle index list</param>
         /// <param name="material">Material</param>
-        public BufferMesh(BufferCorner[] corners, uint[] triangleList, BufferMaterial material)
+        public BufferMesh(BufferCorner[] corners, uint[] triangleList, BufferMaterial material, ushort vertexReadOffset = 0)
         {
             Corners = corners ?? throw new ArgumentNullException("Corners", "Corners can't be null");
-            TriangleList = triangleList ?? throw new ArgumentNullException("TriangleList", "Triangle list can't be null");
+            TriangleList = triangleList;
             Material = material ?? throw new ArgumentNullException("Material", "Material can't be null");
+            VertexReadOffset = vertexReadOffset;
         }
 
         /// <summary>
@@ -113,9 +126,9 @@ namespace SATools.SAModel.ModelData.Buffer
             {
                 for(int i = 0; i < TriangleList.Length; i += 3)
                 {
-                    ushort index1 = Corners[(int)TriangleList[i]].vertexIndex;
-                    ushort index2 = Corners[(int)TriangleList[i + 1]].vertexIndex;
-                    ushort index3 = Corners[(int)TriangleList[i + 2]].vertexIndex;
+                    ushort index1 = Corners[(int)TriangleList[i]].VertexIndex;
+                    ushort index2 = Corners[(int)TriangleList[i + 1]].VertexIndex;
+                    ushort index3 = Corners[(int)TriangleList[i + 2]].VertexIndex;
 
                     if(index1 != index2 && index2 != index3 && index3 != index1)
                         triangles.AddRange(new uint[] { TriangleList[i], TriangleList[i + 1], TriangleList[i + 2] });
@@ -125,9 +138,9 @@ namespace SATools.SAModel.ModelData.Buffer
             {
                 for(int i = 0; i < TriangleList.Length; i += 3)
                 {
-                    Vector3 pos1 = vertices[Corners[(int)TriangleList[i]].vertexIndex].position;
-                    Vector3 pos2 = vertices[Corners[(int)TriangleList[i + 1]].vertexIndex].position;
-                    Vector3 pos3 = vertices[Corners[(int)TriangleList[i + 2]].vertexIndex].position;
+                    Vector3 pos1 = vertices[Corners[(int)TriangleList[i]].VertexIndex].Position;
+                    Vector3 pos2 = vertices[Corners[(int)TriangleList[i + 1]].VertexIndex].Position;
+                    Vector3 pos3 = vertices[Corners[(int)TriangleList[i + 2]].VertexIndex].Position;
                     if(pos1 != pos2 && pos2 != pos3 && pos3 != pos1)
                         triangles.AddRange(new uint[] { TriangleList[i], TriangleList[i + 1], TriangleList[i + 2] });
                 }

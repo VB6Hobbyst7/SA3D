@@ -94,7 +94,7 @@ namespace SATools.SAModel.ObjData
         {
             get
             {
-                if(Attach != null && Attach.HasWeight)
+                if(Attach?.HasWeight == true)
                     return true;
                 foreach(NJObject obj in _children)
                     if(obj.HasWeight)

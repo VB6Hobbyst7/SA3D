@@ -180,8 +180,8 @@ namespace SATools.SAModel.Structs
                 case IOType.Quaternion:
                     result = FromQuaternion(
                         source.ToSingle(address),
-                        -source.ToSingle(address + 4),
-                        -source.ToSingle(address + 8),
+                        source.ToSingle(address + 4),
+                        source.ToSingle(address + 8),
                         source.ToSingle(address + 12)
                         );
 
@@ -264,34 +264,48 @@ namespace SATools.SAModel.Structs
         public static Vector3 FromQuaternion(float w, float x, float y, float z)
         {
             // if the input quaternion is normalized, this is exactly one. Otherwise, this acts as a correction factor for the quaternion's not-normalizedness
-            float unit = (x * x) + (y * y) + (z * z) + (w * w);
+            float unit = (y * y) + (x * x) + (z * z) + (w * w);
 
             // this will have a magnitude of 0.5 or greater if and only if this is a singularity case
-            float test = x * w - y * z;
+            float test = y * w - x * z;
 
             Vector3 v = new();
 
             if(test > 0.4995f * unit) // singularity at north pole
             {
                 v.Y = Pi / 2;
-                v.X = 2f * (float)Math.Atan2(y, x);
+                v.X = 2f * (float)Math.Atan2(x, y);
             }
             else if(test < -0.4995f * unit) // singularity at south pole
             { 
                 v.Y = -Pi / 2;
-                v.X = -2f * (float)Math.Atan2(y, x);
+                v.X = -2f * (float)Math.Atan2(x, y);
             }
             else
             {
-                v.X = (float)Math.Atan2(2f * w * y + 2f * z * x, 1 - 2f * (x * x + y * y));
-                v.Y = (float)Math.Asin(2f * (w * x - y * z));
-                v.Z = (float)Math.Atan2(2f * w * z + 2f * x * y, 1 - 2f * (z * z + x * x));
+                v.Y = (float)Math.Asin(2f * (w * y - x * z));
+                v.X = (float)Math.Atan2(2f * w * x + 2f * z * y, 1 - 2f * (y * y + x * x));
+                v.Z = (float)Math.Atan2(2f * w * z + 2f * y * x, 1 - 2f * (z * z + y * y));
             }
             v *= Rad2Deg;
 
             v.X %= 360;
+            if(v.X < -180)
+                v.X += 360;
+            else if(v.X > 180)
+                v.X -= 360;
+
             v.Y %= 360;
+            if(v.Y < -180)
+                v.Y += 360;
+            else if(v.Y > 180)
+                v.Y -= 360;
+
             v.Z %= 360;
+            if(v.Z < -180)
+                v.Z += 360;
+            else if(v.Z > 180)
+                v.Z -= 360;
 
             return v;
         }

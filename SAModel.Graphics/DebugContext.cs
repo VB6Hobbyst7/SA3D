@@ -45,6 +45,8 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         private BoundsMode _boundsMode;
 
+        private ObjectRelationsMode _objectRelationsMode;
+
         /// <summary>
         /// Used to render debug information onto
         /// </summary>
@@ -128,6 +130,7 @@ namespace SATools.SAModel.Graphics
                 if(value == _renderMode)
                     return;
                 _apiAccessObject.DebugUpdateRenderMode(value);
+                Material.RenderMode = value;
                 _renderMode = value;
             }
         }
@@ -159,6 +162,15 @@ namespace SATools.SAModel.Graphics
                     return;
                 _apiAccessObject.DebugUpdateBoundsMode(value);
                 _boundsMode = value;
+            }
+        }
+
+        public ObjectRelationsMode ObjectRelationsMode
+        {
+            get => _objectRelationsMode;
+            set
+            {
+                _objectRelationsMode = value;
             }
         }
 
@@ -303,13 +315,7 @@ namespace SATools.SAModel.Graphics
             bool backward = Input.IsKeyDown(s.CircleBackward);
 
             if(Input.KeyPressed(s.CircleRenderMode))
-            {
-                RenderMode newRenderMode = Circle(RenderMode, backward);
-                if(newRenderMode == RenderMode.FullBright)
-                    RenderMode = RenderMode.Normals;
-                else
-                    RenderMode = newRenderMode;
-            }
+                RenderMode = Circle(RenderMode, backward);
 
             // Circle wireframe mode
             if(Input.KeyPressed(s.CircleWireframe))
@@ -323,12 +329,17 @@ namespace SATools.SAModel.Graphics
             if(Input.KeyPressed(s.SwapGeometry))
                 RenderCollision = !RenderCollision;
 
+            // Circle object relations mode
+            if(Input.KeyPressed(s.CircleObjectRelations))
+                ObjectRelationsMode = Circle(ObjectRelationsMode, backward);
+
             if(Input.KeyPressed(s.DebugHelp))
                 DebugMenu = DebugMenu.Help;
             else if(Input.KeyPressed(s.DebugCamera))
                 DebugMenu = DebugMenu.Camera;
             else if(Input.KeyPressed(s.DebugRender))
                 DebugMenu = DebugMenu.RenderInfo;
+
 
         }
 

@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Configuration;
 
-namespace SATools.SA3D.XAML
+namespace SATools.SA3D.XAML.UserControls
 {
     /// <summary>
     /// Interaction logic for UcControlSetting.xaml

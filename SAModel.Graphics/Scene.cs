@@ -1,4 +1,5 @@
 ﻿using SATools.SAArchive;
+using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System;
@@ -12,6 +13,9 @@ namespace SATools.SAModel.Graphics
         public delegate void OnUpdate(double delta);
         public event OnUpdate OnUpdateEvent;
 
+        internal delegate void OnAttachLoaded(Attach attach);
+        internal event OnAttachLoaded OnAttachLoadedEvent;
+
         public readonly Camera cam;
         public double time = 0;
 
@@ -19,8 +23,9 @@ namespace SATools.SAModel.Graphics
 
         public readonly List<GameTask> objects = new();
         public readonly List<LandEntry> geometry = new();
-        public readonly List<ModelData.Attach> attaches = new();
-        public readonly List<ModelData.Attach> weightedAttaches = new();
+
+        private readonly List<Attach> attaches = new();
+        private readonly List<Attach> weightedAttaches = new();
 
         public LandEntry[] VisualGeometry
         {
@@ -64,6 +69,7 @@ namespace SATools.SAModel.Graphics
                     {
                         attaches.Add(obj.Attach);
                         obj.Attach.GenBufferMesh(true);
+                        OnAttachLoadedEvent.Invoke(obj.Attach);
                     }
                 }
             }
@@ -79,6 +85,7 @@ namespace SATools.SAModel.Graphics
                 {
                     attaches.Add(le.Attach);
                     le.Attach.GenBufferMesh(true);
+                    OnAttachLoadedEvent.Invoke(le.Attach);
                 }
             }
         }

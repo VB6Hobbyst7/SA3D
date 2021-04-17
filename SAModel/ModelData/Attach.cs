@@ -5,7 +5,7 @@ using System.Linq;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
 namespace SATools.SAModel.ModelData
@@ -55,8 +55,14 @@ namespace SATools.SAModel.ModelData
         /// </summary>
         public BufferMesh[] MeshData { get; private set; }
 
+        /// <summary>
+        /// Whether the Attaches buffer has opaque meshes to display
+        /// </summary>
         public bool BufferHasOpaque { get; private set; }
 
+        /// <summary>
+        /// Whether the Attaches buffer has transparent meshes to display
+        /// </summary>
         public bool BufferHasTransparent { get; private set; }
 
         protected Attach() { }
@@ -75,7 +81,8 @@ namespace SATools.SAModel.ModelData
         /// <summary>
         /// Whether the attach uses weights
         /// </summary>
-        public virtual bool HasWeight => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
+        public virtual bool HasWeight 
+            => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
 
         /// <summary>
         /// Format of the attach
@@ -133,20 +140,24 @@ namespace SATools.SAModel.ModelData
         /// </summary>
         public void GenBufferMesh(bool optimize)
         {
-            MeshData = buffer(optimize);
+            MeshData = Buffer(optimize);
             BufferHasOpaque = MeshData.Any(x => !x.Material?.UseAlpha == true);
             BufferHasTransparent = MeshData.Any(x => x.Material?.UseAlpha == true);
         }
 
-        internal virtual BufferMesh[] buffer(bool optimize) { return MeshData; }
+        internal virtual BufferMesh[] Buffer(bool optimize)
+            => MeshData;
 
         public virtual void RecalculateBounds()
             => throw new InvalidOperationException("");
 
-        object ICloneable.Clone() => Clone();
+        object ICloneable.Clone() 
+            => Clone();
 
-        public virtual Attach Clone() => new(MeshData.ContentClone()) { Name = Name };
+        public virtual Attach Clone() 
+            => new(MeshData.ContentClone()) { Name = Name };
 
-        public override string ToString() => $"{Name} - Buffer";
+        public override string ToString() 
+            => $"{Name} - Buffer";
     }
 }

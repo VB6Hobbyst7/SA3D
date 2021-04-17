@@ -38,7 +38,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             matrices = new(worldMtx, normalMtx, mvp);
         }
 
-        public void BufferMatrices() 
+        public void BufferMatrices()
             => matrices.BufferMatrices();
     }
 }

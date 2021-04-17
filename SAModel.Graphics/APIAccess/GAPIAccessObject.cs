@@ -1,5 +1,6 @@
 ﻿using SATools.SAArchive;
 using SATools.SAModel.Graphics.UI;
+using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
 using System.Collections.Generic;
 using System.Drawing;
@@ -77,6 +78,8 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// Renders the debug context
         /// </summary>
         public abstract uint RenderDebug(DebugContext context);
+
+        public abstract void OnAttachLoad(Attach attach);
 
         // Debug context
         public abstract void DebugUpdateWireframe(WireFrameMode wireframeMode);

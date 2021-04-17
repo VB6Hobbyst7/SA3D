@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Reloaded.Memory.Streams.Writers;
 using static SATools.SACommon.ByteConverter;
-using static SATools.SACommon.Helper;
+using static SATools.SACommon.HelperExtensions;
 
 
 namespace SATools.SAModel.ObjData

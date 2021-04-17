@@ -54,6 +54,12 @@ namespace SATools.SAModel.ObjData.Animation
         public uint Frames { get; private set; }
 
         /// <summary>
+        /// Playback speed of frames per second. Default is 60 fps
+        /// </summary>
+        public float PlaybackSpeed { get; set; }
+            = 60;
+
+        /// <summary>
         /// Size of the model hierarchy to animate
         /// </summary>
         public uint ModelCount { get; }
