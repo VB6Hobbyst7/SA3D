@@ -18,17 +18,18 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public string ItemName
             => "Textures";
 
-        public bool CanExpand => Textures?.Textures.Count > 0;
+        public bool CanExpand 
+            => Textures?.Textures.Count > 0;
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output)
+        public List<ITreeItemData> Expand()
         {
+            List<ITreeItemData> result = new();
             foreach(Texture t in Textures.Textures)
-            {
-                output.Add(new(parent, new VmTexture(t)));
-            }
+                result.Add(new VmTexture(t));
+            return result;
         }
 
-        public void Select(VmTreeItem parent, VmMain main)
+        public void Select(VmTreeItem parent)
         {
 
         }

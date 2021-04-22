@@ -7,6 +7,7 @@ namespace SATools.SAModel.Graphics
 {
     public abstract class GameTask
     {
+
         public string Name { get; }
 
         public GameTask(string name)
@@ -14,7 +15,6 @@ namespace SATools.SAModel.Graphics
             Name = name;
         }
 
-        // texture list
         public virtual void Start()
         {
 
@@ -42,9 +42,23 @@ namespace SATools.SAModel.Graphics
     /// </summary>
     public class DisplayTask : GameTask
     {
+        internal delegate void TextureSetChanged(TextureSet oldSet, TextureSet newSet);
+        internal event TextureSetChanged OnTextureSetChanged;
+
+        private TextureSet _textureSet;
+
         public NJObject Model { get; }
 
-        public TextureSet TextureSet { get; }
+        public TextureSet TextureSet
+        {
+            get => _textureSet;
+            set
+            {
+                var oldSet = _textureSet;
+                _textureSet = value;
+                OnTextureSetChanged?.Invoke(oldSet, value);
+            }
+        }
 
         public DisplayTask(NJObject obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? obj.Name : name)
         {
@@ -82,7 +96,7 @@ namespace SATools.SAModel.Graphics
 
         public void UpdateAnim(double delta)
         {
-            if(Motions.Count == 0)
+            if(Model == null || Motions.Count == 0)
                 return;
 
             Motion motion = Motions[MotionIndex];

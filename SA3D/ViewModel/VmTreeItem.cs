@@ -17,6 +17,14 @@ namespace SATools.SA3D.ViewModel
         Model,
         AnimationHead,
         Animation,
+
+        VisualHead,
+        Visual,
+        CollisionHead,
+        Collision,
+        AttachHead,
+        Attach,
+
         TextureHead,
         Texture
     }
@@ -66,7 +74,9 @@ namespace SATools.SA3D.ViewModel
                 if(value && !loaded)
                 {
                     Children.Clear();
-                    Data.Expand(this, Children);
+                    var children = Data.Expand();
+                    foreach(var t in children)
+                        Children.Add(new(this, t));
                     loaded = true;
                 }
 

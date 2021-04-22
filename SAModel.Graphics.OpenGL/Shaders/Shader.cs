@@ -3,15 +3,15 @@ using OpenTK.Mathematics;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
-using Vector2 = SATools.SAModel.Structs.Vector2;
-using Vector3 = SATools.SAModel.Structs.Vector3;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
     /// <summary>
     /// A GLSL Shader
     /// </summary>
-    public class Shader
+    internal class Shader
     {
         /// <summary>
         /// Used to store the different uniforms in the shader
@@ -231,7 +231,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         public void SetUniform(string name, Vector2 data)
         {
             Use();
-            GL.Uniform2(_uniformLocations[name].location, data.ToGL());
+            GL.Uniform2(_uniformLocations[name].location, new OpenTK.Mathematics.Vector2(data.X, data.Y));
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             if(!_uniformLocations.ContainsKey(name))
                 return;
             Use();
-            GL.Uniform3(_uniformLocations[name].location, data.ToGL());
+            GL.Uniform3(_uniformLocations[name].location, new OpenTK.Mathematics.Vector3(data.X, data.Y, data.Z));
         }
 
         /// <summary>

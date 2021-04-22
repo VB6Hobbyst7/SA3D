@@ -7,14 +7,12 @@ using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using System.Collections.Generic;
 using System.Linq;
-using SAVector3 = SATools.SAModel.Structs.Vector3;
-using SAVector2 = SATools.SAModel.Structs.Vector2;
-using SAColor = SATools.SAModel.Structs.Color;
-using Matrix4 = System.Numerics.Matrix4x4;
-using Vector3 = System.Numerics.Vector3;
+using System.Numerics;
 using System.Drawing;
 using SharpGLTF.Memory;
 using System.IO;
+using SATools.SAModel.Structs;
+using Color = SATools.SAModel.Structs.Color;
 
 namespace SATools.SAModel.Convert
 {
@@ -93,7 +91,7 @@ namespace SATools.SAModel.Convert
                     }
 
                     var weightData = FromWeight(node.Mesh);
-                    Matrix4 meshMatrix = node.GetWorldMatrix(null, 0);
+                    Matrix4x4 meshMatrix = node.GetWorldMatrix(null, 0);
                     AttachHelper.FromWeightedBuffer(bones, meshMatrix, weightData.vertices, weightData.polydata, format);
                 }
             }
@@ -123,14 +121,9 @@ namespace SATools.SAModel.Convert
             else
                 result.Name = node.Name;
 
-            var translation = node.LocalTransform.Translation;
-            result.Position = new(translation.X, translation.Y, translation.Z);
-
-            var rotation = node.LocalTransform.Rotation;
-            result.Rotation = SAVector3.FromQuaternion(rotation.W, rotation.X, rotation.Y, rotation.Z);
-
-            var scale = node.LocalTransform.Scale;
-            result.Scale = new(scale.X, scale.Y, scale.Z);
+            result.Position = node.LocalTransform.Translation;
+            result.QuaternionRotation = node.LocalTransform.Rotation;
+            result.Scale = node.LocalTransform.Scale;
 
             foreach(var c in node.VisualChildren)
             {
@@ -157,19 +150,9 @@ namespace SATools.SAModel.Convert
                 BufferVertex[] vertices = new BufferVertex[positionArray.Count];
                 for(int i = 0; i < vertices.Length; i++)
                 {
-                    // position
                     var pos = positionArray[i];
-                    SAVector3 cpos = new(pos.X, pos.Y, pos.Z);
-
-                    // normal (may be null)
-                    SAVector3 cnrm = SAVector3.UnitY;
-                    if(normalArray != null)
-                    {
-                        var nrm = normalArray[i];
-                        cnrm = new(nrm.X, nrm.Y, nrm.Z);
-                    }
-
-                    vertices[i] = new(cpos, cnrm, (ushort)i);
+                    var nrm = normalArray?[i] ?? Vector3.UnitY;
+                    vertices[i] = new(pos, nrm, (ushort)i);
                 }
 
                 // read corners
@@ -182,23 +165,10 @@ namespace SATools.SAModel.Convert
                 BufferCorner[] corners = new BufferCorner[vertices.Length];
                 for(int i = 0; i < corners.Length; i++)
                 {
-                    // texcoord (may be null)
-                    SAVector2 cuv = default;
-                    if(uvArray != null)
-                    {
-                        var uv = uvArray[i];
-                        cuv = new(uv.X, uv.Y);
-                    }
+                    Vector2 uv = uvArray?[i] ?? default;
+                    Vector4 col = colorArray?[i] ?? Vector4.UnitW;
 
-                    // color (may be null)
-                    SAColor ccol = SAColor.Black;
-                    if(colorArray != null)
-                    {
-                        var col = colorArray[i];
-                        ccol = new(col.X, col.Y, col.Z, col.W);
-                    }
-
-                    corners[i] = new((ushort)i, ccol, cuv);
+                    corners[i] = new((ushort)i, new(col.X, col.Y, col.Z, col.W), uv);
                 }
 
                 // Read indices
@@ -287,23 +257,9 @@ namespace SATools.SAModel.Convert
 
                 for(int i = 0; i < corners.Length; i++)
                 {
-                    // texcoord (may be null)
-                    SAVector2 cuv = default;
-                    if(uvArray != null)
-                    {
-                        var uv = uvArray[i];
-                        cuv = new(uv.X, uv.Y);
-                    }
-
-                    // color (may be null)
-                    SAColor ccol = SAColor.Black;
-                    if(colorArray != null)
-                    {
-                        var col = colorArray[i];
-                        ccol = new(col.X, col.Y, col.Z, col.W);
-                    }
-
-                    corners[i] = new((ushort)i, ccol, cuv);
+                    Vector2 uv = uvArray?[i] ?? default;
+                    Vector4 col = colorArray?[i] ?? Vector4.UnitW;
+                    corners[i] = new((ushort)i, new(col.X, col.Y, col.Z, col.W), uv);
                 }
 
                 // Read indices
@@ -329,6 +285,49 @@ namespace SATools.SAModel.Convert
 
             if(type == PrimitiveType.TRIANGLE_STRIP)
             {
+                bool rev = false;
+                uint index = 0;
+                if(result == null)
+                {
+                    result = new uint[(vertexCount - 2) * 3];
+                    for(int i = 0; i < result.Length; i += 3)
+                    {
+                        if(rev)
+                        {
+                            result[i] = index;
+                            result[i + 1] = index + 1;
+                        }
+                        else
+                        {
+                            result[i] = index + 1;
+                            result[i + 1] = index;
+                        }
+                        result[i+2] = index + 2;
+
+                        index++;
+                    }
+                }
+                else
+                {
+                    uint[] newResult = new uint[(result.Length - 2) * 3];
+                    for(int i = 0; i < result.Length; i += 3)
+                    {
+                        if(rev)
+                        {
+                            newResult[i] = result[index];
+                            newResult[i + 1] = result[index + 1];
+                        }
+                        else
+                        {
+                            newResult[i] = result[index + 1];
+                            newResult[i + 1] = result[index];
+                        }
+                        newResult[i + 2] = result[index + 2];
+
+                        rev = !rev;
+                        index++;
+                    }
+                }
                 throw new NotImplementedException("Triangle strip todo!");
             }
             else if(type != PrimitiveType.TRIANGLES)
@@ -340,8 +339,8 @@ namespace SATools.SAModel.Convert
         private static BufferMaterial GetMaterial(Material mat)
         {
             BufferMaterial result = new();
-            result.Diffuse = SAColor.White;
-            result.Specular = SAColor.White;
+            result.Diffuse = Color.White;
+            result.Specular = Color.White;
             result.SetFlag(MaterialFlags.Flat, mat.Unlit);
 
             var channels = mat.Channels.ToArray();
@@ -399,7 +398,7 @@ namespace SATools.SAModel.Convert
                 }
                 else if(c.Key == "MetallicRoughness")
                 {
-                    result.Specular = SAColor.Lerp(SAColor.White, result.Diffuse, c.Parameter.X);
+                    result.Specular = Color.Lerp(Color.White, result.Diffuse, c.Parameter.X);
                     result.SpecularExponent = c.Parameter.Y;
                 }
                 else if(c.Key == "SpecularGlossiness")
@@ -442,26 +441,17 @@ namespace SATools.SAModel.Convert
                     case PropertyPath.translation:
                         var posSampler = channel.GetTranslationSampler().CreateCurveSampler();
                         for(uint f = 0; f < frames; f++)
-                        {
-                            Vector3 pos = posSampler.GetPoint(keyframeStep * f);
-                            kframes.Position.Add(f, new SAVector3(pos.X, pos.Y, pos.Z));
-                        }
+                            kframes.Position.Add(f, posSampler.GetPoint(keyframeStep * f));
                         break;
                     case PropertyPath.rotation:
                         var rotationSampler = channel.GetRotationSampler().CreateCurveSampler();
                         for(uint f = 0; f < frames; f++)
-                        {
-                            var rot = rotationSampler.GetPoint(keyframeStep * f);
-                            kframes.Rotation.Add(f, SAVector3.FromQuaternion(rot.W, rot.X, rot.Y, rot.Z));
-                        }
+                            kframes.Rotation.Add(f, Vector3Extensions.FromQuaternion(rotationSampler.GetPoint(keyframeStep * f)));
                         break;
                     case PropertyPath.scale:
                         var scaleSampler = channel.GetScaleSampler().CreateCurveSampler();
                         for(uint f = 0; f < frames; f++)
-                        {
-                            Vector3 scale = scaleSampler.GetPoint(keyframeStep * f);
-                            kframes.Scale.Add(f, new SAVector3(scale.X, scale.Y, scale.Z));
-                        }
+                            kframes.Scale.Add(f, scaleSampler.GetPoint(keyframeStep * f));
                         break;
                 }
 

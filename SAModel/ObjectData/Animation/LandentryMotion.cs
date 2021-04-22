@@ -78,7 +78,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="attaches">Attaches that have already been read</param>
         /// <returns></returns>
         public static LandEntryMotion Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX,
-            Dictionary<uint, string> labels, Dictionary<uint, ModelData.Attach> attaches)
+            Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             float frame = source.ToSingle(address);
             float step = source.ToSingle(address + 4);

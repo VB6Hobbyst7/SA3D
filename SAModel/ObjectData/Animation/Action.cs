@@ -43,7 +43,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="labels">C struct labels</param>
         /// <param name="attaches">Attaches that have already been read</param>
         /// <returns></returns>
-        public static Action Read(byte[] source, uint address, uint imagebase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, ModelData.Attach> attaches)
+        public static Action Read(byte[] source, uint address, uint imagebase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             uint mdlAddress = source.ToUInt32(address);
             if(mdlAddress == 0)

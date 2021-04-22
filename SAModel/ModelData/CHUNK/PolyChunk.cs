@@ -1,6 +1,7 @@
 ﻿using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.Structs;
 using System;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 
@@ -1127,9 +1128,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                     address += 2;
 
                     if(hasUV)
-                        c.uv = Vector2.Read(source, ref address, IOType.Short) * multiplier;
+                        c.uv = Vector2Extensions.Read(source, ref address, IOType.Short) * multiplier;
                     if(hasNormal)
-                        c.normal = Vector3.Read(source, ref address, IOType.Float);
+                        c.normal = Vector3Extensions.Read(source, ref address, IOType.Float);
                     else if(hasColor)
                         c.color = Color.Read(source, ref address, IOType.ARGB8_16);
 

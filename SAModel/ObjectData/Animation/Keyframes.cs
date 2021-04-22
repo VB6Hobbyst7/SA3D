@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SACommon;
 using SATools.SAModel.Structs;
@@ -429,7 +430,7 @@ namespace SATools.SAModel.ObjData.Animation
                 {
                     uint frame = source.ToUInt16(address);
                     address += 2;
-                    dictionary.Add(frame, Vector3.Read(source, ref address, type));
+                    dictionary.Add(frame, Vector3Extensions.Read(source, ref address, type));
                 }
             }
             else
@@ -438,7 +439,7 @@ namespace SATools.SAModel.ObjData.Animation
                 {
                     uint frame = source.ToUInt32(address);
                     address += 4;
-                    dictionary.Add(frame, Vector3.Read(source, ref address, type));
+                    dictionary.Add(frame, Vector3Extensions.Read(source, ref address, type));
                 }
             }
 
@@ -469,7 +470,7 @@ namespace SATools.SAModel.ObjData.Animation
                 uint ptr = values[i].Key;
                 Vector3[] vectors = new Vector3[size];
                 for(int j = 0; j < size; j++)
-                    vectors[j] = Vector3.Read(source, ref ptr, IOType.Float);
+                    vectors[j] = Vector3Extensions.Read(source, ref ptr, IOType.Float);
                 dictionary.Add(values[i].Value, vectors);
             }
         }
@@ -480,7 +481,7 @@ namespace SATools.SAModel.ObjData.Animation
             {
                 uint frame = source.ToUInt32(address);
                 address += 4;
-                dictionary.Add(frame, Vector2.Read(source, ref address, type));
+                dictionary.Add(frame, Vector2Extensions.Read(source, ref address, type));
             }
         }
 
@@ -639,7 +640,32 @@ namespace SATools.SAModel.ObjData.Animation
                 return false;
             }
 
-            void WriteDataStruct(Dictionary<uint, IDataStructOut> dict, IOType ioType, AnimFlags flag)
+            void WriteVector3(SortedDictionary<uint, Vector3> dict, IOType ioType, AnimFlags flag)
+            {
+                if(!ContinueWrite(dict.Count, flag))
+                    return;
+
+                foreach(var pair in dict)
+                {
+                    writer.WriteUInt32(pair.Key);
+                    pair.Value.Write(writer, ioType);
+                }
+            }
+
+            void WriteVector2(SortedDictionary<uint, Vector2> dict, IOType ioType, AnimFlags flag)
+            {
+                if(!ContinueWrite(dict.Count, flag))
+                    return;
+
+                foreach(var pair in dict)
+                {
+                    writer.WriteUInt32(pair.Key);
+                    pair.Value.Write(writer, ioType);
+                }
+            }
+
+
+            void WriteColor(SortedDictionary<uint, Color> dict, IOType ioType, AnimFlags flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -708,19 +734,19 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            WriteDataStruct(Position.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.Float, AnimFlags.Position);
-            WriteDataStruct(Rotation.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), shortRot ? IOType.BAMS16 : IOType.BAMS32, AnimFlags.Rotation);
-            WriteDataStruct(Scale.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.Float, AnimFlags.Scale);
-            WriteDataStruct(Vector.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.Float, AnimFlags.Vector);
+            WriteVector3(Position, IOType.Float, AnimFlags.Position);
+            WriteVector3(Rotation, shortRot ? IOType.BAMS16 : IOType.BAMS32, AnimFlags.Rotation);
+            WriteVector3(Scale, IOType.Float, AnimFlags.Scale);
+            WriteVector3(Vector, IOType.Float, AnimFlags.Vector);
             WriteVector3Array(Vertex, AnimFlags.Vertex);
             WriteVector3Array(Normal, AnimFlags.Normal);
-            WriteDataStruct(Target.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.Float, AnimFlags.Target);
+            WriteVector3(Target, IOType.Float, AnimFlags.Target);
             WriteFloat(Roll, true, AnimFlags.Roll);
             WriteFloat(Angle, true, AnimFlags.Angle);
-            WriteDataStruct(LightColor.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.ARGB8_32, AnimFlags.LightColor);
+            WriteColor(LightColor, IOType.ARGB8_32, AnimFlags.LightColor);
             WriteFloat(Intensity, false, AnimFlags.Intensity);
             WriteSpotlight(Spot, AnimFlags.Spot);
-            WriteDataStruct(Point.ToDictionary(x => x.Key, x => x.Value as IDataStructOut), IOType.Float, AnimFlags.Point);
+            WriteVector2(Point, IOType.Float, AnimFlags.Point);
 
             return keyframeLocs;
         }

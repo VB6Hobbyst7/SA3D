@@ -1,7 +1,8 @@
 {
   "profiles": {
     "SA3D": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "\"F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure 2\\Projects\\Ripping\\resource\\gd_PC\\sonicmdl\\0.sa2mdl\" -mtn \"F:\\Programs\\Steam\\steamapps\\common\\Sonic Adventure 2\\Projects\\Ripping\\resource\\gd_PC\\sonicmtn\\119.saanim\" -tex \"F:\\Userfiles\\temp\\sonictex.pak\" -st"
     }
   }
 }

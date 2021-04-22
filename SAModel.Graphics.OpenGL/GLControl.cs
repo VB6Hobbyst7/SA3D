@@ -2,6 +2,7 @@
 using OpenTK.Wpf;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Structs;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -19,7 +20,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
     public class GLControl : GLWpfControl
     {
-        private readonly GAPIAInputBridge _inputBridge;
+        private readonly InputBridge _inputBridge;
 
         private bool _mouseLocked;
 
@@ -27,7 +28,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private readonly Context _context;
 
-        public GLControl(Context context, GAPIAInputBridge inputBridge) : base()
+        public GLControl(Context context, InputBridge inputBridge) : base()
         {
             _context = context;
             _inputBridge = inputBridge;

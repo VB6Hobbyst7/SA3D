@@ -1,6 +1,7 @@
 ﻿using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.Structs;
 using System;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.Buffer
@@ -89,8 +90,8 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <returns></returns>
         public static BufferVertex Read(byte[] source, ref uint address)
         {
-            Vector3 pos = Vector3.Read(source, ref address, IOType.Float);
-            Vector3 nrm = Vector3.Read(source, ref address, IOType.Float);
+            Vector3 pos = Vector3Extensions.Read(source, ref address, IOType.Float);
+            Vector3 nrm = Vector3Extensions.Read(source, ref address, IOType.Float);
             ushort index = source.ToUInt16(address);
             ushort weight = source.ToUInt16(address + 2);
             address += 4;
@@ -182,7 +183,7 @@ namespace SATools.SAModel.ModelData.Buffer
             ushort index = source.ToUInt16(address);
             address += 2;
             Color col = Color.Read(source, ref address, IOType.ARGB8_32);
-            Vector2 uv = Vector2.Read(source, ref address, IOType.Float);
+            Vector2 uv = Vector2Extensions.Read(source, ref address, IOType.Float);
 
             return new BufferCorner(index, col, uv);
         }

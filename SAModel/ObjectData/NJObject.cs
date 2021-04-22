@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
+using static SATools.SACommon.MathHelper;
 
 namespace SATools.SAModel.ObjData
 {
@@ -16,6 +18,12 @@ namespace SATools.SAModel.ObjData
     [Serializable]
     public class NJObject
     {
+        private Vector3 _position;
+
+        private Vector3 _rotation;
+
+        private Vector3 _scale = Vector3.One;
+
         public const uint Size = 0x34;
 
         /// <summary>
@@ -31,17 +39,52 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Local Position of the Object
         /// </summary>
-        public Vector3 Position { get; set; }
+        public Vector3 Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                UpdateMatrix();
+            }
+        }
 
         /// <summary>
         /// Local Rotation of the Object
         /// </summary>
-        public Vector3 Rotation { get; set; }
+        public Vector3 Rotation
+        {
+            get => _rotation;
+            set
+            {
+                _rotation = value;
+                UpdateMatrix();
+            }
+        }
+
+        public Quaternion QuaternionRotation
+        {
+            set
+            {
+                Rotation = Vector3Extensions.FromQuaternion(value);
+            }
+        }
 
         /// <summary>
         /// Local Scale of the Object
         /// </summary>
-        public Vector3 Scale { get; set; }
+        public Vector3 Scale
+        {
+            get => _scale;
+            set
+            {
+                _scale = value;
+                UpdateMatrix();
+            }
+        }
+
+        public Matrix4x4 LocalMatrix { get; private set; }
+            = Matrix4x4.Identity;
 
         /// <summary>
         /// The objects parent in the hierarchy
@@ -147,7 +190,6 @@ namespace SATools.SAModel.ObjData
         {
             Name = "object_" + GenerateIdentifier();
             _children = new List<NJObject>();
-            Scale = new Vector3(1, 1, 1);
         }
 
         /// <summary>
@@ -162,6 +204,11 @@ namespace SATools.SAModel.ObjData
             Parent._children.Add(this);
         }
 
+        private void UpdateMatrix()
+        {
+            LocalMatrix = Vector3Extensions.CreateTransformMatrix(_position, _rotation, _scale, RotateZYX);
+        }
+
         /// <summary>
         /// Reads an NJS object hierarchy from a byte array
         /// </summary>
@@ -172,12 +219,12 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels">C struct labels</param>
         /// <param name="attaches">Already read attaches</param>
         /// <returns></returns>
-        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, ModelData.Attach> attaches)
+        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             return Read(source, address, imageBase, format, DX, null, labels, attaches);
         }
 
-        private static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, NJObject parent, Dictionary<uint, string> labels, Dictionary<uint, ModelData.Attach> attaches)
+        private static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, NJObject parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             string name = labels.ContainsKey(address) ? labels[address] : "object_" + address.ToString("X8");
 
@@ -188,7 +235,7 @@ namespace SATools.SAModel.ObjData
             bool morph = !flags.HasFlag(ObjectFlags.NoMorph);
 
             // reading the attach
-            ModelData.Attach atc = null;
+            Attach atc = null;
             uint tmpaddr = source.ToUInt32(address += 4);
             if(tmpaddr != 0)
             {
@@ -205,9 +252,9 @@ namespace SATools.SAModel.ObjData
 
             // reading transform data
             address += 4;
-            Vector3 position = Vector3.Read(source, ref address, IOType.Float);
-            Vector3 rotation = Vector3.Read(source, ref address, IOType.BAMS32);
-            Vector3 scale = Vector3.Read(source, ref address, IOType.Float);
+            Vector3 position = Vector3Extensions.Read(source, ref address, IOType.Float);
+            Vector3 rotation = Vector3Extensions.Read(source, ref address, IOType.BAMS32);
+            Vector3 scale = Vector3Extensions.Read(source, ref address, IOType.Float);
 
             NJObject result = new(parent)
             {
@@ -279,7 +326,7 @@ namespace SATools.SAModel.ObjData
             writer.Write(new byte[models.Length * Size]);
             uint modelsEnd = (uint)writer.Stream.Position;
 
-            ModelData.Attach[] attaches = models.Where(x => x.Attach != null).Select(x => x.Attach).ToArray();
+            Attach[] attaches = models.Where(x => x.Attach != null).Select(x => x.Attach).ToArray();
 
             // write attaches
             foreach(var atc in attaches)

@@ -2,6 +2,7 @@
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.Buffer

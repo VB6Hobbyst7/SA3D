@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
@@ -192,7 +193,7 @@ namespace SATools.SAModel.ModelData.BASIC
             // reading additional normals
             if(normalAddr != 0)
                 for(int i = 0; i < result.Normals.Length; i++)
-                    result.Normals[i] = Vector3.Read(source, ref normalAddr, IOType.Float);
+                    result.Normals[i] = Vector3Extensions.Read(source, ref normalAddr, IOType.Float);
 
             // reading colors
             if(colorAddr != 0)
@@ -202,7 +203,7 @@ namespace SATools.SAModel.ModelData.BASIC
             // reading uvs
             if(uvAddr != 0)
                 for(int i = 0; i < result.UVs.Length; i++)
-                    result.UVs[i] = Vector2.Read(source, ref uvAddr, IOType.Short) / 256f;
+                    result.UVs[i] = Vector2Extensions.Read(source, ref uvAddr, IOType.Short) / 256f;
 
             address += 24;
 

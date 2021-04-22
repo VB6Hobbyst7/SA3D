@@ -4,6 +4,7 @@ using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
@@ -122,7 +123,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 posAddr -= imageBase;
                 posName = labels.ContainsKey(posAddr) ? labels[posAddr] : "vertex_" + posAddr.ToString("X8");
                 for(int i = 0; i < positions.Length; i++)
-                    positions[i] = Vector3.Read(source, ref posAddr, IOType.Float);
+                    positions[i] = Vector3Extensions.Read(source, ref posAddr, IOType.Float);
             }
             else
                 posName = "vertex_" + GenerateIdentifier();
@@ -135,7 +136,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 nrmAddr -= imageBase;
                 nrmName = labels.ContainsKey(nrmAddr) ? labels[nrmAddr] : "normal_" + nrmAddr.ToString("X8");
                 for(int i = 0; i < normals.Length; i++)
-                    normals[i] = Vector3.Read(source, ref nrmAddr, IOType.Float);
+                    normals[i] = Vector3Extensions.Read(source, ref nrmAddr, IOType.Float);
             }
             else
             {

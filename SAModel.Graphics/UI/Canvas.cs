@@ -8,16 +8,16 @@ namespace SATools.SAModel.Graphics.UI
     /// </summary>
     public class Canvas
     {
-        private readonly IGAPIACanvas _apiAccess;
+        private readonly RenderingBridge _renderingBridge;
 
         private readonly Queue<UIElement> _renderQueue;
 
         private int _oldWidth;
         private int _oldHeight;
 
-        public Canvas(IGAPIACanvas apiAccess)
+        public Canvas(RenderingBridge renderingBridge)
         {
-            _apiAccess = apiAccess;
+            _renderingBridge = renderingBridge;
             _renderQueue = new Queue<UIElement>();
         }
 
@@ -30,7 +30,7 @@ namespace SATools.SAModel.Graphics.UI
         /// <param name="height">Output resolution height</param>
         public void Render(int width, int height)
         {
-            _apiAccess.CanvasPreDraw(width, height);
+            _renderingBridge.CanvasPreDraw(width, height);
 
             float premWidth = width * 0.5f;
             float premHeight = height * 0.5f;
@@ -45,12 +45,12 @@ namespace SATools.SAModel.Graphics.UI
             while(_renderQueue.Count > 0)
             {
                 UIElement element = _renderQueue.Dequeue();
-                _apiAccess.CanvasDrawUIElement(element, premWidth, premHeight, forceTransformUpdate);
+                _renderingBridge.CanvasDrawUIElement(element, premWidth, premHeight, forceTransformUpdate);
             }
 
             _renderQueue.Clear();
 
-            _apiAccess.CanvasPostDraw();
+            _renderingBridge.CanvasPostDraw();
         }
 
     }

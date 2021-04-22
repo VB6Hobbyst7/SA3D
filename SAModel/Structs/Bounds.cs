@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
@@ -10,15 +11,37 @@ namespace SATools.SAModel.Structs
     /// </summary>
     public struct Bounds
     {
+        private Vector3 _position;
+
+        private float _radius;
+
         /// <summary>
         /// Position of the Bounds
         /// </summary>
-        public Vector3 Position { get; set; }
+        public Vector3 Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                RecalculateMatrix();
+            }
+        }
 
         /// <summary>
         /// Radius of the Bounds
         /// </summary>
-        public float Radius { get; set; }
+        public float Radius
+        {
+            get => _radius;
+            set
+            {
+                _radius = value;
+                RecalculateMatrix();
+            }
+        }
+
+        public Matrix4x4 Matrix { get; private set; }
 
         /// <summary>
         /// Creates new bounds from a position and radius
@@ -27,8 +50,14 @@ namespace SATools.SAModel.Structs
         /// <param name="radius"></param>
         public Bounds(Vector3 position, float radius)
         {
-            Position = position;
-            Radius = radius;
+            _position = position;
+            _radius = radius;
+            Matrix = Matrix4x4.CreateScale(_radius) * Matrix4x4.CreateTranslation(_position);
+        }
+
+        private void RecalculateMatrix()
+        {
+            Matrix = Matrix4x4.CreateScale(_radius) * Matrix4x4.CreateTranslation(_position);
         }
 
         /// <summary>
@@ -38,7 +67,7 @@ namespace SATools.SAModel.Structs
         /// <returns></returns>
         public static Bounds FromPoints(Vector3[] points)
         {
-            Vector3 position = Vector3.Center(points);
+            Vector3 position = Vector3Extensions.Center(points);
             float radius = 0;
             foreach(Vector3 p in points)
             {
@@ -59,7 +88,7 @@ namespace SATools.SAModel.Structs
         /// <returns></returns>
         public static Bounds Read(byte[] source, ref uint address)
         {
-            Vector3 position = Vector3.Read(source, ref address, IOType.Float);
+            Vector3 position = Vector3Extensions.Read(source, ref address, IOType.Float);
             float radius = source.ToSingle(address);
             address += 4;
             return new(position, radius);

@@ -24,19 +24,21 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         public ModelFile ModelFileInfo { get; }
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output)
+        public List<ITreeItemData> Expand()
         {
+            List<ITreeItemData> result = new();
             if(TaskData is DisplayTask dtsk)
             {
-                output.Add(new(parent, new VmModelHead(dtsk.Model)));
-                output.Add(new(parent, new VmTextureHead(dtsk.TextureSet)));
+                result.Add(new VmModelHead(dtsk.Model));
+                result.Add(new VmTextureHead(dtsk.TextureSet));
 
                 if(TaskData is DebugTask dbtsk)
-                    output.Add(new(parent, new VmAnimHead(dbtsk.Motions)));
+                    result.Add(new VmAnimHead(dbtsk.Motions));
             }
+            return result;
         }
 
-        public void Select(VmTreeItem parent, VmMain main)
+        public void Select(VmTreeItem parent)
         {
 
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Reloaded.Memory.Streams.Writers;
 using static SATools.SACommon.ByteConverter;
 
@@ -8,7 +9,8 @@ namespace SATools.SAModel.Structs
     /// <summary>
     /// RGBA Color value
     /// </summary>
-    public struct Color : IDataStructOut
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct Color
     {
         #region Constants
 

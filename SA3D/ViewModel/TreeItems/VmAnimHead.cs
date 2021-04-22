@@ -21,15 +21,17 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         public bool CanExpand => Animations.Count > 0;
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output)
+        public List<ITreeItemData> Expand()
         {
+            List<ITreeItemData> result = new();
             foreach(Motion motion in Animations)
             {
-                output.Add(new(parent, new VmAnimation(motion)));
+                result.Add(new VmAnimation(motion));
             }
+            return result;
         }
 
-        public void Select(VmTreeItem parent, VmMain main)
+        public void Select(VmTreeItem parent)
         {
 
         }

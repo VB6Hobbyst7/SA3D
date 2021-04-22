@@ -1,6 +1,7 @@
 ﻿using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Structs;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Windows.Input;
 using Point = System.Drawing.Point;
 
@@ -14,7 +15,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Responsible for updating the input
         /// </summary>
-        private readonly GAPIAInputBridge _apiAccess;
+        private readonly InputBridge _bridge;
 
         /// <summary>
         /// Keys that are pressed
@@ -61,14 +62,14 @@ namespace SATools.SAModel.Graphics
                 if(value == _lockCursor)
                     return;
                 _lockCursor = value;
-                _apiAccess.OnSetMouselock(null, value);
+                _bridge.OnSetMouselock(null, value);
             }
         }
 
-        public Input(GAPIAInputBridge apiAccess)
+        public Input(InputBridge apiAccess)
         {
-            _apiAccess = apiAccess ?? throw new NotInitializedException("Inputhandler required");
-            _apiAccess.inputHandler = this;
+            _bridge = apiAccess ?? throw new NotInitializedException("Inputhandler required");
+            _bridge.inputHandler = this;
 
             _keyPressed = new();
             _keyWasPressed = new();
@@ -82,7 +83,7 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public void Update(bool focused)
         {
-            _apiAccess.PreUpdate();
+            _bridge.PreUpdate();
 
             var tKey = _keyWasPressed;
             _keyWasPressed = _keyPressed;
@@ -97,15 +98,15 @@ namespace SATools.SAModel.Graphics
 
             if(focused)
             {
-                _keyPressed.UnionWith(_apiAccess.PressedKeys);
-                _mousePressed.UnionWith(_apiAccess.PressedButtons);
+                _keyPressed.UnionWith(_bridge.PressedKeys);
+                _mousePressed.UnionWith(_bridge.PressedButtons);
             }
 
-            CursorDif = _apiAccess.CursorDelta;
-            ScrollDif = _apiAccess.ScrollDelta;
-            CursorPos = _apiAccess.CursorLocation;
+            CursorDif = _bridge.CursorDelta;
+            ScrollDif = _bridge.ScrollDelta;
+            CursorPos = _bridge.CursorLocation;
 
-            _apiAccess.PostUpdate();
+            _bridge.PostUpdate();
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace SATools.SAModel.Graphics
         /// <param name="loc">The new location that the cursor should be at</param>
         public void PlaceCursor(Vector2 loc)
         {
-            _apiAccess.SetCursorPosition(loc);
+            _bridge.SetCursorPosition(loc);
             CursorPos = loc;
         }
 

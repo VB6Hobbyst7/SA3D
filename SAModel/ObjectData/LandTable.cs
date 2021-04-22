@@ -232,7 +232,7 @@ namespace SATools.SAModel.ObjData
             string geomName;
             List<LandEntryMotion> anim = new();
             string animName;
-            Dictionary<uint, ModelData.Attach> attaches = new();
+            Dictionary<uint, Attach> attaches = new();
             string texName = "";
             uint texListPtr;
 
@@ -394,7 +394,7 @@ namespace SATools.SAModel.ObjData
         public uint Write(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
         {
             // sort the landentries
-            List<ModelData.Attach> attaches = new();
+            List<Attach> attaches = new();
 
             ushort visCount = 0;
             if(Format > LandtableFormat.SADX)

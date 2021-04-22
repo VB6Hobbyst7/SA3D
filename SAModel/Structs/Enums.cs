@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Reloaded.Memory.Streams.Writers;
-
-namespace SATools.SAModel.Structs
+﻿namespace SATools.SAModel.Structs
 {
     public enum IOType
     {
@@ -21,9 +18,8 @@ namespace SATools.SAModel.Structs
         /// Integer rotation value
         /// </summary>
         BAMS32,
-
         /// <summary>
-        /// Float quaternion (only reading and writing)
+        /// Float quaternion
         /// </summary>
         Quaternion,
 
@@ -48,22 +44,4 @@ namespace SATools.SAModel.Structs
         /// </summary>
         RGBA8,
     }
-
-    public interface IDataStructOut
-    {
-        /// <summary>
-        /// Writes the struct to a stream
-        /// </summary>
-        /// <param name="writer">Output stream</param>
-        /// <param name="type">Datatype to write object as</param>
-        void Write(EndianMemoryStream writer, IOType type);
-
-        /// <summary>
-        /// Writes the struct to a text stream as an NJAscii struct
-        /// </summary>
-        /// <param name="writer">Output text stream</param>
-        /// <param name="type">Output type</param>
-        void WriteNJA(TextWriter writer, IOType type);
-    }
-
 }

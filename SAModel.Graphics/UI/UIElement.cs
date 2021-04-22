@@ -1,6 +1,7 @@
 ﻿using SATools.SAModel.Structs;
 using System;
 using System.Drawing;
+using System.Numerics;
 
 namespace SATools.SAModel.Graphics.UI
 {

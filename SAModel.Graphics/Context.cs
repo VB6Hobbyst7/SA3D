@@ -1,8 +1,11 @@
 ﻿using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.UI;
+using SATools.SAModel.ObjData;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Interop;
 using Color = SATools.SAModel.Structs.Color;
+using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics
 {
@@ -22,10 +25,7 @@ namespace SATools.SAModel.Graphics
 
         #region private fields
 
-        /// <summary>
-        /// Graphics API Access Object
-        /// </summary>
-        protected GAPIAccessObject _apiAccessObject;
+        private bool _used;
 
         /// <summary>
         /// Whether the context was focused in the last update
@@ -69,7 +69,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Polygon display handler
         /// </summary>
-        public Material Material { get; }
+        public Material Material { get; protected set; }
 
         /// <summary>
         /// UI handler
@@ -84,7 +84,8 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// The camera of the scene
         /// </summary>
-        public Camera Camera { get; }
+        public Camera Camera
+            => Scene.Cam;
 
         /// <summary>
         /// 3D scene to hold objects and geometry
@@ -107,7 +108,7 @@ namespace SATools.SAModel.Graphics
                 _screen.Size = value;
                 Camera.Aspect = _screen.Width / (float)_screen.Height;
                 if(_graphicsInitiated)
-                    _apiAccessObject.UpdateViewport(_screen, true);
+                    _renderingBridge.UpdateViewport(_screen, true);
             }
         }
 
@@ -121,7 +122,7 @@ namespace SATools.SAModel.Graphics
             {
                 _screen.Location = value;
                 if(_graphicsInitiated)
-                    _apiAccessObject.UpdateViewport(_screen, false);
+                    _renderingBridge.UpdateViewport(_screen, false);
             }
         }
 
@@ -134,35 +135,51 @@ namespace SATools.SAModel.Graphics
             set
             {
                 _backgroundColor = value;
-                _apiAccessObject.UpdateBackgroundColor(_backgroundColor);
+                _renderingBridge.UpdateBackgroundColor(_backgroundColor);
             }
         }
 
         #endregion
 
+        #region Rendering data
+
+        protected readonly BufferingBridge _bufferingBridge;
+
+        protected readonly RenderingBridge _renderingBridge;
+
+        private readonly InputBridge _inputBridge;
+
+        #endregion
+
+
         /// <summary>
         /// Creates a new render context
         /// </summary>
         /// <param name="inputUpdater"></param>
-        public Context(Rectangle screen, GAPIAccessObject apiAccessObject)
+        public Context(Rectangle screen, RenderingBridge renderingBridge, BufferingBridge bufferingBridge)
         {
-            _apiAccessObject = apiAccessObject;
+            _renderingBridge = renderingBridge;
+            _bufferingBridge = bufferingBridge;
+            _inputBridge = new();
 
             _screen = screen;
-            Camera = new Camera(screen.Width / (float)screen.Height, apiAccessObject);
-            Material = new Material(apiAccessObject);
-            Canvas = new Canvas(apiAccessObject);
-            Input = new Input(apiAccessObject.InputBridge);
-            Scene = new Scene(Camera);
+            Material = new Material(_bufferingBridge);
+            Canvas = new Canvas(_renderingBridge);
+            Input = new Input(_inputBridge);
+            Scene = new Scene(screen.Width / (float)screen.Height, _bufferingBridge);
             _backgroundColor = new Color(0x60, 0x60, 0x60);
-            Scene.OnAttachLoadedEvent += apiAccessObject.OnAttachLoad;
         }
 
         /// <summary>
         /// Starts the context as an independent window
         /// </summary>
         public void AsWindow()
-            => _apiAccessObject.AsWindow(this);
+        {
+            if(_used)
+                throw new System.InvalidOperationException("Context object was already used before!");
+            _used = true;
+            _renderingBridge.AsWindow(this, _inputBridge);
+        }
 
         /// <summary>
         /// Returns the context as a WPF control
@@ -170,7 +187,12 @@ namespace SATools.SAModel.Graphics
         /// <param name="windowSource"></param>
         /// <returns></returns>
         public System.Windows.FrameworkElement AsControl()
-            => _apiAccessObject.AsControl(this);
+        {
+            if(_used)
+                throw new System.InvalidOperationException("Context object was already used before!");
+            _used = true;
+            return _renderingBridge.AsControl(this, _inputBridge);
+        }
 
         /// <summary>
         /// Gets called when graphics are being initialized
@@ -178,7 +200,7 @@ namespace SATools.SAModel.Graphics
         public void GraphicsInit()
         {
             if(!_graphicsInitiated)
-                _apiAccessObject.GraphicsInit(this);
+                _renderingBridge.InitializeGraphics(Resolution, BackgroundColor);
             _graphicsInitiated = true;
         }
 
@@ -195,10 +217,52 @@ namespace SATools.SAModel.Graphics
             _wasFocused = Focused == this;
         }
 
-        public virtual void Render()
+        public void Render()
         {
-            _apiAccessObject.Render(this);
+            Material.ViewPos = Camera.Realposition;
+            Material.ViewDir = Camera.Orthographic ? Camera.Forward : default;
+
+            _bufferingBridge.ClearWeights();
+
+            // get rendermeshes for the
+            var (opaqueGeo, transparentGeo, all) = RenderHelper.PrepareLandEntries(Scene.VisualGeometry, Camera);
+            var models = RenderHelper.PrepareModels(Scene.GameTasks, null, Camera, _bufferingBridge);
+
+            // First render opaque stuff
+            _renderingBridge.ToggleOpaque();
+
+            Material.BufferTextureSet = Scene.LandTextureSet;
+            opaqueGeo.RenderLandentries(Material, _renderingBridge);
+            
+            foreach(var (task, opaque, transparent) in models)
+            {
+                Material.BufferTextureSet = task.TextureSet;
+                foreach(var m in opaque)
+                    _renderingBridge.RenderMesh(m.meshes, m.matrices, Material);
+            }
+
+            // Then transparent stuff
+            _renderingBridge.ToggleTransparent();
+
+            Material.BufferTextureSet = Scene.LandTextureSet;
+            transparentGeo.RenderLandentries(Material, _renderingBridge);
+
+            foreach(var (task, opaque, transparent) in models)
+            {
+                Material.BufferTextureSet = task.TextureSet;
+                foreach(var m in transparent)
+                    _renderingBridge.RenderMesh(m.meshes, m.matrices, Material);
+            }
+
+            // this is to implement debug stuff
+            ExtraRenderStuff(all, opaqueGeo, transparentGeo, models);
+
             Canvas.Render(_screen.Width, _screen.Height);
+        }
+
+        protected internal virtual void ExtraRenderStuff(List<LandEntry> geoData, LandEntryRenderBatch opaqueGeo, LandEntryRenderBatch transparenGeo, List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> models)
+        {
+
         }
     }
 }

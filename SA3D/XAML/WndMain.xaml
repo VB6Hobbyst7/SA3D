@@ -37,16 +37,16 @@
                         <MenuItem Header="SA2" IsEnabled="false"/>
                     </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Open" InputGestureText="Ctrl+O" Icon="{StaticResource ico_OpenFile}" Command="{Binding Cmd_Open3DFile}"/>
+                <MenuItem Header="Open" InputGestureText="Ctrl+O" Icon="{StaticResource ico_OpenFile}" Click="Open3DFile"/>
                 <MenuItem Header="Save" InputGestureText="Ctrl+S" IsEnabled="false" Icon="{StaticResource ico_Save}"/>
                 <MenuItem Header="Save as..." InputGestureText="Ctrl+Shift+S" IsEnabled="false" Icon="{StaticResource ico_SaveAs}" />
                 <Separator/>
-                <MenuItem Header="Import" InputGestureText="Ctrl+I" Icon="{StaticResource ico_Import}">
+                <MenuItem Header="Import" IsEnabled="{Binding ApplicationModeNotNone}" Icon="{StaticResource ico_Import}">
                     <MenuItem Header="Buffer" IsEnabled="false"/>
                     <MenuItem Header="GLTF" Click="ImportGLTF"/>
                     <MenuItem Header="Model file" IsEnabled="false"/>
                 </MenuItem>
-                <MenuItem Header="Export" InputGestureText="Ctrl+E" Icon="{StaticResource ico_Export}">
+                <MenuItem Header="Export" IsEnabled="{Binding ApplicationModeNotNone}" Icon="{StaticResource ico_Export}">
                     <MenuItem Header="Buffer" IsEnabled="false"/>
                     <MenuItem Header="GLTF" IsEnabled="False"/>
                     <MenuItem Header="Model file" IsEnabled="false"/>
@@ -79,11 +79,11 @@
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
 
             <TabControl Grid.Column="2">
-                <TabItem Header="Geometry">
+                <TabItem Header="Geometry" IsEnabled="{Binding EnableGeometryTab}">
                 </TabItem>
-                <TabItem Header="Objects" DataContext="{Binding ObjectTree}">
+                <TabItem Header="Objects" IsEnabled="{Binding EnableObjectTab}">
 
-                    <Grid>
+                    <Grid DataContext="{Binding ObjectTree}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="5"/>

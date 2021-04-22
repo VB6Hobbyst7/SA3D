@@ -1,16 +1,11 @@
 ﻿using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
-using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.MathHelper;
-using CVector3 = System.Numerics.Vector3;
-using Matrix4 = System.Numerics.Matrix4x4;
 
 namespace SATools.SAModel.ModelData
 {
@@ -25,13 +20,13 @@ namespace SATools.SAModel.ModelData
         public struct VertexWeights : IComparable<VertexWeights>, IEquatable<VertexWeights>
         {
 
-            public CVector3 Position { get; set; }
+            public Vector3 Position { get; set; }
 
-            public CVector3 Normal { get; set; }
+            public Vector3 Normal { get; set; }
 
             public (int joint, float weight)[] Skinning { get; set; }
 
-            public VertexWeights(CVector3 position, CVector3 normal, (int joint, float weight)[] skinning)
+            public VertexWeights(Vector3 position, Vector3 normal, (int joint, float weight)[] skinning)
             {
                 Position = position;
                 Normal = normal;
@@ -113,7 +108,7 @@ namespace SATools.SAModel.ModelData
         /// <param name="vertices">Vertex data</param>
         /// <param name="displayMeshes">Polygon info</param>
         /// <param name="format">Attach format to convert to</param>
-        public static void FromWeightedBuffer(NJObject[] nodes, Matrix4 meshMatrix, VertexWeights[] vertices, BufferMesh[] displayMeshes, AttachFormat format)
+        public static void FromWeightedBuffer(NJObject[] nodes, Matrix4x4 meshMatrix, VertexWeights[] vertices, BufferMesh[] displayMeshes, AttachFormat format)
         {
             // Check if the format that we wanna convert to even supports weights
             if(format == AttachFormat.BASIC || format == AttachFormat.GC)
@@ -137,17 +132,17 @@ namespace SATools.SAModel.ModelData
 
             // last thing to do: create the buffer meshes
             // first we gotta get the matrices
-            (Matrix4 pos, Matrix4 nrm, List<BufferVertex> verts)[] matrices = new (Matrix4 pos, Matrix4 nrm, List<BufferVertex> verts)[nodes.Length];
+            (Matrix4x4 pos, Matrix4x4 nrm, List<BufferVertex> verts)[] matrices = new (Matrix4x4 pos, Matrix4x4 nrm, List<BufferVertex> verts)[nodes.Length];
 
-            Dictionary<NJObject, Matrix4> worldMatrices = new();
+            Dictionary<NJObject, Matrix4x4> worldMatrices = new();
             for(int i = 0; i < nodes.Length; i++)
             {
-                Matrix4 nodeMatrix = nodes[i].GetWorldMatrix(worldMatrices);
-                Matrix4.Invert(nodeMatrix, out Matrix4 NodeMatrixI);
-                Matrix4 posMatrix = NodeMatrixI * meshMatrix;
+                Matrix4x4 nodeMatrix = nodes[i].GetWorldMatrix(worldMatrices);
+                Matrix4x4.Invert(nodeMatrix, out Matrix4x4 NodeMatrixI);
+                Matrix4x4 posMatrix = NodeMatrixI * meshMatrix;
 
-                Matrix4.Invert(posMatrix, out Matrix4 posMatrixI);
-                Matrix4 nrm = Matrix4.Transpose(posMatrixI);
+                Matrix4x4.Invert(posMatrix, out Matrix4x4 posMatrixI);
+                Matrix4x4 nrm = Matrix4x4.Transpose(posMatrixI);
 
                 matrices[i] = (posMatrix, nrm, new());
             }
@@ -159,20 +154,20 @@ namespace SATools.SAModel.ModelData
                 if(v.Skinning.Length == 0)
                 {
                     (var posmtx, var nrmmtx, var list) = matrices[0];
-                    var pos = CVector3.Transform(v.Position, posmtx);
-                    var nrm = CVector3.Transform(v.Normal, nrmmtx);
+                    var pos = Vector3.Transform(v.Position, posmtx);
+                    var nrm = Vector3.Transform(v.Normal, nrmmtx);
 
-                    list.Add(new BufferVertex(new(pos.X, pos.Y, pos.Z), new(nrm.X, nrm.Y, nrm.Z), vIndex));
+                    list.Add(new BufferVertex(pos, nrm, vIndex));
                 }
                 else
                 {
                     foreach((int index, float weight) in v.Skinning)
                     {
                         (var posmtx, var nrmmtx, var list) = matrices[index];
-                        var pos = CVector3.Transform(v.Position, posmtx);
-                        var nrm = CVector3.Transform(v.Normal, nrmmtx);
+                        var pos = Vector3.Transform(v.Position, posmtx);
+                        var nrm = Vector3.Transform(v.Normal, nrmmtx);
 
-                        list.Add(new BufferVertex(new(pos.X, pos.Y, pos.Z), new(nrm.X, nrm.Y, nrm.Z), vIndex, weight));
+                        list.Add(new BufferVertex(pos, nrm, vIndex, weight));
                     }
                 }
                 vIndex++;
@@ -280,20 +275,12 @@ namespace SATools.SAModel.ModelData
             return new(distinctCorners, triangleVertices, original.Material.Clone(), newReadOffset);
         }
 
-        private static Matrix4 GetWorldMatrix(this NJObject njobject, Dictionary<NJObject, Matrix4> worldMatrices)
+        private static Matrix4x4 GetWorldMatrix(this NJObject njobject, Dictionary<NJObject, Matrix4x4> worldMatrices)
         {
-            if(worldMatrices.TryGetValue(njobject, out Matrix4 local))
+            if(worldMatrices.TryGetValue(njobject, out Matrix4x4 local))
                 return local;
 
-            Matrix4 translation = Matrix4.CreateTranslation(njobject.Position.X, njobject.Position.Y, njobject.Position.Z);
-            Matrix4 scale = Matrix4.CreateScale(njobject.Scale.X, njobject.Scale.Y, njobject.Scale.Z);
-
-            Matrix4 rotX = Matrix4.CreateRotationX(DegToRad(njobject.Rotation.X));
-            Matrix4 rotY = Matrix4.CreateRotationY(DegToRad(njobject.Rotation.Y));
-            Matrix4 rotZ = Matrix4.CreateRotationZ(DegToRad(njobject.Rotation.Z));
-            Matrix4 rotation = njobject.RotateZYX ? rotZ * rotY * rotX : rotX * rotY * rotZ;
-
-            local = scale * rotation * translation;
+            local = njobject.LocalMatrix;
 
             if(njobject.Parent != null)
                 local *= njobject.Parent.GetWorldMatrix(worldMatrices);

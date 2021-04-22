@@ -73,7 +73,7 @@ namespace SATools.SA3D
                 }
             }
 
-            DebugContext context = new(default, new GLAPIAccessObject());
+            DebugContext context = OpenGLBridge.CreateGLDebugContext(default);
 
             string motionPath = null;
             string texturePath = null;
@@ -154,10 +154,9 @@ namespace SATools.SA3D
                     if(motionPath != null)
                     {
                         task.Motions.Add(Motion.ReadFile(motionPath, file.Model.CountAnimated()));
-                        task.AnimationSpeed = 60;
                     }
 
-                    context.Scene.AddDisplayTask(task);
+                    context.Scene.AddTask(task);
                 }
                 else
                 {

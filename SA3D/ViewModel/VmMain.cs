@@ -6,13 +6,15 @@ using SATools.SAModel.Graphics;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 
 namespace SATools.SA3D.ViewModel
 {
-    internal enum Mode
+    public enum Mode
     {
+        None,
         Model,
         Level,
         ProjectSA1,
@@ -24,84 +26,104 @@ namespace SATools.SA3D.ViewModel
     /// </summary>
     public class VmMain : BaseViewModel
     {
-        // <summary>
-        // Application mode
-        // </summary>
-        //private Mode _applicationMode;
+        public static DebugContext Context { get; private set; }
+
+        #region Application mode Stuff
+
+        private Mode _appMode;
 
         /// <summary>
-        /// Render context being displayed
+        /// Application mode
         /// </summary>
-        public DebugContext RenderContext { get; }
-
-        public RelayCommand Cmd_Open3DFile
-            => new(Open3DFile);
-
-        public VmObjectTree ObjectTree { get; }
-
-        public VmMain(DebugContext renderContext)
+        public Mode ApplicationMode
         {
-            RenderContext = renderContext;
-            ObjectTree = new VmObjectTree(this);
-        }
-
-        public void AddModel(NJObject model, TextureSet textures, Motion[] motions)
-        {
-            DebugTask dbtsk = new(model, textures);
-            if(motions != null)
-                dbtsk.Motions.AddRange(motions);
-            RenderContext.Scene.AddDisplayTask(dbtsk);
-            ObjectTree.Objects.Add(new(null, new VmObject(dbtsk, null)));
-        }
-
-        /// <summary>
-        /// Opens and loads a model/level file
-        /// </summary>
-        private void Open3DFile()
-        {
-            OpenFileDialog ofd = new()
+            get => _appMode;
+            private set
             {
-                Filter = "SA3D File(*.*mdl, *.nj, *.*lvl)|*.SA1MDL;*.SA2MDL;*.SA2BMDL;*.NJ;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
-            };
-
-            if(ofd.ShowDialog() == true)
-            {
-                // reading the file indicator
-                byte[] file = File.ReadAllBytes(ofd.FileName);
-                try
-                {
-                    var mdlFile = SAModel.ObjData.ModelFile.Read(file, ofd.FileName);
-                    if(mdlFile != null)
-                    {
-                        //_applicationMode = Mode.Model;
-                        DebugTask task = new(mdlFile.Model, null, Path.GetFileNameWithoutExtension(ofd.FileName));
-                        RenderContext.Scene.AddDisplayTask(task);
-                        ObjectTree.Objects.Add(new(null, new VmObject(task, mdlFile)));
-                        return;
-                    }
-                }
-                catch(Exception e)
-                {
-                    MessageBox.Show("Error while reading model file!\n " + e.Message, e.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-                try
-                {
-                    var ltbl = SAModel.ObjData.LandTable.ReadFile(file);
-                    if(ltbl != null)
-                    {
-                        //_applicationMode = Mode.Level;
-                        RenderContext.Scene.LoadLandtable(ltbl);
-                        return;
-                    }
-                }
-                catch(Exception e)
-                {
-                    MessageBox.Show("Error while reading level file!\n " + e.Message, e.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-                MessageBox.Show("File not in any valid format", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Error);
+                _appMode = value;
+                OnPropertyChanged(nameof(ApplicationModeNotNone));
+                OnPropertyChanged(nameof(EnableObjectTab));
+                OnPropertyChanged(nameof(EnableGeometryTab));
             }
         }
+
+        /// <summary>
+        /// Whether the application mode hasnt been set yet
+        /// </summary>
+        public bool ApplicationModeNotNone
+            => ApplicationMode != Mode.None;
+
+        /// <summary>
+        /// Whether to get Access to the model tab
+        /// </summary>
+        public bool EnableObjectTab
+            => ApplicationMode is not Mode.Level and not Mode.None;
+
+        /// <summary>
+        /// Whether to get Access to the Geometry Tab
+        /// </summary>
+        public bool EnableGeometryTab
+            => ApplicationMode is not Mode.Model and not Mode.None;
+
+        #endregion
+
+
+        /// <summary>
+        /// Object treeview data
+        /// </summary>
+        public VMDataTree ObjectTree { get; }
+
+        /// <summary>
+        /// Geometry treeview data
+        /// </summary>
+        public VMDataTree GeometryTree { get; }
+
+        public VmMain(DebugContext context)
+        {
+            Context = context;
+            ObjectTree = new VMDataTree(this);
+            GeometryTree = new VMDataTree(this);
+        }
+
+        public void New3DFile(Mode mode)
+        {
+            ApplicationMode = mode;
+            switch(mode)
+            {
+                case Mode.Model:
+                    
+                    DebugTask task = new(null, null);
+                    Context.Scene.AddTask(task);
+                    break;
+                case Mode.Level:
+                    InitGeometryTree(null);
+                    break;
+                case Mode.None:
+                case Mode.ProjectSA1:
+                case Mode.ProjectSA2:
+                default:
+                    break;
+            }
+        }
+
+        public void LoadMdl(DebugTask task)
+        {
+            
+            ApplicationMode = Mode.Model;
+            Context.Scene.AddTask(task);
+            ObjectTree.Objects.Add(new(null, new VmObject(task, null)));
+        }
+
+        private void InitGeometryTree(LandTable ltbl)
+        {
+            Context.Scene.LoadLandtable(ltbl);
+
+            GeometryTree.Objects.Clear();
+
+            GeometryTree.Objects.Add(new VmTreeItem(null, new VmGeometryHead(Context.Scene.VisualGeometry, false)));
+            GeometryTree.Objects.Add(new VmTreeItem(null, new VmGeometryHead(Context.Scene.CollisionGeometry, true)));
+            GeometryTree.Objects.Add(new VmTreeItem(null, new VmTextureHead(Context.Scene.LandTextureSet)));
+        }
+
     }
 }

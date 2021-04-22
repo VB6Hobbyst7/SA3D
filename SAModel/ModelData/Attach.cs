@@ -135,6 +135,36 @@ namespace SATools.SAModel.ModelData
             throw new NotSupportedException("Standard attach doesnt have an available NJA format");
         }
 
+        public (BufferMesh[] opaque, BufferMesh[] transparent) GetDisplayMeshes()
+        {
+            BufferMesh[] result = new BufferMesh[MeshData.Length];
+            int opaqueCount = 0;
+            int transparentCount = result.Length - 1;
+
+            for(int i = 0; i < result.Length; i++)
+            {
+                bool? useAlpha = MeshData[i].Material?.UseAlpha;
+                if(useAlpha == true)
+                {
+                    result[transparentCount] = MeshData[i];
+                    transparentCount--;
+                }
+                else if(useAlpha == false)
+                {
+                    result[opaqueCount] = MeshData[i];
+                    opaqueCount++;
+                }
+            }
+            transparentCount++;
+
+            BufferMesh[] transparent = new BufferMesh[result.Length - transparentCount];
+            if(transparent.Length > 0)
+                Array.Copy(result, transparentCount, transparent, 0, transparent.Length);
+            Array.Resize(ref result, opaqueCount);
+
+            return (result, transparent);
+        }
+
         /// <summary>
         /// Creates a BufferMesh set which acurately depicts the current model
         /// </summary>

@@ -1,6 +1,7 @@
 ﻿using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Structs;
 using System;
+using System.Numerics;
 using static SATools.SACommon.MathHelper;
 
 namespace SATools.SAModel.Graphics
@@ -12,22 +13,66 @@ namespace SATools.SAModel.Graphics
     {
         public const float NearPlane = 1f;
 
-        private readonly IGAPIACamera _apiAccess;
+        #region private field
 
+        /// <summary>
+        /// For <see cref="Position"/>
+        /// </summary>
         private Vector3 _position;
+
+        /// <summary>
+        /// for <see cref="Rotation"/>
+        /// </summary>
         private Vector3 _rotation;
 
+        /// <summary>
+        /// for <see cref="Forward"/>
+        /// </summary>
         private Vector3 _forward;
+
+        /// <summary>
+        /// for <see cref="Right"/>
+        /// </summary>
         private Vector3 _right;
+
+        /// <summary>
+        /// for <see cref="Up"/>
+        /// </summary>
         private Vector3 _up;
 
+        /// <summary>
+        /// for <see cref="Orthographic"/>
+        /// </summary>
         private bool _orthographic;
+
+        /// <summary>
+        /// for <see cref="Orbiting"/>
+        /// </summary>
         private bool _orbiting;
+
+        /// <summary>
+        /// for <see cref="Distance"/>
+        /// </summary>
         private float _distance;
 
+        /// <summary>
+        /// for <see cref="FieldOfView"/>
+        /// </summary>
         private float _fov;
+
+        /// <summary>
+        /// for <see cref="Aspect"/>
+        /// </summary>
         private float _aspect;
+
+        /// <summary>
+        /// for <see cref="ViewDistance"/>
+        /// </summary>
         private float _viewDist;
+
+        #endregion
+
+        #region properties
 
         /// <summary>
         /// Position of the camera in world space <br/>
@@ -46,13 +91,8 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Position of camera in world space (regardless of orbit mode
         /// </summary>
-        public Vector3 Realposition
-        {
-            get
-            {
-                return _position - _forward * _distance;
-            }
-        }
+        public Vector3 Realposition 
+            => _position - _forward * _distance;
 
         /// <summary>
         /// The rotation of the camera in world space
@@ -63,35 +103,34 @@ namespace SATools.SAModel.Graphics
             set
             {
                 _rotation = value;
-                _apiAccess.UpdateDirections(_rotation, out _up, out _forward, out _right);
-                UpdateViewMatrix();
+                UpdateDirections();
             }
         }
 
         /// <summary>
         /// The Cameras global forward Direction
         /// </summary>
-        public Vector3 Forward => _forward;
+        public Vector3 Forward 
+            => _forward;
 
         /// <summary>
         /// The Cameras global right Direction
         /// </summary>
-        public Vector3 Right => _right;
+        public Vector3 Right 
+            => _right;
 
         /// <summary>
         /// The Cameras global up Direction
         /// </summary>
-        public Vector3 Up => _up;
+        public Vector3 Up 
+            => _up;
 
         /// <summary>
         /// Whether the control scheme is set to orbiting
         /// </summary>
         public bool Orbiting
         {
-            get
-            {
-                return _orbiting;
-            }
+            get => _orbiting;
             set
             {
                 if(_orbiting == value)
@@ -111,10 +150,7 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public float Distance
         {
-            get
-            {
-                return _distance;
-            }
+            get => _distance;
             set
             {
                 _distance = Math.Min(_viewDist, Math.Max(NearPlane, value));
@@ -179,21 +215,23 @@ namespace SATools.SAModel.Graphics
         }
 
         /// <summary>
-        /// The direction in which the camera is viewing
+        /// Camera View Matrix
         /// </summary>
-        public Vector3 ViewDir
-        {
-            get => _forward;
-        }
+        public Matrix4x4 ViewMatrix { get; private set; }
+
+        /// <summary>
+        /// Camera projection matrix
+        /// </summary>
+        public Matrix4x4 ProjectionMatrix { get; private set; }
+
+        #endregion
 
         /// <summary>
         /// Creates a new camera from the resolution ratio
         /// </summary>
         /// <param name="aspect"></param>
-        public Camera(float aspect, IGAPIACamera apiAccess)
+        public Camera(float aspect)
         {
-            _apiAccess = apiAccess;
-
             _orbiting = true;
             _distance = 50;
             _fov = DegToRad(50);
@@ -201,39 +239,84 @@ namespace SATools.SAModel.Graphics
             _orthographic = false;
             _viewDist = 3000;
 
-            _apiAccess.UpdateDirections(_rotation, out _up, out _forward, out _right);
-            UpdateViewMatrix();
+            UpdateDirections();
             UpdateProjectionMatrix();
         }
 
+        /// <summary>
+        /// Recalculates the directions
+        /// </summary>
+        private void UpdateDirections()
+        {
+            Matrix4x4 rot = Matrix4x4.Transpose(Vector3Extensions.CreateRotationMatrix(_rotation, true));
+
+            _forward =  Vector3.Normalize( Vector3.TransformNormal(-Vector3.UnitZ, rot) );
+            _up =       Vector3.Normalize( Vector3.TransformNormal( Vector3.UnitY, rot) );
+            _right =    Vector3.Normalize( Vector3.TransformNormal(-Vector3.UnitX, rot) );
+
+            UpdateViewMatrix();
+        }
+
+        /// <summary>
+        /// Recalculates the view matrix
+        /// </summary>
         private void UpdateViewMatrix()
         {
+            Matrix4x4 posMtx = Matrix4x4.CreateTranslation(-_position);
+            Matrix4x4 rotMtx = Vector3Extensions.CreateRotationMatrix(_rotation, true);
+
+            ViewMatrix = posMtx * rotMtx;
+
             if(_orbiting)
             {
-                _apiAccess.SetOrbitViewMatrix(_position, _rotation, _forward * (_orthographic ? _viewDist * 0.5f : _distance));
-            }
-            else
-            {
-                _apiAccess.SetViewMatrix(_position, _rotation);
+                Vector3 orbitOffset = _forward * (_orthographic ? _viewDist * 0.5f : _distance);
+                Matrix4x4 orbitMatrix = Matrix4x4.CreateTranslation(orbitOffset);
+                ViewMatrix = orbitMatrix * ViewMatrix;
             }
         }
 
+        /// <summary>
+        /// Recalculates projection matrix
+        /// </summary>
         private void UpdateProjectionMatrix()
         {
+            Matrix4x4 result = default;
+
             if(_orthographic && _orbiting)
             {
-                _apiAccess.SetOrtographicMatrix(_distance * _aspect, _distance, NearPlane, _viewDist);
+                var invRL = 1.0f / (_distance * _aspect);
+                var invTB = 1.0f / _distance;
+                var invFN = 1.0f / (_viewDist - NearPlane);
+
+                result.M11 = 2 * invRL;
+                result.M22 = 2 * invTB;
+                result.M33 = -2 * invFN;
+
+                result.M43 = -(_viewDist + NearPlane) * invFN;
             }
             else
             {
-                _apiAccess.SetPerspectiveMatrix(_fov, _aspect, NearPlane, _viewDist);
+                var top = NearPlane * MathF.Tan(0.5f * _fov);
+                var right = top * _aspect;
+
+                result.M11 = 2.0f * NearPlane / (right * 2);
+                result.M22 = 2.0f * NearPlane / (top * 2);
+                result.M33 = -(_viewDist + NearPlane) / (_viewDist - NearPlane);
+                result.M34 = -1;
+                result.M43 = -(2.0f * _viewDist * NearPlane) / (_viewDist - NearPlane);
             }
+            ProjectionMatrix = result;
         }
 
+        /// <summary>
+        /// Checks wether bounds are rendable
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
         public bool CanRender(Bounds bounds)
         {
-            Vector3 viewLocation = _apiAccess.ToViewPos(bounds.Position);
-            return viewLocation.Length - bounds.Radius <= _viewDist
+            Vector3 viewLocation = Vector3.Transform(bounds.Position, ViewMatrix);
+            return viewLocation.Length() - bounds.Radius <= _viewDist
                 && viewLocation.Z <= bounds.Radius;
         }
     }

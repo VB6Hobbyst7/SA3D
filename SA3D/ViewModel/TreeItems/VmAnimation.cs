@@ -22,12 +22,9 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         public bool CanExpand => false;
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output)
-        {
-            
-        }
+        public List<ITreeItemData> Expand() => null;
 
-        public void Select(VmTreeItem parent, VmMain main)
+        public void Select(VmTreeItem parent)
         {
             if(((VmObject)parent.Parent.Data).TaskData is DebugTask dbtsk)
             {

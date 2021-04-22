@@ -4,8 +4,7 @@ using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
-using System;
-using System.Collections.ObjectModel;
+using System.Numerics;
 
 namespace SATools.SAModel.Graphics
 {
@@ -17,23 +16,14 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Graphics API Access for buffering Materials
         /// </summary>
-        protected readonly IGAPIAMaterial _apiAccess;
+        protected readonly BufferingBridge _bridge;
 
-        protected BufferMaterial _bufferMaterial;
+        private BufferMaterial _bufferMaterial;
 
-        protected TextureSet _bufferTextureSet;
-
-        public TextureSet BufferTextureSet
-        {
-            get => _bufferTextureSet;
-            set
-            {
-                if(_bufferTextureSet == value)
-                    return;
-                _bufferTextureSet = value;
-                _apiAccess.BufferTextureSet(value);
-            }
-        }
+        /// <summary>
+        /// Texture set to use
+        /// </summary>
+        public TextureSet BufferTextureSet { get; set; }
 
         /// <summary>
         /// Active material
@@ -63,64 +53,75 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Base buffer data
         /// </summary>
-        public ReadOnlyCollection<byte> Buffer { get; private set; }
+        public byte[] Buffer { get; private set; }
 
-        protected byte[] _buffer;
-
-        public Material(IGAPIAMaterial apiAccess)
+        public Material(BufferingBridge bridge)
         {
-            _apiAccess = apiAccess;
-            _buffer = new byte[104];
-            Buffer = Array.AsReadOnly(_buffer);
+            _bridge = bridge;
+            Buffer = new byte[104];
             _bufferMaterial = new BufferMaterial();
         }
 
-        /// <summary>
-        /// Sets the buffer material to a new instance and buffers it
-        /// </summary>
-        public void ResetBufferMaterial() => BufferMaterial = new BufferMaterial();
-
-        /// <summary>
-        /// Buffers the material into the byte buffer
-        /// </summary>
-        public virtual void ReBuffer()
+        protected void UpdateBuffer()
         {
-            using(ExtendedMemoryStream stream = new(_buffer))
-            {
-                LittleEndianMemoryStream writer = new(stream);
+            using ExtendedMemoryStream stream = new(Buffer);
+            LittleEndianMemoryStream writer = new(stream);
 
-                ViewPos.Write(writer, IOType.Float);
-                writer.Write(0);
+            ViewPos.Write(writer, IOType.Float);
+            writer.Write(0);
 
-                ViewDir.Write(writer, IOType.Float);
-                writer.Write(0);
+            ViewDir.Write(writer, IOType.Float);
+            writer.Write(0);
 
-                new Vector3(0, 1, 0).Write(writer, IOType.Float);
-                writer.Write(0);
+            new Vector3(0, 1, 0).Write(writer, IOType.Float);
+            writer.Write(0);
 
-                WriteColor(writer, BufferMaterial.Diffuse);
-                WriteColor(writer, BufferMaterial.Specular);
-                WriteColor(writer, BufferMaterial.Ambient);
+            WriteColor(writer, BufferMaterial.Diffuse);
+            WriteColor(writer, BufferMaterial.Specular);
+            WriteColor(writer, BufferMaterial.Ambient);
 
-                writer.Write(BufferMaterial.SpecularExponent);
+            writer.Write(BufferMaterial.SpecularExponent);
 
-                var matFlags = BufferMaterial.MaterialFlags;
-                if(BufferTextureSet == null)
-                    matFlags &= ~MaterialFlags.useTexture;
+            var matFlags = BufferMaterial.MaterialFlags;
+            if(BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
+                matFlags &= ~MaterialFlags.useTexture;
 
-                int flags = (ushort)matFlags;
-                writer.Write(flags);
-            }
-
-            _apiAccess.MaterialPostBuffer(this);
+            int flags = (ushort)matFlags;
+            writer.Write(flags);
         }
 
-        protected static void WriteColor(LittleEndianMemoryStream writer, Color c)
+        protected virtual void ReBuffer()
+        {
+            UpdateBuffer();
+            _bridge.BufferMaterial(this);
+        }
+
+        private static void WriteColor(LittleEndianMemoryStream writer, Color c)
         {
             writer.Write(c.RedF);
             writer.Write(c.GreenF);
             writer.Write(c.BlueF);
             writer.Write(c.AlphaF);
+        }
+    }
+
+    /// <summary>
+    /// Material with special debug properties
+    /// </summary>
+    public class DebugMaterial : Material
+    {
+        /// <summary>
+        /// Material rendering mode
+        /// </summary>
+        public RenderMode RenderMode { get; set; }
+
+        public DebugMaterial(BufferingBridge bridge) : base(bridge) { }
+
+        protected override void ReBuffer()
+        {
+            UpdateBuffer();
+            Buffer[^1] = (byte)RenderMode;
+            _bridge.BufferMaterial(this);
         }
     }
 }

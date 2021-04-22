@@ -325,6 +325,7 @@ namespace SATools.SAModel.ModelData.GC
     /// </summary>
     public static partial class GCExtensions
     {
+
         public static IOType ToStructType(this DataType typ)
         {
             switch(typ)

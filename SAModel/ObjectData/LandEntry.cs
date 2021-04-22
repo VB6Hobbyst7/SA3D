@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
@@ -16,7 +17,13 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Model for the geometry
         /// </summary>
-        private NJObject _model;
+        private readonly NJObject _model;
+
+        /// <summary>
+        /// Name of the Landentry
+        /// </summary>
+        public string Name 
+            => _model.Name;
 
         /// <summary>
         /// World space bounds
@@ -26,15 +33,15 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// The mesh used by the geometry
         /// </summary>
-        public ModelData.Attach Attach
+        public Attach Attach
         {
             get => _model.Attach;
             set
             {
                 if(value == null)
                     throw new NullReferenceException("Attach cant be null!");
-                ModelBounds = new Bounds(value.MeshBounds.Position + Position, value.MeshBounds.Radius * Scale.GreatestValue);
-                Attach = value;
+                ModelBounds = new Bounds(value.MeshBounds.Position + Position, value.MeshBounds.Radius * Scale.GreatestValue());
+                _model.Attach = value;
             }
         }
 
@@ -68,10 +75,18 @@ namespace SATools.SAModel.ObjData
             get => _model.Scale;
             set
             {
-                ModelBounds = new Bounds(ModelBounds.Position, Attach.MeshBounds.Radius * value.GreatestValue);
+                ModelBounds = new Bounds(ModelBounds.Position, Attach.MeshBounds.Radius * value.GreatestValue());
                 _model.Scale = value;
             }
         }
+
+        public Quaternion QuaternionRotation
+        {
+            set => _model.QuaternionRotation = value;
+        }
+
+        public Matrix4x4 LocalMatrix
+            => _model.LocalMatrix;
 
         /// <summary>
         /// Polygon information (visual and/or collision information)
@@ -102,7 +117,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="rotation">World space rotation</param>
         /// <param name="scale">World space scale</param>
         /// <param name="flags">Surface flags</param>
-        public LandEntry(ModelData.Attach attach)
+        public LandEntry(Attach attach)
         {
             if(attach == null)
                 throw new ArgumentNullException("attach", "Attach cant be null!");
@@ -134,7 +149,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels"></param>
         /// <param name="attaches"></param>
         /// <returns></returns>
-        public static LandEntry Read(byte[] source, uint address, uint imageBase, AttachFormat format, LandtableFormat ltblFormat, Dictionary<uint, string> labels, Dictionary<uint, ModelData.Attach> attaches)
+        public static LandEntry Read(byte[] source, uint address, uint imageBase, AttachFormat format, LandtableFormat ltblFormat, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             Bounds bounds = Bounds.Read(source, ref address);
             if(ltblFormat < LandtableFormat.SA2)

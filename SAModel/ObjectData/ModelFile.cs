@@ -381,13 +381,13 @@ namespace SATools.SAModel.ObjData
         public static void WriteNJA(string outputPath, bool DX, NJObject model, string[] textures = null)
         {
             NJObject[] objects = model.GetObjects();
-            ModelData.Attach[] attaches = objects.Select(x => x.Attach).Distinct().ToArray();
+            Attach[] attaches = objects.Select(x => x.Attach).Distinct().ToArray();
 
             AttachFormat fmt = AttachFormat.Buffer;
             if(attaches.Length > 0)
             {
                 fmt = attaches[0].Format;
-                foreach(ModelData.Attach atc in attaches)
+                foreach(Attach atc in attaches)
                     if(fmt != atc.Format)
                         throw new InvalidCastException("Not all attaches are of the same type!");
                 if(fmt == AttachFormat.Buffer)

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 namespace SATools.SA3D.ViewModel
 {
-    public class VmObjectTree : BaseViewModel
+    public class VMDataTree : BaseViewModel
     {
         private readonly VmMain _mainVM;
 
@@ -21,18 +21,18 @@ namespace SATools.SA3D.ViewModel
                     return;
                 _selected = value;
 
-                _selected.Data.Select(_selected.Parent, _mainVM);
+                _selected.Data.Select(_selected.Parent);
                 OnPropertyChanged(nameof(Selected));
             }
         }
 
-        public VmObjectTree(VmMain mainVM)
+        public VMDataTree(VmMain mainVM)
         {
             _mainVM = mainVM;
 
             Objects = new();
 
-            foreach(var obj in _mainVM.RenderContext.Scene.objects)
+            foreach(var obj in VmMain.Context.Scene.GameTasks)
             {
                 Objects.Add(new(null, new VmObject(obj, null)));
             }

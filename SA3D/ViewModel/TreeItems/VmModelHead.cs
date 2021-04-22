@@ -21,12 +21,14 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         public bool CanExpand => true;
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output)
+        public List<ITreeItemData> Expand()
         {
-            output.Add(new(parent, new VmNJObject(ObjectData)));
+            List<ITreeItemData> result = new();
+            result.Add(new VmNJObject(ObjectData));
+            return result;
         }
 
-        public void Select(VmTreeItem parent, VmMain main)
+        public void Select(VmTreeItem parent)
         {
 
         }

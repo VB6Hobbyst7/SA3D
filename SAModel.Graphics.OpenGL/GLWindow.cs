@@ -148,19 +148,15 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private readonly Context _context;
 
-        private readonly GAPIAInputBridge _inputBridge;
+        private readonly InputBridge _inputBridge;
 
         private bool _mouseLocked;
 
         private Vector2 _center;
 
-        public GLWindow(Context context, GAPIAInputBridge inputBridge, Size resolution, Point? location = null) :
+        public GLWindow(Context context, InputBridge inputBridge, Size resolution, Point? location = null, bool UseVsync = true) :
             base(
-                new()
-                {
-                    RenderFrequency = 60,
-                    UpdateFrequency = 60
-                },
+                new(),
                 new()
                 {
                     API = ContextAPI.OpenGL,
@@ -169,9 +165,11 @@ namespace SATools.SAModel.Graphics.OpenGL
                     Size = new(resolution.Width, resolution.Height),
                     NumberOfSamples = 4,
                     Flags = ContextFlags.ForwardCompatible,
-                    WindowBorder = WindowBorder.Resizable
+                    WindowBorder = WindowBorder.Resizable,
                 })
         {
+            if(!UseVsync)
+                VSync = VSyncMode.Off;
             _context = context;
             _inputBridge = inputBridge;
 
@@ -217,7 +215,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             base.OnUpdateFrame(e);
             _context.IsFocused = IsFocused;
-            _context.Update((float)e.Time);
+            _context.Update(e.Time);
             if(_mouseLocked)
             {
                 MousePosition = _center;

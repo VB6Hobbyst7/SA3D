@@ -9,11 +9,11 @@ namespace SATools.SA3D.XAML
     /// </summary>
     public partial class App : Application
     {
-        public static DebugContext Context { get; private set; }
+        public static DebugContext CurrentContext { get; private set; }
 
         public App(DebugContext context)
         {
-            Context = context;
+            CurrentContext = context;
             InitializeComponent();
             MainWindow = new WndMain();
             MainWindow.Show();

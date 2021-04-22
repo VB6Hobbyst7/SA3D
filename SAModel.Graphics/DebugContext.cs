@@ -15,6 +15,9 @@ using System.Windows.Input;
 using Color = SATools.SAModel.Structs.Color;
 using System.Runtime.InteropServices;
 using SATools.SAModel.Graphics.Properties;
+using System.Collections.Generic;
+using System.Numerics;
+using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics
 {
@@ -24,6 +27,11 @@ namespace SATools.SAModel.Graphics
     public class DebugContext : Context
     {
         #region Private Fields
+
+        private Queue<double> deltas
+            = new();
+
+        private double deltasAdded;
 
         /// <summary>
         /// see <see cref="DebugMenu"/>
@@ -39,11 +47,6 @@ namespace SATools.SAModel.Graphics
         /// see <see cref="WireframeMode"/>
         /// </summary>
         private WireFrameMode _wireFrameMode;
-
-        /// <summary>
-        /// see <see cref="BoundsMode"/>
-        /// </summary>
-        private BoundsMode _boundsMode;
 
         private ObjectRelationsMode _objectRelationsMode;
 
@@ -129,8 +132,7 @@ namespace SATools.SAModel.Graphics
             {
                 if(value == _renderMode)
                     return;
-                _apiAccessObject.DebugUpdateRenderMode(value);
-                Material.RenderMode = value;
+                DebugMaterial.RenderMode = value;
                 _renderMode = value;
             }
         }
@@ -145,7 +147,7 @@ namespace SATools.SAModel.Graphics
             {
                 if(value == _wireFrameMode)
                     return;
-                _apiAccessObject.DebugUpdateWireframe(value);
+                _renderingBridge.ChangeWireframe(value);
                 _wireFrameMode = value;
             }
         }
@@ -153,17 +155,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Whether to draw bounds
         /// </summary>
-        public BoundsMode BoundsMode
-        {
-            get => _boundsMode;
-            set
-            {
-                if(value == _boundsMode)
-                    return;
-                _apiAccessObject.DebugUpdateBoundsMode(value);
-                _boundsMode = value;
-            }
-        }
+        public BoundsMode BoundsMode { get; set; }
 
         public ObjectRelationsMode ObjectRelationsMode
         {
@@ -177,7 +169,11 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Whether to render collision models
         /// </summary>
-        public bool RenderCollision { get; set; }
+        public bool RenderCollision
+        {
+            get => Scene._visualCollision;
+            set => Scene._visualCollision = value;
+        }
 
         /// <summary>
         /// Camera Orbit-drag speed for the mouse
@@ -209,7 +205,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Used for rendering the bounding spheres
         /// </summary>
-        public ModelData.Attach SphereMesh { get; }
+        public BufferMesh SphereMesh { get; }
 
         /// <summary>
         /// Active NJ Object
@@ -241,13 +237,13 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        public new DebugMaterial Material { get; }
+        public DebugMaterial DebugMaterial => (DebugMaterial)Material;
 
         #endregion
 
-        public DebugContext(Rectangle screen, GAPIAccessObject apiAccessObject) : base(screen, apiAccessObject)
+        public DebugContext(Rectangle screen, RenderingBridge renderingBridge, BufferingBridge bufferingBridge) : base(screen, renderingBridge, bufferingBridge)
         {
-            Material = new DebugMaterial(apiAccessObject);
+            Material = new DebugMaterial(bufferingBridge);
 
             LoadFonts();
             _debugFont = new Font(_fonts.Families[0], 12);
@@ -258,12 +254,9 @@ namespace SATools.SAModel.Graphics
             stream.Close();
 
             uint addr = 0;
-            SphereMesh = new ModelData.Attach(new BufferMesh[] { BufferMesh.Read(sphere, ref addr) })
-            {
-                Name = "Debug_Sphere"
-            };
+            SphereMesh = BufferMesh.Read(sphere, ref addr);
 
-            BufferMaterial mat = SphereMesh.MeshData[0].Material;
+            BufferMaterial mat = SphereMesh.Material;
             mat.MaterialFlags = MaterialFlags.noDiffuse | MaterialFlags.noSpecular;
             mat.UseAlpha = true;
             mat.Culling = true;
@@ -305,6 +298,13 @@ namespace SATools.SAModel.Graphics
         /// <param name="delta"></param>
         private void DebugUpdate(double delta)
         {
+            //calculate fps
+            deltas.Enqueue(delta);
+            deltasAdded += delta;
+            while(deltasAdded > 1)
+                deltasAdded -= deltas.Dequeue();
+
+
             if(Focused != this)
                 return;
 
@@ -415,10 +415,10 @@ namespace SATools.SAModel.Graphics
                 if(Input.IsKeyDown(s.FpDown))
                     dif -= Camera.Up;
 
-                if(dif.Length == 0)
+                if(dif.Length() == 0)
                     return;
 
-                Camera.Position += dif.Normalized() * CamMovementSpeed * (Input.IsKeyDown(s.FpSpeedup) ? CamMovementModif : 1) * (float)delta;
+                Camera.Position += Vector3.Normalize(dif) * CamMovementSpeed * (Input.IsKeyDown(s.FpSpeedup) ? CamMovementModif : 1) * (float)delta;
             }
             else
             {
@@ -517,21 +517,22 @@ namespace SATools.SAModel.Graphics
                         break;
                     case DebugMenu.RenderInfo:
                         textBold("== Renderinfo == ", 60);
+                        text($"FPS: {deltas.Count / deltasAdded:f1}", 10);
                         text($"View Pos.: {Camera.Realposition.Rounded(2)}", 10);
                         //text($"Lighting Dir.: LIGHTDATA TODO", 10);//{RenderMaterial.LightDir.Rounded(2)}", 10);
                         text($"Meshes Drawn: {meshesDrawn}", 10);
                         text($"Render Mode: {_renderMode}", 10);
                         text($"Wireframe Mode: {_wireFrameMode}", 10);
                         text($"Display: {(RenderCollision ? "Collision" : "Visual")}", 10);
-                        text($"Display Bounds: {_boundsMode}", 10);
+                        text($"Display Bounds: {BoundsMode}", 10);
                         if(ActiveNJO != null)
-                            text($"Active object: {ActiveNJO.Name}", 10);
+                            text($"Active: Object - {ActiveNJO.Name}", 10);
                         else if(ActiveLE != null)
                         {
-                            text($"Active object: LandEntry {Scene.geometry.IndexOf(ActiveLE)}", 10);
+                            text($"Active: Landentry - {ActiveLE.Name}", 10);
                         }
                         else
-                            text($"Active object: NULL", 10);
+                            text($"Active: NULL", 10);
                         break;
                 }
 
@@ -552,11 +553,31 @@ namespace SATools.SAModel.Graphics
             Canvas.Draw(_debugPanel);
         }
 
-
-        public override void Render()
+        protected internal override void ExtraRenderStuff(List<LandEntry> geoData, LandEntryRenderBatch opaqueGeo, LandEntryRenderBatch transparenGeo, List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> models)
         {
-            DrawDebug(_apiAccessObject.RenderDebug(this));
-            Canvas.Render(Resolution.Width, Resolution.Height);
+            if(WireframeMode == WireFrameMode.Overlay)
+            {
+                _renderingBridge.RenderOverlayWireframes(opaqueGeo, transparenGeo, models);
+            }
+
+            if(BoundsMode == BoundsMode.All
+                || BoundsMode == BoundsMode.Selected && ActiveLE != null)
+            {
+                _renderingBridge.RenderBounds(geoData, SphereMesh, Camera);
+            }
+
+            if(ObjectRelationsMode == ObjectRelationsMode.Lines)
+            {
+                List<Vector3> lines = new();
+                foreach(DisplayTask t in Scene.GameTasks)
+                {
+                    if(t.Model != null)
+                        RenderHelper.GetModelLine(t.Model, lines, null);
+                }
+                _renderingBridge.DrawModelRelationship(lines, Camera);
+            }
+
+            DrawDebug(0);
         }
 
         private void LoadFonts()

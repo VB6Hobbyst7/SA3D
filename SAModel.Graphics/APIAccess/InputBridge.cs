@@ -1,9 +1,6 @@
-﻿using SATools.SAModel.Structs;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 using System.Windows.Input;
 
 namespace SATools.SAModel.Graphics.APIAccess
@@ -11,7 +8,7 @@ namespace SATools.SAModel.Graphics.APIAccess
     /// <summary>
     /// Input bridge between window/control and the api
     /// </summary>
-    public class GAPIAInputBridge
+    public class InputBridge
     {
         /// <summary>
         /// Input handler to get he last pressed keys of

@@ -2,6 +2,7 @@
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.GC
@@ -12,6 +13,12 @@ namespace SATools.SAModel.ModelData.GC
     [Serializable]
     public class VertexSet : ICloneable
     {
+        private readonly Vector3[] _vector3Data;
+
+        private readonly Vector2[] _uvData;
+
+        private readonly Color[] _colorData;
+
         /// <summary>
         /// The type of vertex data that is stored
         /// </summary>
@@ -32,49 +39,98 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         public uint StructSize => GCExtensions.GetStructSize(StructType, DataType);
 
-        /// <summary>
-        /// The vertex data
-        /// </summary>
-        public IDataStructOut[] Data { get; }
+        public Vector3[] Vector3Data
+        {
+            get
+            {
+                if(_vector3Data == null)
+                    throw new InvalidOperationException("VertexSet does not contain Vector3 data!");
+                return _vector3Data;
+            }
+        }
+
+        public Vector2[] UVData
+        {
+            get
+            {
+                if(_uvData == null)
+                    throw new InvalidOperationException("VertexSet does not contain Vector2 data!");
+                return _uvData;
+            }
+        }
+
+        public Color[] ColorData
+        {
+            get
+            {
+                if(_colorData == null)
+                    throw new InvalidOperationException("VertexSet does not contain Color data!");
+                return _colorData;
+            }
+        }
+
+        public int DataLength
+        {
+            get
+            {
+                if(_vector3Data != null)
+                    return _vector3Data.Length;
+
+                if(_uvData != null)
+                    return _uvData.Length;
+
+                if(_colorData != null)
+                    return _colorData.Length;
+
+                return 0;
+            }
+        }
 
         /// <summary>
         /// The address of the vertex attribute (gets set after writing
         /// </summary>
         private uint _dataAddress;
 
-        /// <summary>
-        /// Creates a new empty vertex attribute using the default struct setups
-        /// </summary>
-        /// <param name="attributeType">The attribute type of the vertex attribute</param>
-        public VertexSet(VertexAttribute attributeType, IDataStructOut[] data)
+        public VertexSet(Vector3[] vector3Data, bool normals)
         {
-            Attribute = attributeType;
+            _vector3Data = vector3Data;
 
-            switch(Attribute)
+            if(normals)
             {
-                case VertexAttribute.Position:
-                    DataType = DataType.Float32;
-                    StructType = StructType.Position_XYZ;
-                    break;
-                case VertexAttribute.Normal:
-                    DataType = DataType.Float32;
-                    StructType = StructType.Normal_XYZ;
-                    break;
-                case VertexAttribute.Color0:
-                    DataType = DataType.RGBA8;
-                    StructType = StructType.Color_RGBA;
-                    break;
-                case VertexAttribute.Tex0:
-                    DataType = DataType.Signed16;
-                    StructType = StructType.TexCoord_ST;
-                    break;
-                case VertexAttribute.Null:
-                    break;
-                default:
-                    throw new ArgumentException($"Datatype { Attribute } is not a valid vertex type for SA2");
+                Attribute = VertexAttribute.Position;
+                DataType = DataType.Float32;
+                StructType = StructType.Normal_XYZ;
             }
+            else
+            {
+                Attribute = VertexAttribute.Normal;
+                DataType = DataType.Float32;
+                StructType = StructType.Position_XYZ;
+            }
+        }
 
-            Data = data;
+        /// <summary>
+        /// Creates a UV vertex set
+        /// </summary>
+        /// <param name="uvData"></param>
+        public VertexSet(Vector2[] uvData)
+        {
+            Attribute = VertexAttribute.Tex0;
+            _uvData = uvData;
+            DataType = DataType.Signed16;
+            StructType = StructType.TexCoord_ST;
+        }
+
+        /// <summary>
+        /// Creates a Color vertex set
+        /// </summary>
+        /// <param name="colorData"></param>
+        public VertexSet(Color[] colorData)
+        {
+            Attribute = VertexAttribute.Color0;
+            _colorData = colorData;
+            DataType = DataType.RGBA8;
+            StructType = StructType.Color_RGBA;
         }
 
         /// <summary>
@@ -84,12 +140,14 @@ namespace SATools.SAModel.ModelData.GC
         /// <param name="dataType"></param>
         /// <param name="structType"></param>
         /// <param name="fractionalBitCount"></param>
-        public VertexSet(VertexAttribute attribute, DataType dataType, StructType structType, IDataStructOut[] data)
+        private VertexSet(VertexAttribute attribute, DataType dataType, StructType structType, Vector3[] vector3Data, Vector2[] uvData, Color[] colorData)
         {
             Attribute = attribute;
             DataType = dataType;
             StructType = structType;
-            Data = data;
+            _vector3Data = vector3Data;
+            _uvData = uvData;
+            _colorData = colorData;
         }
 
         /// <summary>
@@ -102,7 +160,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             VertexAttribute attribute = (VertexAttribute)source[address];
             if(attribute == VertexAttribute.Null)
-                return new VertexSet(VertexAttribute.Null, new IDataStructOut[0]);
+                return new VertexSet(VertexAttribute.Null, default, default, null, null, null);
 
             uint structure = source.ToUInt32(address + 4);
             StructType structType = (StructType)(structure & 0x0F);
@@ -117,34 +175,33 @@ namespace SATools.SAModel.ModelData.GC
             int count = source.ToUInt16(address + 2);
             uint tmpaddr = source.ToUInt32(address + 8) - imageBase;
 
-            List<IDataStructOut> data = new();
+            Vector3[] vector3Data = null;
+            Vector2[] uvData = null;
+            Color[] colorData = null;
 
             switch(attribute)
             {
                 case VertexAttribute.Position:
                 case VertexAttribute.Normal:
+                    vector3Data = new Vector3[count];
                     for(int i = 0; i < count; i++)
-                    {
-                        data.Add(Vector3.Read(source, ref tmpaddr, IOType.Float));
-                    }
+                        vector3Data[i] = Vector3Extensions.Read(source, ref tmpaddr, IOType.Float);
                     break;
                 case VertexAttribute.Color0:
+                    colorData = new Color[count];
                     for(int i = 0; i < count; i++)
-                    {
-                        data.Add(Color.Read(source, ref tmpaddr, IOType.RGBA8));
-                    }
+                        colorData[i] = Color.Read(source, ref tmpaddr, IOType.RGBA8);
                     break;
                 case VertexAttribute.Tex0:
+                    uvData = new Vector2[count];
                     for(int i = 0; i < count; i++)
-                    {
-                        data.Add(Vector2.Read(source, ref tmpaddr, IOType.Short) / 256f);
-                    }
+                        uvData[i] = Vector2Extensions.Read(source, ref tmpaddr, IOType.Short) / 256f;
                     break;
                 default:
                     throw new ArgumentException($"Attribute type not valid sa2 type: {attribute}");
             }
 
-            return new VertexSet(attribute, dataType, structType, data.ToArray());
+            return new VertexSet(attribute, dataType, structType, vector3Data, uvData, colorData);
         }
 
         /// <summary>
@@ -156,12 +213,23 @@ namespace SATools.SAModel.ModelData.GC
         {
             _dataAddress = (uint)writer.Stream.Position;
 
-            if(Attribute == VertexAttribute.Tex0)
-                foreach(Vector2 uv in Data)
-                    (uv * 256).Write(writer, DataType.ToStructType());
-            else
-                foreach(IDataStructOut dso in Data)
-                    dso.Write(writer, DataType.ToStructType());
+            IOType outputType = DataType.ToStructType();
+
+            if(_vector3Data != null)
+            {
+                foreach(Vector3 vec in _vector3Data)
+                    vec.Write(writer, outputType);
+            }
+            else if(_uvData != null)
+            {
+                foreach(Vector2 uv in _uvData)
+                    (uv * 256).Write(writer, outputType);
+            }
+            else if(_colorData != null)
+            {
+                foreach(Color col in _colorData)
+                    col.Write(writer, outputType);
+            }
         }
 
         /// <summary>
@@ -176,20 +244,22 @@ namespace SATools.SAModel.ModelData.GC
                 throw new Exception("Data has not been written yet!");
             byte[] bytes = new byte[] { (byte)Attribute, (byte)StructSize };
             writer.Write(bytes);
-            writer.WriteUInt16((ushort)Data.Length);
+            writer.WriteUInt16((ushort)DataLength);
             uint structure = (uint)StructType;
             structure |= (uint)((byte)DataType << 4);
             writer.WriteUInt32(structure);
             writer.WriteUInt32(_dataAddress + imagebase);
-            writer.WriteUInt32((uint)(Data.Length * StructSize));
+            writer.WriteUInt32((uint)(DataLength * StructSize));
 
             _dataAddress = 0;
         }
 
-        object ICloneable.Clone() => Clone();
+        object ICloneable.Clone()
+            => Clone();
 
-        public VertexSet Clone() => new(Attribute, DataType, StructType, (IDataStructOut[])Data.Clone());
+        public VertexSet Clone()
+            => new(Attribute, DataType, StructType, (Vector3[])_vector3Data?.Clone(), (Vector2[])_uvData?.Clone(), (Color[])_colorData?.Clone() );
 
-        public override string ToString() => $"{Attribute}: {Data.Length}";
+        public override string ToString() => $"{Attribute}: {DataLength}";
     }
 }

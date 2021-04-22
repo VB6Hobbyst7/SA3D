@@ -15,8 +15,8 @@ namespace SATools.SA3D.ViewModel
 
         public bool CanExpand { get; }
 
-        public void Expand(VmTreeItem parent, ObservableCollection<VmTreeItem> output);
+        public List<ITreeItemData> Expand();
 
-        public void Select(VmTreeItem parent, VmMain main);
+        public void Select(VmTreeItem parent);
     }
 }

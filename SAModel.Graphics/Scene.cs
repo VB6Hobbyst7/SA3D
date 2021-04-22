@@ -1,35 +1,85 @@
 ﻿using SATools.SAArchive;
+using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace SATools.SAModel.Graphics
 {
     public class Scene
     {
+        #region events
+
         public delegate void OnUpdate(double delta);
+
         public event OnUpdate OnUpdateEvent;
 
-        internal delegate void OnAttachLoaded(Attach attach);
-        internal event OnAttachLoaded OnAttachLoadedEvent;
+        #endregion
 
-        public readonly Camera cam;
-        public double time = 0;
+        #region Privates
 
-        public TextureSet LandTextureSet { get; set; }
+        private readonly BufferingBridge _bufferingBridge;
 
-        public readonly List<GameTask> objects = new();
+        private readonly List<GameTask> _gameTasks;
+
+        private readonly Dictionary<TextureSet, (int count, bool manual)> _textureSetCounts;
+
+        private readonly List<TextureSet> _textureSets;
+
+        private TextureSet _geometryTextures;
+
+        internal bool _visualCollision;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Loaded game tasks
+        /// </summary>
+        public readonly ReadOnlyCollection<GameTask> GameTasks;
+
+        /// <summary>
+        /// Loaded texture sets (used in tasks and landtable)
+        /// </summary>
+        public ReadOnlyCollection<TextureSet> TextureSets { get; }
+
+        /// <summary>
+        ///  Geometry textures
+        /// </summary>
+        public TextureSet LandTextureSet
+        {
+            get => _geometryTextures;
+            set
+            {
+                if(_geometryTextures == value)
+                    return;
+                TaskTexturesChanged(_geometryTextures, value);
+                _geometryTextures = value;
+            }
+        }
+
+        /// <summary>
+        /// Camera used by the scene
+        /// </summary>
+        public Camera Cam { get; }
+
+        /// <summary>
+        /// Time passed in the scene
+        /// </summary>
+        public double SceneTime { get; private set; }
+
+        #endregion
+
         public readonly List<LandEntry> geometry = new();
-
-        private readonly List<Attach> attaches = new();
-        private readonly List<Attach> weightedAttaches = new();
 
         public LandEntry[] VisualGeometry
         {
-            get => geometry.Where(x => x.SurfaceFlags.HasFlag(SurfaceFlags.Visible)).ToArray();
+            get => _visualCollision ? CollisionGeometry : geometry.Where(x => x.SurfaceFlags.HasFlag(SurfaceFlags.Visible)).ToArray();
         }
 
         public LandEntry[] CollisionGeometry
@@ -37,67 +87,133 @@ namespace SATools.SAModel.Graphics
             get => geometry.Where(x => x.SurfaceFlags.IsCollision()).ToArray();
         }
 
-        public Scene(Camera cam)
+        internal Scene(float cameraAspect, BufferingBridge bufferbridge)
         {
-            this.cam = cam;
-        }
+            Cam = new Camera(cameraAspect);
 
-        public void AddDisplayTask(DisplayTask task)
-        {
-            objects.Add(task);
-            NJObject[] objs = task.Model.GetObjects();
-            if(task.Model.HasWeight)
-            {
-                foreach(NJObject obj in objs)
-                {
-                    if(obj.Attach == null)
-                        continue;
-                    if(!weightedAttaches.Contains(obj.Attach))
-                    {
-                        weightedAttaches.Add(obj.Attach);
-                        obj.Attach.GenBufferMesh(true);
-                    }
-                }
-            }
-            else
-            {
-                foreach(NJObject obj in objs)
-                {
-                    if(obj.Attach == null)
-                        continue;
-                    if(!attaches.Contains(obj.Attach))
-                    {
-                        attaches.Add(obj.Attach);
-                        obj.Attach.GenBufferMesh(true);
-                        OnAttachLoadedEvent.Invoke(obj.Attach);
-                    }
-                }
-            }
+            _bufferingBridge = bufferbridge;
 
-        }
+            _textureSetCounts = new();
+            _textureSets = new();
+            TextureSets = new(_textureSets);
 
-        public void LoadLandtable(ObjData.LandTable table)
-        {
-            foreach(LandEntry le in table.Geometry)
-            {
-                geometry.Add(le);
-                if(!attaches.Contains(le.Attach))
-                {
-                    attaches.Add(le.Attach);
-                    le.Attach.GenBufferMesh(true);
-                    OnAttachLoadedEvent.Invoke(le.Attach);
-                }
-            }
+            _gameTasks = new();
+            GameTasks = new(_gameTasks);
         }
 
         public void Update(double delta)
         {
             OnUpdateEvent.Invoke(delta);
-            time += delta;
-            foreach(GameTask tsk in objects)
+            SceneTime += delta;
+            foreach(GameTask tsk in GameTasks)
+                tsk.Update(delta, SceneTime);
+        }
+    
+
+        #region Handling tasks
+
+        public void AddTask(GameTask task)
+        {
+            if(_gameTasks.Contains(task))
+                throw new ArgumentException("The added task was already part of the scene!");
+            _gameTasks.Add(task);
+            if(task is DisplayTask dtsk)
             {
-                tsk.Update(delta, time);
+                dtsk.OnTextureSetChanged += TaskTexturesChanged;
+                TaskTexturesChanged(null, dtsk.TextureSet);
+
+                NJObject[] objs = dtsk.Model.GetObjects();
+                foreach(NJObject obj in objs)
+                    obj.Attach?.GenBufferMesh(true); 
             }
         }
+
+        public void RemoveTask(GameTask task)
+        {
+            if(_gameTasks.Remove(task) && task is DisplayTask dtsk)
+            {
+                dtsk.OnTextureSetChanged -= TaskTexturesChanged;
+                TaskTexturesChanged(dtsk.TextureSet, null);
+            }
+        }
+
+        #endregion
+
+        public void LoadLandtable(LandTable table)
+        {
+            foreach(LandEntry le in table.Geometry)
+            {
+                geometry.Add(le);
+                le.Attach.GenBufferMesh(true);
+            }
+        }
+
+        #region Texture handling
+
+        private void TaskTexturesChanged(TextureSet oldSet, TextureSet newSet)
+            => TaskTexturesChanged(oldSet, newSet, false);
+
+        private void TaskTexturesChanged(TextureSet oldSet, TextureSet newSet, bool manual)
+        {
+            // Removing the old texture set
+            if(oldSet != null)
+            {
+                // this can only happen when texture was loaded manually
+                if(!_textureSetCounts.TryGetValue(oldSet, out var found))
+                    throw new InvalidOperationException("Texture was not manually added!");
+
+                if(manual)
+                {
+                    if(found.manual)
+                        found.manual = false;
+                    else
+                        throw new InvalidOperationException("Texture was not manually added!");
+                }
+
+                if(found.count == 1 && !found.manual)
+                {
+                    _textureSets.Remove(oldSet);
+                    _textureSetCounts.Remove(oldSet);
+                    _bufferingBridge.InternalDebufferTextureSet(oldSet);
+                }
+                else
+                {
+                    found.count--;
+                    _textureSetCounts[oldSet] = found;
+                }
+            }
+
+            // adding new texture set
+            if(newSet != null)
+            {
+                if(_textureSetCounts.TryGetValue(newSet, out var found))
+                {
+                    if(manual)
+                    {
+                        if(found.manual)
+                            throw new InvalidOperationException("Texture was already manually added!");
+                        else
+                            found.manual = true;
+                    }
+
+                    found.count++;
+                    _textureSetCounts[newSet] = found;
+                }
+                else
+                {
+                    _textureSets.Add(newSet);
+                    _textureSetCounts.Add(newSet, (1, manual));
+                    _bufferingBridge.InternalBufferTextureSet(newSet);
+                }
+            }
+        }
+
+        public void AddManualTextureSet(TextureSet textureSet)
+            => TaskTexturesChanged(null, textureSet, true);
+
+        public void RemoveManualTextureSet(TextureSet textureSet)
+            => TaskTexturesChanged(textureSet, null, true);
+
+        #endregion
     }
 }

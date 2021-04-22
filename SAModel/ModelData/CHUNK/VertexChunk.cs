@@ -3,6 +3,7 @@ using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.CHUNK
@@ -176,13 +177,13 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 ChunkVertex vtx = new()
                 {
-                    Position = Vector3.Read(source, ref address, IOType.Float)
+                    Position = Vector3Extensions.Read(source, ref address, IOType.Float)
                 };
                 address += vec4;
 
                 if(hasNormal)
                 {
-                    vtx.Normal = Vector3.Read(source, ref address, IOType.Float);
+                    vtx.Normal = Vector3Extensions.Read(source, ref address, IOType.Float);
                     address += vec4;
                 }
                 else

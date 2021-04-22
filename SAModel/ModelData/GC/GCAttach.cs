@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
@@ -50,7 +51,7 @@ namespace SATools.SAModel.ModelData.GC
             OpaqueMeshes = opaqueMeshes;
             TranslucentMeshes = translucentMeshes;
 
-            MeshBounds = Bounds.FromPoints(VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position).Data.Cast<Vector3>().ToArray());
+            MeshBounds = Bounds.FromPoints(VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position).Vector3Data);
 
             Name = "attach_" + GenerateIdentifier();
         }
@@ -202,10 +203,10 @@ namespace SATools.SAModel.ModelData.GC
         {
             List<BufferMesh> meshes = new();
 
-            List<Vector3> positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position)?.Data.Cast<Vector3>().ToList();
-            List<Vector3> normals = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal)?.Data.Cast<Vector3>().ToList();
-            List<Color> colors = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0)?.Data.Cast<Color>().ToList();
-            List<Vector2> uvs = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0)?.Data.Cast<Vector2>().ToList();
+            Vector3[] positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position)?.Vector3Data;
+            Vector3[] normals = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal)?.Vector3Data;
+            Color[] colors = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0)?.ColorData;
+            Vector2[] uvs = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0)?.UVData;
 
             BufferMaterial material = new()
             {
