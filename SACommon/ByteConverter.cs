@@ -11,26 +11,30 @@ namespace SATools.SACommon
     [DebuggerNonUserCode]
     public static class ByteConverter
     {
-        private static Stack<bool> endianStack = new Stack<bool>();
+        private static readonly Stack<bool> _endianStack = new();
 
         /// <summary>
-        /// Whether bytes should be written in big endian. Set with <see cref="PushBigEndian(bool)"/> and free afterwards with <see cref="PopEndian"/>
+        /// Whether bytes should be read in big endian. Set with <see cref="PushBigEndian(bool)"/> and free afterwards with <see cref="PopEndian"/>
         /// </summary>
-        public static bool BigEndian { get; private set; }
+        public static bool BigEndian 
+            => _endianStack.Peek();
+
         public static bool Reverse { get; set; }
 
         /// <summary>
         /// Sets an endian. Dont forget to free it afterwards as well using <see cref="PopEndian"/>
         /// </summary>
         /// <param name="bigEndian">New bigendian mode</param>
-        public static void PushBigEndian(bool bigEndian)
-        {
-            endianStack.Push(BigEndian);
-            BigEndian = bigEndian;
-        }
+        public static void PushBigEndian(bool bigEndian) 
+            => _endianStack.Push(bigEndian);
 
-        public static void PopEndian() 
-            => BigEndian = endianStack.Pop();
+        public static void PopEndian()
+            => _endianStack.Pop();
+
+        static ByteConverter()
+        {
+            _endianStack.Push(false);
+        }
 
         public static byte[] GetBytes(this ushort value)
         {
@@ -187,28 +191,24 @@ namespace SATools.SACommon
 
         public static bool CheckBigEndianInt16(this byte[] file, uint address)
         {
-            bool bigEndState = BigEndian;
-
-            BigEndian = false;
+            PushBigEndian(false);
             uint little = file.ToUInt16(address);
-            BigEndian = true;
+            PopEndian();
+            PushBigEndian(true);
             uint big = file.ToUInt16(address);
-
-            BigEndian = bigEndState;
+            PopEndian();
 
             return little > big;
         }
 
         public static bool CheckBigEndianInt32(this byte[] file, uint address)
         {
-            bool bigEndState = BigEndian;
-
-            BigEndian = false;
+            PushBigEndian(false);
             uint little = file.ToUInt32(address);
-            BigEndian = true;
+            PopEndian();
+            PushBigEndian(true);
             uint big = file.ToUInt32(address);
-
-            BigEndian = bigEndState;
+            PopEndian();
 
             return little > big;
         }

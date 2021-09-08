@@ -15,33 +15,33 @@ namespace SATools.SACommon.Ini
     /// </summary>
     public static class IniSerializer
     {
-        private static readonly IniCollectionSettings initialCollectionSettings 
+        private static readonly IniCollectionSettings initialCollectionSettings
             = new(IniCollectionMode.IndexOnly);
 
-        private static readonly IniCollectionSettings defaultCollectionSettings 
+        private static readonly IniCollectionSettings defaultCollectionSettings
             = new(IniCollectionMode.Normal);
 
         #region Serializing
 
-        public static void Serialize(object Object, string Filename) 
+        public static void Serialize(object Object, string Filename)
             => IniFile.Write(Serialize(Object), Filename);
 
         public static void Serialize(object Object, TypeConverter Converter, string Filename)
             => IniFile.Write(Serialize(Object, Converter), Filename);
 
-        public static void Serialize(object Object, IniCollectionSettings CollectionSettings, string Filename) 
+        public static void Serialize(object Object, IniCollectionSettings CollectionSettings, string Filename)
             => IniFile.Write(Serialize(Object, CollectionSettings), Filename);
 
-        public static void Serialize(object Object, IniCollectionSettings CollectionSettings, TypeConverter Converter, string Filename) 
+        public static void Serialize(object Object, IniCollectionSettings CollectionSettings, TypeConverter Converter, string Filename)
             => IniFile.Write(Serialize(Object, CollectionSettings, Converter), Filename);
 
-        public static IniDictionary Serialize(object Object) 
+        public static IniDictionary Serialize(object Object)
             => Serialize(Object, initialCollectionSettings, (TypeConverter)null);
 
-        public static IniDictionary Serialize(object Object, TypeConverter Converter) 
+        public static IniDictionary Serialize(object Object, TypeConverter Converter)
             => Serialize(Object, initialCollectionSettings, Converter);
 
-        public static IniDictionary Serialize(object Object, IniCollectionSettings CollectionSettings) 
+        public static IniDictionary Serialize(object Object, IniCollectionSettings CollectionSettings)
             => Serialize(Object, CollectionSettings, (TypeConverter)null);
 
         public static IniDictionary Serialize(object Object, IniCollectionSettings CollectionSettings, TypeConverter Converter)
@@ -165,53 +165,53 @@ namespace SATools.SACommon.Ini
 
         #region Generic Deserializing
 
-        public static T Deserialize<T>(string filename) 
+        public static T Deserialize<T>(string filename)
             => Deserialize<T>(IniFile.Read(filename), (TypeConverter)null);
 
-        public static T Deserialize<T>(string filename, TypeConverter Converter) 
+        public static T Deserialize<T>(string filename, TypeConverter Converter)
             => Deserialize<T>(IniFile.Read(filename), Converter);
 
-        public static T Deserialize<T>(IniDictionary INI) 
+        public static T Deserialize<T>(IniDictionary INI)
             => (T)Deserialize(typeof(T), INI, (TypeConverter)null);
 
-        public static T Deserialize<T>(IniDictionary INI, TypeConverter Converter) 
+        public static T Deserialize<T>(IniDictionary INI, TypeConverter Converter)
             => (T)Deserialize(typeof(T), INI, Converter);
 
-        public static T Deserialize<T>(string filename, IniCollectionSettings CollectionSettings) 
+        public static T Deserialize<T>(string filename, IniCollectionSettings CollectionSettings)
             => Deserialize<T>(IniFile.Read(filename), CollectionSettings, null);
 
-        public static T Deserialize<T>(string filename, IniCollectionSettings CollectionSettings, TypeConverter Converter) 
+        public static T Deserialize<T>(string filename, IniCollectionSettings CollectionSettings, TypeConverter Converter)
             => Deserialize<T>(IniFile.Read(filename), CollectionSettings, Converter);
 
-        public static T Deserialize<T>(IniDictionary INI, IniCollectionSettings CollectionSettings) 
+        public static T Deserialize<T>(IniDictionary INI, IniCollectionSettings CollectionSettings)
             => (T)Deserialize(typeof(T), INI, CollectionSettings, null);
 
-        public static T Deserialize<T>(IniDictionary INI, IniCollectionSettings CollectionSettings, TypeConverter Converter) 
+        public static T Deserialize<T>(IniDictionary INI, IniCollectionSettings CollectionSettings, TypeConverter Converter)
             => (T)Deserialize(typeof(T), INI, CollectionSettings, Converter);
 
         #endregion
 
         #region Deserializing
 
-        public static object Deserialize(Type type, string filepath) 
+        public static object Deserialize(Type type, string filepath)
             => Deserialize(type, IniFile.Read(filepath), (TypeConverter)null);
 
-        public static object Deserialize(Type type, string Filename, TypeConverter Converter) 
+        public static object Deserialize(Type type, string Filename, TypeConverter Converter)
             => Deserialize(type, IniFile.Read(Filename), Converter);
 
-        public static object Deserialize(Type type, IniDictionary INI) 
+        public static object Deserialize(Type type, IniDictionary INI)
             => Deserialize(type, INI, initialCollectionSettings, null);
 
-        public static object Deserialize(Type type, IniDictionary INI, TypeConverter Converter) 
+        public static object Deserialize(Type type, IniDictionary INI, TypeConverter Converter)
             => Deserialize(type, INI, initialCollectionSettings, Converter);
 
-        public static object Deserialize(Type type, string Filename, IniCollectionSettings CollectionSettings) 
+        public static object Deserialize(Type type, string Filename, IniCollectionSettings CollectionSettings)
             => Deserialize(type, IniFile.Read(Filename), CollectionSettings, null);
 
-        public static object Deserialize(Type type, string Filename, IniCollectionSettings CollectionSettings, TypeConverter Converter) 
+        public static object Deserialize(Type type, string Filename, IniCollectionSettings CollectionSettings, TypeConverter Converter)
             => Deserialize(type, IniFile.Read(Filename), CollectionSettings, Converter);
 
-        public static object Deserialize(Type type, IniDictionary INI, IniCollectionSettings CollectionSettings) 
+        public static object Deserialize(Type type, IniDictionary INI, IniCollectionSettings CollectionSettings)
             => Deserialize(type, INI, CollectionSettings, null);
 
         public static object Deserialize(Type type, IniDictionary INI, IniCollectionSettings CollectionSettings, TypeConverter Converter)
@@ -502,7 +502,7 @@ namespace SATools.SACommon.Ini
         /// </summary>
         /// <param name="type">Type to get the default value of</param>
         /// <returns></returns>
-        private static object GetDefaultValue(this Type type) 
+        private static object GetDefaultValue(this Type type)
             => type.IsValueType ? Activator.CreateInstance(type) : null;
 
         /// <summary>
@@ -519,7 +519,7 @@ namespace SATools.SACommon.Ini
             if(converter == null)
                 converter = TypeDescriptor.GetConverter(type);
 
-            if(converter is not ComponentConverter 
+            if(converter is not ComponentConverter
                 && converter.GetType() != typeof(TypeConverter)
                 && converter.CanConvertTo(typeof(string)) & converter.CanConvertFrom(typeof(string)))
                 return false;
@@ -544,7 +544,7 @@ namespace SATools.SACommon.Ini
             if(converter == null)
                 converter = TypeDescriptor.GetConverter(@object);
 
-            if(!(converter is ComponentConverter) 
+            if(!(converter is ComponentConverter)
                 && converter.GetType() != typeof(TypeConverter)
                 && converter.CanConvertTo(typeof(string)))
                 return converter.ConvertToInvariantString(@object);
@@ -567,7 +567,7 @@ namespace SATools.SACommon.Ini
             if(converter == null)
                 converter = TypeDescriptor.GetConverter(type);
 
-            if(!(converter is ComponentConverter) 
+            if(!(converter is ComponentConverter)
                 && converter.GetType() != typeof(TypeConverter)
                 && converter.CanConvertFrom(typeof(string)))
                 return converter.ConvertFromInvariantString(value);

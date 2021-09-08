@@ -80,6 +80,9 @@ namespace SATools.SACommon
 
         public static (T[] distinct, int[] map) CreateDistinctMap<T>(this IList<T> collection) where T : IEquatable<T>
         {
+            if(collection == null)
+                return (null, null);
+
             int[] map = new int[collection.Count];
             T[] distinct = new T[collection.Count];
             int distinctCount = 0;
@@ -98,10 +101,11 @@ namespace SATools.SACommon
                 }
 
                 map[i] = distinctCount;
-                distinct[distinctCount] = c; 
+                distinct[distinctCount] = c;
                 distinctCount++;
 
-                found:;
+                found:
+                ;
                 i++;
             }
 
@@ -111,7 +115,21 @@ namespace SATools.SACommon
             Array.Resize(ref distinct, distinctCount);
             return (distinct, map);
         }
-                
+
+        public static void AddLabel(this Dictionary<string, uint> labels, string label, uint address)
+        {
+            try
+            {
+                labels.Add(label, address);
+            }
+            catch
+            {
+                int append = 1;
+                while(labels.TryGetValue($"{label}_{append}", out _))
+                    append++;
+                labels.Add($"{label}_{append}", address);
+            }
+        }
 
         /// <summary>
         /// Adds nullbytes to align a list with the 

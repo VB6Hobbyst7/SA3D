@@ -19,7 +19,7 @@ namespace SATools.SACommon.Ini
         /// </summary>
         public string Format
         {
-            get => Settings.Format; 
+            get => Settings.Format;
             set => Settings.Format = value;
         }
 
