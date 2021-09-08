@@ -56,7 +56,7 @@ namespace SATools.SAModel.Structs
         /// </summary>
         /// <param name="writer">Output stream</param>
         /// <param name="type">Datatype to write object as</param>
-        public static void Write(this Vector2 vector, EndianMemoryStream writer, IOType type)
+        public static void Write(this Vector2 vector, EndianWriter writer, IOType type)
         {
             switch(type)
             {
@@ -110,7 +110,7 @@ namespace SATools.SAModel.Structs
 
         {
             return new(
-                (float)Math.Round(vector.X, digits), 
+                (float)Math.Round(vector.X, digits),
                 (float)Math.Round(vector.Y, digits));
         }
 

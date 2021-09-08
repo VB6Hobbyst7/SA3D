@@ -131,7 +131,7 @@ namespace SATools.SAModel.Structs
         /// </summary>
         /// <param name="writer">Output stream</param>
         /// <param name="type">Datatype to write object as</param>
-        public static void Write(this Vector3 vector, EndianMemoryStream writer, IOType type)
+        public static void Write(this Vector3 vector, EndianWriter writer, IOType type)
         {
             switch(type)
             {
@@ -228,8 +228,8 @@ namespace SATools.SAModel.Structs
         public static Vector3 Rounded(this Vector3 vector, int digits)
         {
             return new(
-                (float)Math.Round(vector.X, digits), 
-                (float)Math.Round(vector.Y, digits), 
+                (float)Math.Round(vector.X, digits),
+                (float)Math.Round(vector.Y, digits),
                 (float)Math.Round(vector.Z, digits));
         }
 
@@ -266,7 +266,7 @@ namespace SATools.SAModel.Structs
 
             static void boundsCheck(float i, ref float p, ref float n)
             {
-                if(i >p)
+                if(i > p)
                     p = i;
                 else if(i < n)
                     n = i;

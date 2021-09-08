@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
@@ -116,7 +117,7 @@ namespace SATools.SAModel.Structs
         /// Writes the bounds to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             Position.Write(writer, IOType.Float);
             writer.WriteSingle(Radius);

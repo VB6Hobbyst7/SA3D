@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.Structs
@@ -10,7 +11,7 @@ namespace SATools.SAModel.Structs
     /// RGBA Color value
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Color
+    public struct Color : IEquatable<Color>
     {
         #region Constants
 
@@ -271,7 +272,7 @@ namespace SATools.SAModel.Structs
             }
         }
 
-        public void Write(EndianMemoryStream writer, IOType type)
+        public void Write(EndianWriter writer, IOType type)
         {
             switch(type)
             {
@@ -382,6 +383,8 @@ namespace SATools.SAModel.Structs
 
         public static bool operator !=(Color l, Color r)
             => !l.Equals(r);
+
+        bool IEquatable<Color>.Equals(Color other) => Equals(other);
 
         #endregion
         public override string ToString() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";

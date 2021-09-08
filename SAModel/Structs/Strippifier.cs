@@ -436,14 +436,21 @@ namespace SATools.SAModel.Structs
         /// <param name="doSwaps">Whether to use swaps</param>
         /// <param name="concat">Whether to concat the strips into one big strip (broken)</param>
         /// <returns></returns>
-        public static int[][] Strip(int[] triList, bool doSwaps, bool concat)
+        public static int[][] Strip(int[] triList)
         {
-            Mesh mesh = new(triList);
-            int written = 0;
-            List<int[]> strips = new();
+            /* based on the paper written by David Kronmann:
+             https://pdfs.semanticscholar.org/9749/331d92f865282c3f5a19b73b25c4f0ac02bc.pdf
+             The code has been written and slightly modified by me Justin113D,
+             and added options such as noSwaps, and also slightly optimized
+             the strips by handling the priority list slightly different */
+
+            Mesh mesh = new(triList);   // reading the index data into a virtual mesh
+            int written = 0;            // amount of written triangles
+            List<int[]> strips = new(); // the result list
 
             int triCount = mesh.triangles.Length;
 
+            // creates a strip from a triangle with no (free) neighbours
             void AddZTriangle(Triangle tri)
             {
                 Vertex[] verts = tri.vertices;
@@ -461,22 +468,24 @@ namespace SATools.SAModel.Structs
                 foreach(Triangle t in mesh.triangles)
                 {
                     i++;
-                    if(!t.used)
+                    if(t.used)
+                        continue;
+                    
+                    int tnCount = t.AvailableNeighbours.Length;
+                    if(tnCount == 0)
                     {
-                        int tnCount = t.AvailableNeighbours.Length;
-                        if(tnCount == 0)
-                        {
-                            AddZTriangle(t);
-                            continue;
-                        }
-                        if(tnCount < curNCount)
-                        {
-                            if(tnCount == 1)
-                                return t;
-                            curNCount = tnCount;
-                            resultTri = t;
-                        }
+                        AddZTriangle(t);
+                        continue;
                     }
+
+                    if(tnCount < curNCount)
+                    {
+                        if(tnCount == 1)
+                            return t;
+                        curNCount = tnCount;
+                        resultTri = t;
+                    }
+                    
                 }
 
                 return resultTri;
@@ -484,37 +493,65 @@ namespace SATools.SAModel.Structs
 
             Triangle firstTri = getFirstTri();
 
+            // as long as some triangles remain to be written, keep the loop running
             while(written != triCount)
             {
+                // when looking for the first triangle, we also filter out some
+                // single triangles, which means that it will alter the written
+                // count. thats why we have to call it before the loop starts
+                // and before the end of the loop, instead of once at the start
 
+                // the first thing we gotta do is determine the
+                // first (max) 3 triangles to write
                 Triangle currentTri = firstTri;
                 currentTri.used = true;
 
                 Triangle newTri = currentTri.NextTriangleS(null, null);
 
+                // If the two triangles have a broken cull flow, then dont continue
+                // the strip (well ok, there is a chance it could continue on
+                // another tri, but its not worth looking for such a triangle)
                 if(currentTri.HasBrokenCullFlow(newTri))
                 {
                     AddZTriangle(currentTri);
+                    // since we are wrapping back around, we have
+                    // to set the first tri too
                     firstTri = getFirstTri();
                     continue;
                 }
 
-                newTri.used = true;
+                newTri.used = true; // confirming that we are using it now
 
+                // get the starting vert
+                // (the one which is not connected with the new tri)
                 Vertex[] sharedVerts = currentTri.GetSharedEdge(newTri).vertices;
                 Vertex prevVert = currentTri.GetThirdVertex(sharedVerts[0], sharedVerts[1]);
+
+                // get the vertex which wouldnt be connected to
+                // the tri afterwards, to prevent swapping 
                 Triangle secNewTri = newTri.NextTriangleS(null, null);
                 Vertex currentVert;
                 Vertex nextVert;
 
+                // if the third tri isnt valid, just end the strip;
+                // now you might be thinking:
+                // "but justin, what if the strip can be reversed?"
+                // good point, but! if the third triangle already doesnt exist,
+                // then that would mean that the second tri has only one neighbour,
+                // which can only occur if the first tri also has only one
+                // neighbour. Only two triangles in the strip! boom!
                 if(secNewTri == null)
                 {
                     currentVert = sharedVerts[1];
                     nextVert = sharedVerts[0];
 
-                    strips.Add(new int[] { prevVert.index, currentVert.index, nextVert.index, newTri.GetThirdVertex(currentVert, nextVert).index });
+                    int thirdVertex = newTri.GetThirdVertex(currentVert, nextVert).index;
+
+                    strips.Add(new int[] { prevVert.index, nextVert.index, currentVert.index, thirdVertex });
                     written += 2;
 
+                    // since we are wrapping back around,
+                    // we have to set the first tri too
                     firstTri = getFirstTri();
                     continue;
                 }
@@ -529,24 +566,30 @@ namespace SATools.SAModel.Structs
                     nextVert = sharedVerts[1];
                 }
 
+                // initializing the strip base
                 List<int> strip = new()
                 { prevVert.index, currentVert.index, nextVert.index };
                 written++;
 
+                // shift verts two forward
                 prevVert = nextVert;
                 currentVert = newTri.GetThirdVertex(currentVert, nextVert);
+
+                // shift triangles one forward
                 currentTri = newTri;
                 newTri = currentTri.HasBrokenCullFlow(secNewTri) ? null : secNewTri;
-                Triangle swapTri = null;
 
+                // creating the strip
                 bool reachedEnd = false;
                 bool reversedList = false;
-
                 while(!reachedEnd)
                 {
+                    // writing the next index
                     strip.Add(currentVert.index);
                     written++;
 
+                    // ending or reversing the loop when the current
+                    // tri is None (end of the strip)
                     if(newTri == null)
                     {
                         if(!reversedList && firstTri.AvailableNeighbours.Length > 0)
@@ -554,19 +597,13 @@ namespace SATools.SAModel.Structs
                             reversedList = true;
                             prevVert = mesh.vertices[strip[1]];
                             currentVert = mesh.vertices[strip[0]];
-                            if(doSwaps && false) // its broken, so imma disable it rn
+                            newTri = firstTri.NextTriangle(prevVert, currentVert);
+                            if(newTri == null)
                             {
-                                newTri = firstTri.NextTriangleS(prevVert, currentVert);
+                                reachedEnd = true;
+                                continue;
                             }
-                            else
-                            {
-                                newTri = firstTri.NextTriangle(prevVert, currentVert);
-                                if(newTri == null)
-                                {
-                                    reachedEnd = true;
-                                    continue;
-                                }
-                            }
+                            
                             strip.Reverse();
 
                             Triangle tTri = firstTri;
@@ -580,19 +617,7 @@ namespace SATools.SAModel.Structs
                         }
                     }
 
-                    if(doSwaps)
-                    {
-                        swapTri = newTri.NextTriangle(prevVert, currentVert);
-                        if(swapTri != null && secNewTri.HasVertex(currentVert))
-                        {
-                            strip.Add(prevVert.index);
-
-                            Vertex t = prevVert;
-                            prevVert = currentVert;
-                            currentVert = t;
-                        }
-                    }
-
+                    // getting the next vertex to write
                     nextVert = newTri.GetThirdVertex(prevVert, currentVert);
 
                     if(nextVert == null)
@@ -610,49 +635,31 @@ namespace SATools.SAModel.Structs
 
                     if(oldTri.HasBrokenCullFlow(currentTri))
                         newTri = null;
-                    else if(doSwaps)
-                        newTri = swapTri;
                     else
                         newTri = currentTri.NextTriangle(prevVert, currentVert);
                 }
 
+                // checking if the triangle is reversed
                 for(int i = 0; i < 3; i++)
                 {
                     if(firstTri.vertices[0].index == strip[i])
                     {
                         if(firstTri.vertices[1].index == strip[(i + 1) % 3])
                         {
-                            strip.Insert(0, strip[0]);
+                            if(strip.Count % 2 == 1)
+                                strip.Reverse();
+                            else
+                                strip.Insert(0, strip[0]);
                         }
                         break;
                     }
                 }
 
                 strips.Add(strip.ToArray());
-
                 firstTri = getFirstTri();
             }
 
-            int[][] result;
-
-            if(concat) // TODO strippifier Concat is broken
-            {
-                List<int> tResult = new(strips[0]);
-                if(strips.Count > 1)
-                {
-                    for(int i = 1; i < strips.Count; i++)
-                    {
-                        tResult.Add(strips[i - 1].Last());
-                        tResult.Add(strips[i][0]);
-                        tResult.AddRange(strips[i]);
-                    }
-                }
-                result = new int[][] { tResult.ToArray() };
-            }
-            else
-                result = strips.ToArray();
-
-            return result;
+            return strips.ToArray();
         }
     }
 }
