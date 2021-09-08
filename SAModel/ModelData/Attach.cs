@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
@@ -39,6 +41,8 @@ namespace SATools.SAModel.ModelData
     [Serializable]
     public class Attach : ICloneable
     {
+        private BufferMesh[] _meshData;
+
         /// <summary>
         /// Name of the attach
         /// </summary>
@@ -51,9 +55,17 @@ namespace SATools.SAModel.ModelData
 
         /// <summary>
         /// Mesh data ready to draw and able to convert into any other format <br/>
-        /// Might Require rebuffer via <see cref="GenBufferMesh"/>
         /// </summary>
-        public BufferMesh[] MeshData { get; private set; }
+        public BufferMesh[] MeshData
+        {
+            get => _meshData;
+            set
+            {
+                _meshData = value;
+                BufferHasOpaque = _meshData.Any(x => !x.Material?.UseAlpha == true);
+                BufferHasTransparent = _meshData.Any(x => x.Material?.UseAlpha == true);
+            }
+        }
 
         /// <summary>
         /// Whether the Attaches buffer has opaque meshes to display
@@ -81,7 +93,7 @@ namespace SATools.SAModel.ModelData
         /// <summary>
         /// Whether the attach uses weights
         /// </summary>
-        public virtual bool HasWeight 
+        public virtual bool HasWeight
             => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
 
         /// <summary>
@@ -108,9 +120,41 @@ namespace SATools.SAModel.ModelData
                     return CHUNK.ChunkAttach.Read(source, address, imageBase, labels);
                 case AttachFormat.GC:
                     return GC.GCAttach.Read(source, address, imageBase, labels);
+                case AttachFormat.Buffer:
+                    return ReadBuffer(source, address, imageBase, labels);
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Reads a buffer attach
+        /// </summary>
+        /// <param name="source">Byte source</param>
+        /// <param name="address">Address at which the attach is stored</param>
+        /// <param name="imageBase">Imagebase for all addresses</param>
+        /// <param name="labels">C struct labels</param>
+        /// <returns></returns>
+        public static Attach ReadBuffer(byte[] source, uint address, uint imageBase, Dictionary<uint, string> labels)
+        {
+            uint meshCount = source.ToUInt32(address);
+            uint meshAddr = source.ToUInt32(address + 4) - imageBase;
+
+            uint[] meshAddresses = new uint[meshCount];
+            for(int i = 0; i < meshCount; i++)
+            {
+                meshAddresses[i] = source.ToUInt32(meshAddr) - imageBase;
+                meshAddr += 4;
+            }
+
+            BufferMesh[] meshes = new BufferMesh[meshCount];
+
+            for(int i = 0; i < meshCount; i++)
+            {
+                meshes[i] = BufferMesh.Read(source, meshAddresses[i], imageBase);
+            }
+
+            return new Attach(meshes);
         }
 
         /// <summary>
@@ -120,9 +164,35 @@ namespace SATools.SAModel.ModelData
         /// <param name="DX">Whether the attach is for sadx</param>
         /// <param name="labels">Labels for the objects</param>
         /// <returns>address pointing to the attach</returns>
-        public virtual uint Write(EndianMemoryStream writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
+        public virtual uint Write(EndianWriter writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
         {
-            throw new NotSupportedException("Standard attach doesnt have an available Binary format");
+            // default to buffer format
+            return WriteBuffer(writer, imageBase, labels);
+        }
+
+        public uint WriteBuffer(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
+        {
+            // write the meshes first
+            uint[] meshAddresses = new uint[MeshData.Length];
+            for(int i = 0; i < MeshData.Length; i++)
+            {
+                meshAddresses[i] = MeshData[i].Write(writer, imageBase);
+            }
+
+            // write the pointer array
+            uint arrayAddr = writer.Position + imageBase;
+            for(int i = 0; i < MeshData.Length; i++)
+            {
+                writer.WriteUInt32(meshAddresses[i]);
+            }
+
+            uint address = writer.Position + imageBase;
+            labels.AddLabel(Name, address);
+
+            writer.WriteUInt32((uint)meshAddresses.Length);
+            writer.WriteUInt32(arrayAddr);
+
+            return address;
         }
 
         /// <summary>
@@ -165,29 +235,16 @@ namespace SATools.SAModel.ModelData
             return (result, transparent);
         }
 
-        /// <summary>
-        /// Creates a BufferMesh set which acurately depicts the current model
-        /// </summary>
-        public void GenBufferMesh(bool optimize)
-        {
-            MeshData = Buffer(optimize);
-            BufferHasOpaque = MeshData.Any(x => !x.Material?.UseAlpha == true);
-            BufferHasTransparent = MeshData.Any(x => x.Material?.UseAlpha == true);
-        }
-
-        internal virtual BufferMesh[] Buffer(bool optimize)
-            => MeshData;
-
         public virtual void RecalculateBounds()
             => throw new InvalidOperationException("");
 
-        object ICloneable.Clone() 
+        object ICloneable.Clone()
             => Clone();
 
-        public virtual Attach Clone() 
+        public virtual Attach Clone()
             => new(MeshData.ContentClone()) { Name = Name };
 
-        public override string ToString() 
+        public override string ToString()
             => $"{Name} - Buffer";
     }
 }

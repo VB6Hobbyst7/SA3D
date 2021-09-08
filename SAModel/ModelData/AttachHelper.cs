@@ -14,6 +14,18 @@ namespace SATools.SAModel.ModelData
     /// </summary>
     public static class AttachHelper
     {
+        public struct VertexWeightSet
+        {
+            public VertexWeights[] vertices;
+            public BufferMesh[] displayMeshes;
+
+            public VertexWeightSet(VertexWeights[] vertices, BufferMesh[] displayMeshes)
+            {
+                this.vertices = vertices;
+                this.displayMeshes = displayMeshes;
+            }
+        }
+
         /// <summary>
         /// Vertex in local space with weight information
         /// </summary>
@@ -86,17 +98,6 @@ namespace SATools.SAModel.ModelData
                 => Equals(other);
         }
 
-        public static Attach FromBufferMesh(BufferMesh[] buffer, AttachFormat format)
-        {
-            return format switch
-            {
-                AttachFormat.BASIC => new BASIC.BasicAttach(buffer),
-                AttachFormat.CHUNK => new CHUNK.ChunkAttach(buffer),
-                AttachFormat.GC => new GC.GCAttach(buffer),
-                _ => new Attach(buffer),
-            };
-        }
-
         /// <summary>
         /// Takes (simplified) mesh data and convertes it to working mesh data. <br/>
         /// Attaches it to the "bones" afterwards. <br/>
@@ -108,12 +109,8 @@ namespace SATools.SAModel.ModelData
         /// <param name="vertices">Vertex data</param>
         /// <param name="displayMeshes">Polygon info</param>
         /// <param name="format">Attach format to convert to</param>
-        public static void FromWeightedBuffer(NJObject[] nodes, Matrix4x4 meshMatrix, VertexWeights[] vertices, BufferMesh[] displayMeshes, AttachFormat format)
+        public static void FromWeightedBuffer(NJObject[] nodes, Matrix4x4 meshMatrix, VertexWeights[] vertices, BufferMesh[] displayMeshes)
         {
-            // Check if the format that we wanna convert to even supports weights
-            if(format == AttachFormat.BASIC || format == AttachFormat.GC)
-                throw new ArgumentException($"Format {format} does not support weighted data!");
-
             // lets optimize our data size a bit;
             // First, we remove any duplicates
             VertexWeights[] distinctVerts = vertices.GetDistinct();
@@ -219,7 +216,7 @@ namespace SATools.SAModel.ModelData
                 else
                     meshes = new BufferMesh[] { mesh };
 
-                nodes[i].Attach = FromBufferMesh(meshes, format);
+                nodes[i].Attach = new(meshes);
             }
         }
 
@@ -289,5 +286,214 @@ namespace SATools.SAModel.ModelData
 
             return local;
         }
+
+        #region Weightless stuff
+
+        /// <summary>
+        /// A single cached vertex
+        /// </summary>
+        private struct CachedVertex : IEquatable<CachedVertex>
+        {
+            public Vector4 position;
+            public Vector3 normal;
+
+            public Vector3 V3Position => new(position.X, position.Y, position.Z);
+
+            public CachedVertex(Vector4 position, Vector3 normal)
+            {
+                this.position = position;
+                this.normal = normal;
+            }
+            public bool Equals(CachedVertex other)
+            {
+                return V3Position == other.V3Position
+                    && normal == other.normal;
+            }
+
+            public override string ToString()
+            {
+                return $"({position.X:f3}, {position.Y:f3}, {position.Z:f3}, {position.W:f3}) - ({normal.X:f3}, {normal.Y:f3}, {normal.Z:f3})";
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CachedVertex vertex && Equals(vertex);
+            }
+
+            public override int GetHashCode() => HashCode.Combine(position, normal, V3Position);
+        }
+
+        /// <summary>
+        /// Vertex Cache size
+        /// </summary>
+        private const int VertexCacheSize = 0xFFFF;
+
+        /// <summary>
+        /// Vertex cache
+        /// </summary>
+        private static readonly CachedVertex[] _vertexCache
+            = new CachedVertex[VertexCacheSize];
+
+        private static readonly ushort[] _vertexCacheMap
+            = new ushort[VertexCacheSize];
+
+        /// <summary>
+        /// Used for converting weightless attach information
+        /// </summary>
+        public struct WeightlessBufferAttach
+        {
+            readonly public BufferVertex[] vertices;
+            readonly public BufferCorner[][] corners;
+            readonly public BufferMaterial[] materials;
+
+            public WeightlessBufferAttach(BufferVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials)
+            {
+                this.vertices = vertices;
+                this.corners = corners;
+                this.materials = materials;
+            }
+        }
+
+        /// <summary>
+        /// Processes weightless buffer attaches to assist in conversion (may also be used on weighted models, but wont give fancy results)
+        /// </summary>
+        public static void ProcessWeightlessModel(NJObject model, Func<WeightlessBufferAttach, Attach, Attach> loopaction)
+        {
+            // checking if all the meshes have buffer information
+            NJObject[] models = model.GetObjects();
+            foreach(NJObject obj in models)
+            {
+                if(obj.Attach == null)
+                    continue;
+
+                if(obj.Attach.MeshData == null)
+                    throw new FormatException("Not all attaches have meshdata! Please generate Meshdata before converting");
+            }
+
+            // clearing the cache
+            Array.Clear(_vertexCache, 0, VertexCacheSize);
+
+            // The world matrix for each object
+            Dictionary<NJObject, Matrix4x4> worldMatrices = new();
+
+            // The new attach for each NJ object
+            Dictionary<NJObject, Attach> newAttaches = new();
+
+            // Used for checking if a mesh was already converted; <Old, New>
+            Dictionary<Attach, Attach> attachMap = new();
+
+            foreach(NJObject obj in models)
+            {
+                // get the world matrix
+                Matrix4x4 worldMatrix = obj.LocalMatrix;
+                if(obj.Parent != null)
+                    worldMatrix *= worldMatrices[obj.Parent];
+                worldMatrices.Add(obj, worldMatrix);
+
+                // nothing to convert
+                if(obj.Attach == null)
+                    continue;
+
+                // whether the attach was already converted
+                // we are still gonna move the vertex information to the cache,
+                // just to be sure that all data is correct
+                bool alreadyConverted = attachMap.TryGetValue(obj.Attach, out Attach newAtc);
+
+                // getting the other matrices
+                Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
+                Matrix4x4 normalMtx = Matrix4x4.Transpose(invertedWorldMatrix);
+
+                BufferMesh[] bufferMeshes = obj.Attach.MeshData;
+
+                // preparing output collections
+                List<BufferVertex> vertices = new();
+                BufferCorner[][] corners = new BufferCorner[bufferMeshes.Length][];
+                BufferMaterial[] materials = new BufferMaterial[bufferMeshes.Length];
+
+                HashSet<ushort> containingIndices = new();
+
+                for(int i = 0; i < bufferMeshes.Length; i++)
+                {
+                    BufferMesh bufferMesh = bufferMeshes[i];
+                    materials[i] = bufferMesh.Material;
+
+                    if(bufferMesh.Vertices != null)
+                        CacheVertices(bufferMesh.Vertices, bufferMesh.VertexWriteOffset, bufferMesh.ContinueWeight, worldMatrix, normalMtx, containingIndices);
+
+                    List<BufferCorner> meshCorners = new();
+
+                    foreach(BufferCorner bc in bufferMesh.Corners)
+                    {
+                        ushort vertexIndex = (ushort)(bc.VertexIndex + bufferMesh.VertexReadOffset);
+
+                        if(!containingIndices.Contains(vertexIndex))
+                        {
+                            CachedVertex vtx = _vertexCache[vertexIndex];
+
+                            BufferVertex bufferVertex = new(
+                                Vector3.Transform(vtx.V3Position, invertedWorldMatrix),
+                                Vector3.TransformNormal(vtx.normal, invertedWorldMatrix),
+                                (ushort)vertices.Count
+                                );
+
+                            _vertexCacheMap[vertexIndex] = bufferVertex.Index;
+                            vertices.Add(bufferVertex);
+                            containingIndices.Add(vertexIndex);
+                        }
+
+                        meshCorners.Add(new BufferCorner(
+                            _vertexCacheMap[vertexIndex],
+                            bc.Color,
+                            bc.Texcoord
+                            ));
+                    }
+
+                    if(bufferMesh.Corners != null)
+                    {
+                        corners[i] = bufferMesh.TriangleList != null
+                            ? bufferMesh.TriangleList.Select(x => meshCorners[(int)x]).ToArray()
+                            : meshCorners.ToArray();
+                    }
+                }
+
+
+                if(!alreadyConverted)
+                {
+                    newAtc = loopaction.Invoke(new WeightlessBufferAttach(vertices.ToArray(), corners.ToArray(), materials), obj.Attach);
+                    newAtc.MeshData = obj.Attach.MeshData;
+                    attachMap.Add(obj.Attach, newAtc);
+                }
+
+                newAttaches.Add(obj, newAtc);
+            }
+
+            foreach(var p in newAttaches)
+                p.Key._attach = p.Value;
+        }
+
+        private static void CacheVertices(BufferVertex[] vertices, ushort vertexIndexOffset, bool continueWeight, Matrix4x4 worldMatrix, Matrix4x4 normalWorldMatrix, HashSet<ushort> replaced)
+        {
+            foreach(BufferVertex vtx in vertices)
+            {
+                Vector4 pos = Vector4.Transform(vtx.Position, worldMatrix) * vtx.Weight;
+                Vector3 nrm = Vector3.TransformNormal(vtx.Normal, normalWorldMatrix) * vtx.Weight;
+
+                int index = vtx.Index + vertexIndexOffset;
+
+                if(continueWeight)
+                {
+                    _vertexCache[index].position += pos;
+                    _vertexCache[index].normal += nrm;
+                }
+                else
+                {
+                    _vertexCache[index] = new(pos, nrm);
+                }
+
+                replaced.Remove((ushort)index);
+            }
+        }
+
+        #endregion
     }
 }
