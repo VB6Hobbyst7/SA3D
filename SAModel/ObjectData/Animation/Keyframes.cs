@@ -314,7 +314,8 @@ namespace SATools.SAModel.ObjData.Animation
 
             if(a < 0)
                 return Lerp(a, a - dif, t);
-            else return Lerp(a, a + dif, t);
+            else
+                return Lerp(a, a + dif, t);
         }
 
         private static Vector3[] ValueAtFrame(SortedDictionary<uint, Vector3[]> keyframes, float frame)
@@ -619,7 +620,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="channels">Channel count (derived from type)</param>
         /// <param name="type">Which channels should be written</param>
         /// <param name="shortRot">Whether to write rotation in </param>
-        public (uint address, uint count)[] Write(EndianMemoryStream writer, uint imageBase, int channels, AnimFlags type, bool shortRot = false)
+        public (uint address, uint count)[] Write(EndianWriter writer, uint imageBase, int channels, AnimFlags type, bool shortRot = false)
         {
             (uint address, uint count)[] keyframeLocs = new (uint address, uint count)[channels];
             int channelIndex = 0;
@@ -633,7 +634,7 @@ namespace SATools.SAModel.ObjData.Animation
                         channelIndex++;
                         return false;
                     }
-                    keyframeLocs[channelIndex] = ((uint)writer.Stream.Position + imageBase, (uint)count);
+                    keyframeLocs[channelIndex] = (writer.Position + imageBase, (uint)count);
                     channelIndex++;
                     return true;
                 }
@@ -690,12 +691,12 @@ namespace SATools.SAModel.ObjData.Animation
                     Dictionary<uint, uint> ptrs = new();
                     foreach(var pair in dict)
                     {
-                        ptrs.Add(pair.Key, (uint)writer.Stream.Position + imageBase);
+                        ptrs.Add(pair.Key, writer.Position + imageBase);
                         foreach(Vector3 v in pair.Value)
                             v.Write(writer, IOType.Float);
                     }
 
-                    keyframeLocs[channelIndex] = ((uint)writer.Stream.Position + imageBase, (uint)dict.Count);
+                    keyframeLocs[channelIndex] = (writer.Position + imageBase, (uint)dict.Count);
 
                     foreach(var pair in dict)
                     {
@@ -896,7 +897,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// Writes the spotlight to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             writer.WriteSingle(near);
             writer.WriteSingle(far);

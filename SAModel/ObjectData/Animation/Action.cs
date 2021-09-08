@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using static SATools.SACommon.ByteConverter;
 
@@ -68,12 +69,21 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="DX">Whether the action is for SADX</param>
         /// <param name="labels">C struct labels</param>
         /// <returns>Address to the written action</returns>
-        public uint Write(EndianMemoryStream writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
+        public uint Write(EndianWriter writer, uint imageBase, bool DX, bool writeBuffer, Dictionary<string, uint> labels)
         {
-            uint mdlAddress = Model.WriteHierarchy(writer, imageBase, DX, labels);
-            uint aniAddress = Animation.Write(writer, imageBase, labels);
+            if(labels.TryGetValue(Model.Name, out uint mdlAddress))
+            {
+                mdlAddress = Model.WriteHierarchy(writer, imageBase, DX, writeBuffer, labels);
+                labels.Add(Model.Name, mdlAddress);
+            }
 
-            uint address = (uint)writer.Stream.Position + imageBase;
+            if(labels.TryGetValue(Animation.Name, out uint aniAddress))
+            {
+                aniAddress = Animation.Write(writer, imageBase, labels);
+                labels.Add(Model.Name, aniAddress);
+            }
+
+            uint address = writer.Position + imageBase;
             writer.WriteUInt32(mdlAddress);
             writer.WriteUInt32(aniAddress);
             return address;

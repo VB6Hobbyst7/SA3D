@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
@@ -217,7 +218,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="writer">Ouput stream</param>
         /// <param name="imageBase">Image base for all addresses</param>
         /// <param name="labels">C struct label</param>
-        public uint Write(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
+        public uint Write(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
             AnimFlags type = 0;
             foreach(Keyframes kf in Keyframes.Values)
@@ -239,7 +240,7 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            uint keyframesAddr = (uint)writer.Stream.Position + imageBase;
+            uint keyframesAddr = writer.Position + imageBase;
 
             foreach(var kf in keyFrameLocations)
             {
@@ -251,8 +252,8 @@ namespace SATools.SAModel.ObjData.Animation
 
             UpdateFrameCount();
 
-            uint address = (uint)writer.Stream.Position + imageBase;
-            labels.Add(Name, address);
+            uint address = writer.Position + imageBase;
+            labels.AddLabel(Name, address);
 
             writer.WriteUInt32(keyframesAddr);
             writer.WriteUInt32(Frames);
@@ -276,24 +277,22 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public byte[] WriteFile()
         {
-            using(ExtendedMemoryStream stream = new())
-            {
-                LittleEndianMemoryStream writer = new(stream);
+            using ExtendedMemoryStream stream = new();
+            EndianWriter writer = new(stream);
 
-                writer.WriteUInt64(SAANIMVer);
-                writer.WriteUInt32(0); // placeholders for motion address and name address
-                writer.WriteUInt32(0x14);
-                writer.WriteInt32((int)ModelCount | (ShortRot ? int.MinValue : 0));
-                writer.Write(Encoding.UTF8.GetBytes(Name));
-                writer.Write(new byte[1]);
+            writer.WriteUInt64(SAANIMVer);
+            writer.WriteUInt32(0); // placeholders for motion address and name address
+            writer.WriteUInt32(0x14);
+            writer.WriteInt32((int)ModelCount | (ShortRot ? int.MinValue : 0));
+            writer.Write(Encoding.UTF8.GetBytes(Name));
+            writer.Write(new byte[1]);
 
-                uint aniAddr = Write(writer, 0, new Dictionary<string, uint>());
-                writer.Stream.Seek(8, SeekOrigin.Begin);
-                writer.WriteUInt32(aniAddr);
-                writer.Stream.Seek(0, SeekOrigin.End);
+            uint aniAddr = Write(writer, 0, new Dictionary<string, uint>());
+            writer.Stream.Seek(8, SeekOrigin.Begin);
+            writer.WriteUInt32(aniAddr);
+            writer.Stream.Seek(0, SeekOrigin.End);
 
-                return stream.ToArray();
-            }
+            return stream.ToArray();
         }
 
         public override string ToString() => $"{Name} - {Frames}, {ModelCount} - {Keyframes.Count}";

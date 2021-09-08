@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using static SATools.SACommon.ByteConverter;
 
@@ -14,7 +15,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Size in bytes
         /// </summary>
-        public static uint Size => 18;
+        public static uint Size => 24;
 
         /// <summary>
         /// First keyframe / Keyframe to start the animation at
@@ -39,7 +40,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Animation
         /// </summary>
-        public Motion Motion { get; set; }
+        public Action MotionAction { get; set; }
 
         /// <summary>
         /// Texture list
@@ -51,17 +52,25 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         /// <param name="frame">Start frame</param>
         /// <param name="step">Animation speed</param>
+        public LandEntryMotion(float frame, float step, float maxFrame, NJObject model, Motion motion, uint texListPtr)
+            : this(frame, step, maxFrame, model, new Action(model, motion), texListPtr) { }
+
+        /// <summary>
+        /// Creates a new geometry animation
+        /// </summary>
+        /// <param name="frame">Start frame</param>
+        /// <param name="step">Animation speed</param>
         /// <param name="maxFrame"></param>
         /// <param name="model"></param>
         /// <param name="motion"></param>
         /// <param name="texListPtr"></param>
-        public LandEntryMotion(float frame, float step, float maxFrame, NJObject model, Motion motion, uint texListPtr)
+        public LandEntryMotion(float frame, float step, float maxFrame, NJObject model, Action action, uint texListPtr)
         {
             Frame = frame;
             Step = step;
             MaxFrame = maxFrame;
             Model = model;
-            Motion = motion;
+            MotionAction = action;
             TexListPtr = texListPtr;
         }
 
@@ -88,11 +97,11 @@ namespace SATools.SAModel.ObjData.Animation
             NJObject model = NJObject.Read(source, modelAddress, imageBase, format, DX, labels, attaches);
 
             uint motionAddress = source.ToUInt32(address + 0x10) - imageBase;
-            Motion motion = Motion.Read(source, ref motionAddress, imageBase, (uint)model.Count(), labels);
+            Action action = Action.Read(source, motionAddress, imageBase, format, DX, labels, attaches);
 
             uint texListPtr = source.ToUInt32(address + 0x14);
 
-            return new LandEntryMotion(frame, step, maxFrame, model, motion, texListPtr);
+            return new LandEntryMotion(frame, step, maxFrame, model, action, texListPtr);
         }
 
         /// <summary>
@@ -100,13 +109,33 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         /// <param name="writer">Output stream</param>
         /// <param name="labels">C struct labels</param>
-        public void Write(EndianMemoryStream writer, Dictionary<string, uint> labels)
+        public void Write(EndianWriter writer, uint imageBase, bool DX, bool writeBuffer, Dictionary<string, uint> labels)
+        {
+            uint mdlAddr = Model.Write(writer, imageBase, labels);
+            uint actionAddr = MotionAction.Write(writer, imageBase, DX, writeBuffer, labels);
+
+            writer.WriteSingle(Frame);
+            writer.WriteSingle(Step);
+            writer.WriteSingle(MaxFrame);
+            writer.WriteUInt32(mdlAddr);
+            writer.WriteUInt32(actionAddr);
+            writer.WriteUInt32(TexListPtr);
+        }
+
+        public void Write(EndianWriter writer, Dictionary<Action, uint> actionAddresses, Dictionary<string, uint> labels)
         {
             writer.WriteSingle(Frame);
             writer.WriteSingle(Step);
             writer.WriteSingle(MaxFrame);
-            writer.WriteUInt32(labels.ContainsKey(Model.Name) ? labels[Model.Name] : throw new NullReferenceException($"Model \"{Model.Name}\" has not been written yet / cannot be found in labels!"));
-            writer.WriteUInt32(labels.ContainsKey(Motion.Name) ? labels[Motion.Name] : throw new NullReferenceException($"Motion \"{Motion.Name}\" has not been written yet / cannot be found in labels!"));
+
+            if(!labels.TryGetValue(Model.Name, out uint mdlAddress))
+                throw new NullReferenceException($"Model \"{Model.Name}\" has not been written yet / cannot be found in labels!");
+            writer.WriteUInt32(mdlAddress);
+
+            if(!actionAddresses.TryGetValue(MotionAction, out uint actionAddress))
+                throw new NullReferenceException($"Model \"{Model.Name}\" has not been written yet / cannot be found in labels!");
+            writer.WriteUInt32(actionAddress);
+
             writer.WriteUInt32(TexListPtr);
         }
     }
