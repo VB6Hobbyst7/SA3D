@@ -12,13 +12,13 @@ namespace SATools.SA3D.ViewModel.TreeItems
     {
         public TextureSet Textures { get; set; }
 
-        public TreeItemType ItemType 
+        public TreeItemType ItemType
             => TreeItemType.TextureHead;
 
         public string ItemName
             => "Textures";
 
-        public bool CanExpand 
+        public bool CanExpand
             => Textures?.Textures.Count > 0;
 
         public List<ITreeItemData> Expand()

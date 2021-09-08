@@ -18,12 +18,12 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public string ItemName
             => Texture.Name;
 
-        public bool CanExpand 
+        public bool CanExpand
             => false;
 
-        public List<ITreeItemData> Expand() 
+        public List<ITreeItemData> Expand()
             => null;
-        
+
 
         public void Select(VmTreeItem parent)
         {

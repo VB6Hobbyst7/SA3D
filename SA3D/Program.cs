@@ -150,7 +150,7 @@ namespace SATools.SA3D
 
                     var file = SAModel.ObjData.ModelFile.Read(path);
                     DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
-                    
+
                     if(motionPath != null)
                     {
                         task.Motions.Add(Motion.ReadFile(motionPath, file.Model.CountAnimated()));

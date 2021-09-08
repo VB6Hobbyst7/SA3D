@@ -13,8 +13,6 @@
     <UserControl.Resources>
         <DataTemplate x:Key="NJObject" DataType="{x:Type vmTree:VmNJObject}">
             <StackPanel>
-                
-                
                 <!-- transform info -->
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -35,19 +33,19 @@
                     <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding ItemName}"/>
 
                     <TextBlock Grid.Row="1" Text="Position"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ObjectData.Position.X}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ObjectData.Position.Y}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding ObjectData.Position.Z}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PositionX, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding PositionY, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding PositionZ, StringFormat={}{0:0.###}}"/>
 
                     <TextBlock Grid.Row="2" Text="Rotation"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ObjectData.Rotation.X}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding ObjectData.Rotation.Y}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding ObjectData.Rotation.Z}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding RotationX, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding RotationY, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding RotationZ, StringFormat={}{0:0.###}}"/>
 
                     <TextBlock Grid.Row="3" Text="Scale"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ObjectData.Scale.X}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding ObjectData.Scale.Y}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding ObjectData.Scale.Z}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ScaleX, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding ScaleY, StringFormat={}{0:0.###}}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding ScaleZ, StringFormat={}{0:0.###}}"/>
 
                 </Grid>
             </StackPanel>
@@ -62,7 +60,7 @@
                         <Setter.Value>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Type:"/>
+                                    <TextBlock Text="Type: "/>
                                     <TextBlock Text="{Binding ItemType}"/>
                                 </StackPanel>
                             </DataTemplate>

@@ -11,7 +11,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 using SATools.SAModel.Convert;
+using System.IO;
 
 namespace SATools.SA3D.XAML.Dialogs
 {
@@ -20,15 +22,17 @@ namespace SATools.SA3D.XAML.Dialogs
     /// </summary>
     public partial class WndGltfImport : Window
     {
-        public string FilePath { get; }
-
         public GLTF.Contents Imported { get; private set; }
 
-        public WndGltfImport(string filePath)
+        public WndGltfImport()
         {
-            FilePath = filePath;
             InitializeComponent();
-            PathDisplay.Text = FilePath;
+
+            filepath.Dialog = new OpenFileDialog()
+            {
+                Title = "Select GLTF file to import",
+                Filter = "GLTF file (*.glb; *.gltf)|*.glb;*.gltf"
+            };
         }
 
         private void AnimFrameRate_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -48,7 +52,13 @@ namespace SATools.SA3D.XAML.Dialogs
 
             try
             {
-                Imported = GLTF.Read(FilePath, SAModel.ModelData.AttachFormat.Buffer, ImportTextures.IsChecked.Value, ImportAnims.IsChecked.Value ? playbackSpeed : null );
+                if(!File.Exists(filepath.FilePath))
+                {
+                    _ = MessageBox.Show("Filepath doesnt exist!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                Imported = GLTF.Read(filepath.FilePath, ImportTextures.IsChecked.Value, ImportAnims.IsChecked.Value ? playbackSpeed : null);
                 DialogResult = true;
             }
             catch(Exception exc)

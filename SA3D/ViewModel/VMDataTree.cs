@@ -21,7 +21,7 @@ namespace SATools.SA3D.ViewModel
                     return;
                 _selected = value;
 
-                _selected.Data.Select(_selected.Parent);
+                _selected?.Data.Select(_selected.Parent);
                 OnPropertyChanged(nameof(Selected));
             }
         }
@@ -38,5 +38,10 @@ namespace SATools.SA3D.ViewModel
             }
         }
 
+        public void Reset()
+        {
+            Selected = null;
+            Objects.Clear();
+        }
     }
 }

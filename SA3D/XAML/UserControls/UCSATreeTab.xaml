@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="SATools.SA3D.XAML.UserControls.UCSATreeTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SATools.SA3D.XAML.UserControls"
+             xmlns:uc="clr-namespace:SATools.SA3D.XAML.UserControls"
+             xmlns:vm="clr-namespace:SATools.SA3D.ViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="250"
+             d:DataContext="{d:DesignInstance vm:VMDataTree}">
+
+    <UserControl.Resources>
+        <vm:TreeItemTypeConverter x:Key="TreeItemTypeConverter"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="200"/>
+        </Grid.RowDefinitions>
+
+        <TreeView ItemsSource="{Binding Objects}" SelectedItemChanged="TreeView_SelectedItemChanged">
+
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Grid.Column="0" Source="{Binding ItemType, Converter={StaticResource TreeItemTypeConverter}}" SnapsToDevicePixels="True"/>
+                        <Label Grid.Column="1" Content="{Binding ItemName}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"/>
+                    </Grid>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+
+        </TreeView>
+
+        <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+
+        <uc:UcTreeItemInspector Grid.Row="2" DataContext="{Binding Selected}"/>
+
+    </Grid>
+</UserControl>

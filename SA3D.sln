@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAWPF", "SAWPF\SAWPF.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAArchive", "SAArchive\SAArchive.csproj", "{95CA92B7-1B1B-4B6D-B1DA-AFBA33318751}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAModel.Convert", "SAModel.Convert\SAModel.Convert.csproj", "{6538B528-2A29-49D0-BFDE-3AD57CE30B82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAModel.Convert", "SAModel.Convert\SAModel.Convert.csproj", "{6538B528-2A29-49D0-BFDE-3AD57CE30B82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

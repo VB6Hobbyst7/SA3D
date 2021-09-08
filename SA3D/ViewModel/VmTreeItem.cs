@@ -93,5 +93,5 @@ namespace SATools.SA3D.ViewModel
                 Children.Add(null);
         }
     }
-    
+
 }

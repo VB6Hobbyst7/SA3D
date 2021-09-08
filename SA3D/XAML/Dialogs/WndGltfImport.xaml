@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SATools.SA3D.XAML.Dialogs"
+        xmlns:ucs="clr-namespace:SATools.SA3D.XAML.UserControls"
         mc:Ignorable="d"
         Title="Import GL Transmission File" Height="200" Width="400"
         ResizeMode="NoResize">
@@ -13,6 +14,7 @@
                 <Style TargetType="{x:Type TextBlock}">
                     <Setter Property="FontWeight" Value="DemiBold"/>
                     <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Height" Value="20"/>
                 </Style> 
             </Grid.Resources>
             
@@ -22,41 +24,48 @@
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="20"/>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="File"/>
-            <TextBox Grid.Row="0" Grid.Column="1" x:Name="PathDisplay" Text="Path" IsReadOnly="True" IsEnabled="False" VerticalContentAlignment="Center"/>
+            <ucs:UcFilepath Grid.Row="0" Grid.Column="1" x:Name="filepath"/>
 
-            <TextBlock Grid.Row="1" Text="Generate Normals"/>
-            <CheckBox Grid.Row="1" Grid.Column="1" 
+            <TextBlock Grid.Row="1" Text="Insert at"/>
+            <ComboBox Grid.Row="1" Grid.Column="1" x:Name="InsertMode">
+                <ComboBoxItem IsSelected="True" ToolTip="Insert as child of the root. If the root has no children, it will replace the root">Root</ComboBoxItem>
+                <ComboBoxItem ToolTip="Insert as child of the selected node">Selection</ComboBoxItem>
+            </ComboBox>
+
+            <TextBlock Grid.Row="2" Text="Generate Normals"/>
+            <CheckBox Grid.Row="2" Grid.Column="1" 
                       x:Name="ImportTextures" 
                       IsChecked="True" 
                       VerticalAlignment="Center" 
                       ToolTip="Generate Normals if none exist"/>
             
-            <TextBlock Grid.Row="2" Text="Textures"/>
-            <CheckBox Grid.Row="2" Grid.Column="1" 
+            <TextBlock Grid.Row="3" Text="Textures"/>
+            <CheckBox Grid.Row="3" Grid.Column="1" 
                       x:Name="GenerateNormals" 
                       IsEnabled="False"
                       IsChecked="False" 
                       VerticalAlignment="Center" 
                       ToolTip="Import Textures"/>
 
-            <TextBlock Grid.Row="3" Text="Animations"/>
-            <CheckBox Grid.Row="3" Grid.Column="1" 
+            <TextBlock Grid.Row="4" Text="Animations"/>
+            <CheckBox Grid.Row="4" Grid.Column="1" 
                       x:Name="ImportAnims" 
                       IsChecked="True" 
                       VerticalAlignment="Center" 
                       ToolTip="Import animations"/>
             
-            <TextBlock Grid.Row="4" Text="Framerate"/>
-            <TextBox Grid.Row="4" Grid.Column="1" 
+            <TextBlock Grid.Row="5" Text="Framerate"/>
+            <TextBox Grid.Row="5" Grid.Column="1" 
                      x:Name="AnimFrameRate" 
                      PreviewTextInput="AnimFrameRate_PreviewTextInput" 
                      Text="60" 
@@ -68,7 +77,7 @@
                      HorizontalContentAlignment="Right" 
                      HorizontalAlignment="Left"/>
 
-            <StackPanel Grid.Row="5" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <StackPanel Grid.Row="6" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                 <Button Content="Import" Width="80" Margin="10 0" Click="Import"/>
                 <Button Content="Cancel" Width="80" Click="Cancel"/>
             </StackPanel>
