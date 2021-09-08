@@ -75,16 +75,18 @@ namespace SATools.SAModel.Graphics
 
         #endregion
 
-        public readonly List<LandEntry> geometry = new();
+        public LandTable CurrentLandTable { get; private set; }
+
+        public List<LandEntry> Geometry => CurrentLandTable?.Geometry;
 
         public LandEntry[] VisualGeometry
         {
-            get => _visualCollision ? CollisionGeometry : geometry.Where(x => x.SurfaceFlags.HasFlag(SurfaceFlags.Visible)).ToArray();
+            get => _visualCollision ? CollisionGeometry : Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceFlags.HasFlag(SurfaceFlags.Visible)).ToArray();
         }
 
         public LandEntry[] CollisionGeometry
         {
-            get => geometry.Where(x => x.SurfaceFlags.IsCollision()).ToArray();
+            get => Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceFlags.IsCollision()).ToArray();
         }
 
         internal Scene(float cameraAspect, BufferingBridge bufferbridge)
@@ -108,7 +110,7 @@ namespace SATools.SAModel.Graphics
             foreach(GameTask tsk in GameTasks)
                 tsk.Update(delta, SceneTime);
         }
-    
+
 
         #region Handling tasks
 
@@ -121,10 +123,6 @@ namespace SATools.SAModel.Graphics
             {
                 dtsk.OnTextureSetChanged += TaskTexturesChanged;
                 TaskTexturesChanged(null, dtsk.TextureSet);
-
-                NJObject[] objs = dtsk.Model.GetObjects();
-                foreach(NJObject obj in objs)
-                    obj.Attach?.GenBufferMesh(true); 
             }
         }
 
@@ -137,15 +135,33 @@ namespace SATools.SAModel.Graphics
             }
         }
 
+        public void ClearTasks()
+        {
+            List<GameTask> toRemove = new(_gameTasks);
+            foreach(GameTask t in toRemove)
+            {
+                if(_gameTasks.Remove(t) && t is DisplayTask dtsk)
+                {
+                    dtsk.OnTextureSetChanged -= TaskTexturesChanged;
+                    TaskTexturesChanged(dtsk.TextureSet, null);
+                }
+            }
+        }
+
         #endregion
 
         public void LoadLandtable(LandTable table)
         {
-            foreach(LandEntry le in table.Geometry)
-            {
-                geometry.Add(le);
-                le.Attach.GenBufferMesh(true);
-            }
+            ClearLandtable();
+            CurrentLandTable = table;
+            CurrentLandTable.BufferLandtable();
+        }
+
+        public void ClearLandtable()
+        {
+            // TODO debuffer the buffered attaches here!
+
+            CurrentLandTable = null;
         }
 
         #region Texture handling

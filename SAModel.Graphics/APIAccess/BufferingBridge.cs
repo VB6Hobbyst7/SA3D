@@ -226,7 +226,7 @@ namespace SATools.SAModel.Graphics.APIAccess
                         vtx.V3Position,
                         vtx.normal,
                         weightworld.HasValue ? GetWeightColor(VertexWeights[vOffset]) : corner.Color,
-                        corner.Uv);
+                        corner.Texcoord);
                 }
 
                 BufferVertexCache(mesh, toBuffer);
@@ -246,17 +246,23 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// <param name="mesh"></param>
         public abstract void DebufferVertexCache(BufferMesh mesh);
 
+        /// <summary>
+        /// Used to check whether a mesh is already buffered
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public abstract bool IsBuffered(BufferMesh mesh);
 
         #endregion
 
         #region Texture Buffering
 
-        private Dictionary<TextureSet, int> _textureSetUsages
+        private readonly Dictionary<TextureSet, int> _textureSetUsages
             = new();
 
         internal void InternalBufferTextureSet(TextureSet set)
         {
-            if(!_textureSetUsages.TryGetValue(set, out int count))
+            if(!_textureSetUsages.TryGetValue(set, out _))
             {
                 _textureSetUsages.Add(set, 1);
                 if(initialized)

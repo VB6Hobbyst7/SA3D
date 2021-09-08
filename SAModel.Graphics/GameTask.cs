@@ -1,7 +1,9 @@
 ﻿using SATools.SAArchive;
+using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System.Collections.Generic;
+using System;
 
 namespace SATools.SAModel.Graphics
 {
@@ -47,7 +49,7 @@ namespace SATools.SAModel.Graphics
 
         private TextureSet _textureSet;
 
-        public NJObject Model { get; }
+        public NJObject Model { get; private set; }
 
         public TextureSet TextureSet
         {
@@ -60,10 +62,17 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        public DisplayTask(NJObject obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? obj.Name : name)
+        public DisplayTask(NJObject obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? (obj == null ? "New Model" : obj.Name) : name)
         {
-            Model = obj;
+            Model = obj ?? throw new ArgumentNullException("New model cannot be null!");
+            Model.ConvertAttachFormat(AttachFormat.Buffer, true, false);
             TextureSet = textureSet;
+        }
+
+        public void ReplaceModel(NJObject newModel)
+        {
+            Model = newModel ?? throw new ArgumentNullException("New model cannot be null!");
+            Model?.ConvertAttachFormat(AttachFormat.Buffer, true, false);
         }
     }
 
@@ -128,5 +137,6 @@ namespace SATools.SAModel.Graphics
             base.Update(delta, time);
             UpdateAnim(delta);
         }
+        
     }
 }

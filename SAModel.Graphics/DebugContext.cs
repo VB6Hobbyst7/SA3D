@@ -18,6 +18,7 @@ using SATools.SAModel.Graphics.Properties;
 using System.Collections.Generic;
 using System.Numerics;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
+using SATools.SAModel.ModelData;
 
 namespace SATools.SAModel.Graphics
 {
@@ -249,12 +250,11 @@ namespace SATools.SAModel.Graphics
             _debugFont = new Font(_fonts.Families[0], 12);
             _debugFontBold = new Font(_fonts.Families[0], 15, FontStyle.Bold);
 
-            var stream = GetType().Assembly.GetManifestResourceStream("SATools.SAModel.Graphics.Sphere.bufmdl");
+            var stream = GetType().Assembly.GetManifestResourceStream("SATools.SAModel.Graphics.Sphere.bfmdl");
             byte[] sphere = stream.ReadFully();
             stream.Close();
 
-            uint addr = 0;
-            SphereMesh = BufferMesh.Read(sphere, ref addr);
+            SphereMesh = ModelFile.Read(sphere).Model.Attach.MeshData[0];
 
             BufferMaterial mat = SphereMesh.Material;
             mat.MaterialFlags = MaterialFlags.noDiffuse | MaterialFlags.noSpecular;
@@ -560,10 +560,13 @@ namespace SATools.SAModel.Graphics
                 _renderingBridge.RenderOverlayWireframes(opaqueGeo, transparenGeo, models);
             }
 
-            if(BoundsMode == BoundsMode.All
-                || BoundsMode == BoundsMode.Selected && ActiveLE != null)
+            if(BoundsMode == BoundsMode.All)
             {
                 _renderingBridge.RenderBounds(geoData, SphereMesh, Camera);
+            }
+            else if(BoundsMode == BoundsMode.Selected && ActiveLE != null)
+            {
+                _renderingBridge.RenderBounds(new() { ActiveLE }, SphereMesh, Camera);
             }
 
             if(ObjectRelationsMode == ObjectRelationsMode.Lines)
@@ -581,7 +584,7 @@ namespace SATools.SAModel.Graphics
         }
 
         private void LoadFonts()
-        { 
+        {
             using Stream fontStream = GetType().Assembly.GetManifestResourceStream("SATools.SAModel.Graphics.debugFont.ttf");
             byte[] fontBytes = fontStream.ReadFully();
 

@@ -91,7 +91,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Position of camera in world space (regardless of orbit mode
         /// </summary>
-        public Vector3 Realposition 
+        public Vector3 Realposition
             => _position - _forward * _distance;
 
         /// <summary>
@@ -110,19 +110,19 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// The Cameras global forward Direction
         /// </summary>
-        public Vector3 Forward 
+        public Vector3 Forward
             => _forward;
 
         /// <summary>
         /// The Cameras global right Direction
         /// </summary>
-        public Vector3 Right 
+        public Vector3 Right
             => _right;
 
         /// <summary>
         /// The Cameras global up Direction
         /// </summary>
-        public Vector3 Up 
+        public Vector3 Up
             => _up;
 
         /// <summary>
@@ -250,9 +250,9 @@ namespace SATools.SAModel.Graphics
         {
             Matrix4x4 rot = Matrix4x4.Transpose(Vector3Extensions.CreateRotationMatrix(_rotation, true));
 
-            _forward =  Vector3.Normalize( Vector3.TransformNormal(-Vector3.UnitZ, rot) );
-            _up =       Vector3.Normalize( Vector3.TransformNormal( Vector3.UnitY, rot) );
-            _right =    Vector3.Normalize( Vector3.TransformNormal(-Vector3.UnitX, rot) );
+            _forward = Vector3.Normalize(Vector3.TransformNormal(-Vector3.UnitZ, rot));
+            _up = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, rot));
+            _right = Vector3.Normalize(Vector3.TransformNormal(-Vector3.UnitX, rot));
 
             UpdateViewMatrix();
         }

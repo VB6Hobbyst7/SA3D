@@ -143,7 +143,7 @@ namespace SATools.SAModel.Graphics.APIAccess
             }
 
             if(recenter.HasValue)
-            { 
+            {
                 if(recenter != pos.Value)
                     CursorDelta = pos.Value - recenter.Value;
                 CursorLocation = recenter.Value;
@@ -163,7 +163,7 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// </summary>
         public void UpdateScroll(float delta)
             => ScrollDelta += delta;
-        
+
 
         /// <summary>
         /// Places the cursor

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <None Remove="debugFont.ttf" />
+    <None Remove="Sphere.bfmdl" />
     <None Remove="Sphere.bufmdl" />
   </ItemGroup>
 
@@ -30,9 +31,7 @@
     <EmbeddedResource Include="debugFont.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Sphere.bufmdl">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Sphere.bfmdl" />
   </ItemGroup>
 
   <ItemGroup>

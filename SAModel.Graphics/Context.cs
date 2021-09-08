@@ -225,7 +225,7 @@ namespace SATools.SAModel.Graphics
             _bufferingBridge.ClearWeights();
 
             // get rendermeshes for the
-            var (opaqueGeo, transparentGeo, all) = RenderHelper.PrepareLandEntries(Scene.VisualGeometry, Camera);
+            var (opaqueGeo, transparentGeo, all) = RenderHelper.PrepareLandEntries(Scene.VisualGeometry, Camera, _bufferingBridge);
             var models = RenderHelper.PrepareModels(Scene.GameTasks, null, Camera, _bufferingBridge);
 
             // First render opaque stuff
@@ -233,7 +233,7 @@ namespace SATools.SAModel.Graphics
 
             Material.BufferTextureSet = Scene.LandTextureSet;
             opaqueGeo.RenderLandentries(Material, _renderingBridge);
-            
+
             foreach(var (task, opaque, transparent) in models)
             {
                 Material.BufferTextureSet = task.TextureSet;

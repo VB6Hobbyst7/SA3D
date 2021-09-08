@@ -11,13 +11,13 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             return instr switch
             {
-                BlendMode.One               => BlendingFactor.One,
-                BlendMode.Other             => BlendingFactor.SrcColor,
-                BlendMode.OtherInverted     => BlendingFactor.OneMinusSrcColor,
-                BlendMode.SrcAlpha          => BlendingFactor.SrcAlpha,
-                BlendMode.SrcAlphaInverted  => BlendingFactor.OneMinusSrcAlpha,
-                BlendMode.DstAlpha          => BlendingFactor.DstAlpha,
-                BlendMode.DstAlphaInverted  => BlendingFactor.OneMinusDstAlpha,
+                BlendMode.One => BlendingFactor.One,
+                BlendMode.Other => BlendingFactor.SrcColor,
+                BlendMode.OtherInverted => BlendingFactor.OneMinusSrcColor,
+                BlendMode.SrcAlpha => BlendingFactor.SrcAlpha,
+                BlendMode.SrcAlphaInverted => BlendingFactor.OneMinusSrcAlpha,
+                BlendMode.DstAlpha => BlendingFactor.DstAlpha,
+                BlendMode.DstAlphaInverted => BlendingFactor.OneMinusDstAlpha,
                 _ => BlendingFactor.Zero,
             };
         }

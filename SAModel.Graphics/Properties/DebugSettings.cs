@@ -3,7 +3,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Windows.Input;
 
-namespace SATools.SAModel.Graphics.Properties {
+namespace SATools.SAModel.Graphics.Properties
+{
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class SettingsKeyCategoryAttribute : Attribute
@@ -31,11 +32,12 @@ namespace SATools.SAModel.Graphics.Properties {
     }
 
     [DebuggerNonUserCode()]
-    public sealed class DebugSettings : ApplicationSettingsBase {
-        
+    public sealed class DebugSettings : ApplicationSettingsBase
+    {
+
         private static DebugSettings defaultInstance = (DebugSettings)Synchronized(new DebugSettings());
-        
-        public static DebugSettings Default =>  defaultInstance;
+
+        public static DebugSettings Default => defaultInstance;
 
         [UserScopedSetting()]
         [SettingsKeyCategory("Switching the camera")]

@@ -1,6 +1,7 @@
 ﻿using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SAArchive;
+using SATools.SACommon;
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
@@ -19,6 +20,8 @@ namespace SATools.SAModel.Graphics
         protected readonly BufferingBridge _bridge;
 
         private BufferMaterial _bufferMaterial;
+
+        private EndianWriter _bufferWriter;
 
         /// <summary>
         /// Texture set to use
@@ -60,34 +63,34 @@ namespace SATools.SAModel.Graphics
             _bridge = bridge;
             Buffer = new byte[104];
             _bufferMaterial = new BufferMaterial();
+            _bufferWriter = new(new(Buffer));
         }
 
         protected void UpdateBuffer()
         {
-            using ExtendedMemoryStream stream = new(Buffer);
-            LittleEndianMemoryStream writer = new(stream);
+            _bufferWriter.Stream.Seek(0, System.IO.SeekOrigin.Begin);
 
-            ViewPos.Write(writer, IOType.Float);
-            writer.Write(0);
+            ViewPos.Write(_bufferWriter, IOType.Float);
+            _bufferWriter.Write(0);
 
-            ViewDir.Write(writer, IOType.Float);
-            writer.Write(0);
+            ViewDir.Write(_bufferWriter, IOType.Float);
+            _bufferWriter.Write(0);
 
-            new Vector3(0, 1, 0).Write(writer, IOType.Float);
-            writer.Write(0);
+            new Vector3(0, 1, 0).Write(_bufferWriter, IOType.Float);
+            _bufferWriter.Write(0);
 
-            WriteColor(writer, BufferMaterial.Diffuse);
-            WriteColor(writer, BufferMaterial.Specular);
-            WriteColor(writer, BufferMaterial.Ambient);
+            WriteColor(_bufferWriter, BufferMaterial.Diffuse);
+            WriteColor(_bufferWriter, BufferMaterial.Specular);
+            WriteColor(_bufferWriter, BufferMaterial.Ambient);
 
-            writer.Write(BufferMaterial.SpecularExponent);
+            _bufferWriter.Write(BufferMaterial.SpecularExponent);
 
             var matFlags = BufferMaterial.MaterialFlags;
             if(BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
                 matFlags &= ~MaterialFlags.useTexture;
 
             int flags = (ushort)matFlags;
-            writer.Write(flags);
+            _bufferWriter.Write(flags);
         }
 
         protected virtual void ReBuffer()
@@ -96,7 +99,7 @@ namespace SATools.SAModel.Graphics
             _bridge.BufferMaterial(this);
         }
 
-        private static void WriteColor(LittleEndianMemoryStream writer, Color c)
+        private static void WriteColor(EndianWriter writer, Color c)
         {
             writer.Write(c.RedF);
             writer.Write(c.GreenF);

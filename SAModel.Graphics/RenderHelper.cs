@@ -74,13 +74,13 @@ namespace SATools.SAModel.Graphics
         }
 
         private static void PrepareModel(
-            this NJObject obj, 
+            this NJObject obj,
             List<RenderMesh> opaque,
             List<RenderMesh> transparent,
             BufferingBridge buffer,
-            Camera cam, 
-            NJObject activeObj, 
-            Matrix4? parentWorld, 
+            Camera cam,
+            NJObject activeObj,
+            Matrix4? parentWorld,
             bool weighted)
         {
             Matrix4 world = obj.LocalMatrix;
@@ -92,6 +92,8 @@ namespace SATools.SAModel.Graphics
                 // if a model is weighted, then the buffered vertex positions/normals will have to be set to world space, which means that world and normal matrix should be identities
                 if(weighted)
                     buffer.LoadToCache(obj.Attach.MeshData, world, obj == activeObj);
+                else if(!buffer.IsBuffered(obj.Attach.MeshData[0]))
+                    buffer.LoadToCache(obj.Attach.MeshData, null, false);
 
                 RenderMatrices matrices = weighted ? new(cam.ViewMatrix * cam.ProjectionMatrix) : new(world, world * cam.ViewMatrix * cam.ProjectionMatrix);
 
@@ -124,21 +126,38 @@ namespace SATools.SAModel.Graphics
                 GetModelLine(obj[i], lines, world);
         }
 
-        internal static (LandEntryRenderBatch opaque, LandEntryRenderBatch transparent, List<LandEntry> rendered) PrepareLandEntries(LandEntry[] entries, Camera camera)
+        internal static (LandEntryRenderBatch opaque, LandEntryRenderBatch transparent, List<LandEntry> rendered) PrepareLandEntries(LandEntry[] entries, Camera camera, BufferingBridge bufferBridge)
         {
+            // the output list. This contains all landentries that need to be rendered
             List<LandEntry> rendered = new();
-            Dictionary<Attach, List<LandEntry>> toRender = new();
 
-            foreach(LandEntry le in entries)
+            // the landentries to render are grouped by attach
+            Dictionary<Attach, List<LandEntry>> toRender = new();
+            
+            for(int i = 0; i < entries.Length; i++)
             {
+                LandEntry le = entries[i];
+                // check if the entry can be rendered at all
                 if(!camera.CanRender(le.ModelBounds))
                     continue;
+
                 if(toRender.TryGetValue(le.Attach, out List<LandEntry> list))
                     list.Add(le);
                 else
+                {
+                    // check if the attach is already buffered
+                    if(!bufferBridge.IsBuffered(le.Attach.MeshData[0]))
+                        bufferBridge.LoadToCache(le.Attach.MeshData, null, false);
                     toRender.Add(le.Attach, new() { le });
+                }
                 rendered.Add(le);
             }
+
+            // Landentry Renderbatch structure:
+            // <TextureIndex <Buffermesh, List<Matrices>>
+            // So, each buffermesh has multiple render matrices to be rendered multiple times
+            // and each of those lists belongs to a texture. That way textures dont need
+            // to be swapped out so often
 
             LandEntryRenderBatch opaque = new();
             LandEntryRenderBatch transparent = new();
@@ -152,6 +171,9 @@ namespace SATools.SAModel.Graphics
                     RenderMatrices rm = new(world, world * camera.ViewMatrix * camera.ProjectionMatrix);
                     matrices.Add(rm);
                 }
+
+                // check if attach is buffered
+                
 
                 foreach(BufferMesh bm in t.Key.MeshData)
                 {

@@ -3,7 +3,6 @@ using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.OpenGL.Properties;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
-using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -11,11 +10,9 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
-using M4 = OpenTK.Mathematics.Matrix4;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -71,8 +68,6 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             _bufferBridge.Initialize();
             InitializeShaders();
-
-            // TODO prebuffer sphere! but not here, but this is where it was, so i put the todo here
         }
 
         private void InitializeShaders()
@@ -203,12 +198,11 @@ namespace SATools.SAModel.Graphics.OpenGL
             RenderLandentriesWireframe(opaqueGeo);
             RenderLandentriesWireframe(transparentgeo);
 
-            foreach(var m in models)
+            foreach(var (_, opaque, transparent) in models)
             {
-                RenderModelsWireframe(m.opaque);
-                RenderModelsWireframe(m.transparent);
+                RenderModelsWireframe(opaque);
+                RenderModelsWireframe(transparent);
             }
-
 
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }
@@ -238,6 +232,8 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Disable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Blend);
 
+            if(!_bufferBridge.IsBuffered(sphere))
+                _bufferBridge.LoadToCache(sphere);
             var handle = _bufferBridge.GetHandle(sphere);
             GL.BindVertexArray(handle.vao);
 
@@ -252,6 +248,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                     GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
             }
 
+            GL.Enable(EnableCap.DepthTest);
         }
 
         unsafe public override void DrawModelRelationship(List<Vector3> lines, Camera cam)

@@ -100,10 +100,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         public BufferMeshHandle GetHandle(BufferMesh mesh)
         {
             if(!MeshHandles.TryGetValue(mesh, out var handle))
-            {
-                LoadToCache(mesh);
-                handle = MeshHandles[mesh];
-            }
+                throw new InvalidOperationException("Mesh was not buffered!");
             return handle;
         }
 
@@ -182,13 +179,16 @@ namespace SATools.SAModel.Graphics.OpenGL
             MeshHandles.Remove(mesh);
         }
 
+        public override bool IsBuffered(BufferMesh mesh) 
+            => MeshHandles.ContainsKey(mesh);
+
         public override unsafe void BufferMaterial(Material material)
         {
             if(material.BufferMaterial.MaterialFlags.HasFlag(MaterialFlags.useTexture) && material.BufferTextureSet != null)
             {
                 int textureIndex = (int)material.BufferMaterial.TextureIndex;
                 GL.BindTexture(TextureTarget.Texture2D, TextureHandles[material.BufferTextureSet][textureIndex]);
-                
+
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMinFilter());
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)material.BufferMaterial.TextureFiltering.ToGLMagFilter());
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)material.BufferMaterial.WrapModeU());
