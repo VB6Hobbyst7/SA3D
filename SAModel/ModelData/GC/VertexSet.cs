@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -94,17 +95,16 @@ namespace SATools.SAModel.ModelData.GC
         public VertexSet(Vector3[] vector3Data, bool normals)
         {
             _vector3Data = vector3Data;
+            DataType = DataType.Float32;
 
-            if(normals)
+            if(!normals)
             {
                 Attribute = VertexAttribute.Position;
-                DataType = DataType.Float32;
                 StructType = StructType.Normal_XYZ;
             }
             else
             {
                 Attribute = VertexAttribute.Normal;
-                DataType = DataType.Float32;
                 StructType = StructType.Position_XYZ;
             }
         }
@@ -195,7 +195,7 @@ namespace SATools.SAModel.ModelData.GC
                 case VertexAttribute.Tex0:
                     uvData = new Vector2[count];
                     for(int i = 0; i < count; i++)
-                        uvData[i] = Vector2Extensions.Read(source, ref tmpaddr, IOType.Short) / 256f;
+                        uvData[i] = Vector2Extensions.Read(source, ref tmpaddr, IOType.Short) / 256;
                     break;
                 default:
                     throw new ArgumentException($"Attribute type not valid sa2 type: {attribute}");
@@ -209,9 +209,9 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="writer">The output stream</param>
         /// <param name="imagebase">The imagebase</param>
-        public void WriteData(EndianMemoryStream writer)
+        public void WriteData(EndianWriter writer)
         {
-            _dataAddress = (uint)writer.Stream.Position;
+            _dataAddress = writer.Position;
 
             IOType outputType = DataType.ToStructType();
 
@@ -238,7 +238,7 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="writer">The output stream</param>
         /// <param name="imagebase">The imagebase</param>
-        public void WriteAttribute(EndianMemoryStream writer, uint imagebase)
+        public void WriteAttribute(EndianWriter writer, uint imagebase)
         {
             if(_dataAddress == 0)
                 throw new Exception("Data has not been written yet!");
@@ -258,7 +258,7 @@ namespace SATools.SAModel.ModelData.GC
             => Clone();
 
         public VertexSet Clone()
-            => new(Attribute, DataType, StructType, (Vector3[])_vector3Data?.Clone(), (Vector2[])_uvData?.Clone(), (Color[])_colorData?.Clone() );
+            => new(Attribute, DataType, StructType, (Vector3[])_vector3Data?.Clone(), (Vector2[])_uvData?.Clone(), (Color[])_colorData?.Clone());
 
         public override string ToString() => $"{Attribute}: {DataLength}";
     }

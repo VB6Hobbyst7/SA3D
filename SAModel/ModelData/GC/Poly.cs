@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using System;
 using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
@@ -8,7 +9,7 @@ namespace SATools.SAModel.ModelData.GC
     /// <summary>
     /// A single corner of a polygon, called loop
     /// </summary>
-    public struct Corner
+    public struct Corner : IEquatable<Corner>
     {
         /// <summary>
         /// The index of the position value
@@ -30,7 +31,17 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         public ushort UV0Index { get; set; }
 
+        public override bool Equals(object obj) 
+            => obj is Corner corner 
+            && PositionIndex == corner.PositionIndex 
+            && NormalIndex == corner.NormalIndex 
+            && Color0Index == corner.Color0Index 
+            && UV0Index == corner.UV0Index;
+
+        public override int GetHashCode() => HashCode.Combine(PositionIndex, NormalIndex, Color0Index, UV0Index);
         public override string ToString() => $"({PositionIndex}, {NormalIndex}, {Color0Index}, {UV0Index})";
+
+        bool IEquatable<Corner>.Equals(Corner other) => Equals(other);
     }
 
     /// <summary>
@@ -163,13 +174,12 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="writer">The output stream</param>
         /// <param name="indexFlags">How the indices of the loops are structured</param>
-        public void Write(EndianMemoryStream writer, IndexAttributeFlags indexFlags)
+        public void Write(EndianWriter writer, IndexAttributeFlags indexFlags)
         {
-            // has to be big endian
-            BigEndianMemoryStream bWriter = new(writer.Stream);
+            writer.PushBigEndian(true);
 
-            bWriter.Write((byte)Type);
-            bWriter.Write((ushort)Corners.Length);
+            writer.Write((byte)Type);
+            writer.Write((ushort)Corners.Length);
 
             // checking the flags
             bool hasFlag(IndexAttributeFlags flag) => indexFlags.HasFlag(flag);
@@ -188,29 +198,30 @@ namespace SATools.SAModel.ModelData.GC
             {
                 // Position should always exist
                 if(shortPos)
-                    bWriter.Write(v.PositionIndex);
+                    writer.Write(v.PositionIndex);
                 else
-                    bWriter.Write((byte)v.PositionIndex);
+                    writer.Write((byte)v.PositionIndex);
 
                 if(hasNrm)
                     if(shortNrm)
-                        bWriter.Write(v.NormalIndex);
+                        writer.Write(v.NormalIndex);
                     else
-                        bWriter.Write((byte)v.NormalIndex);
+                        writer.Write((byte)v.NormalIndex);
 
                 if(hasCol)
                     if(shortCol)
-                        bWriter.Write(v.Color0Index);
+                        writer.Write(v.Color0Index);
                     else
-                        bWriter.Write((byte)v.Color0Index);
+                        writer.Write((byte)v.Color0Index);
 
                 if(hasUV)
                     if(shortUV)
-                        bWriter.Write(v.UV0Index);
+                        writer.Write(v.UV0Index);
                     else
-                        bWriter.Write((byte)v.UV0Index);
+                        writer.Write((byte)v.UV0Index);
             }
 
+            writer.PopEndian();
         }
 
         public override string ToString() => $"{Type}: {Corners.Length}";

@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ModelData.GC;
 using SATools.SAModel.Structs;
@@ -57,13 +58,167 @@ namespace SATools.SAModel.ModelData.GC
         }
 
         /// <summary>
-        /// Converts mesh buffer data to a GC attach
+        /// Removes duplicate vertex data
         /// </summary>
-        /// <param name="name">Name of the mesh</param>
-        /// <param name="meshdata">Buffer mesh data</param>
-        public GCAttach(BufferMesh[] meshdata) : base(meshdata)
+        public void OptimizeVertexData()
         {
-            throw new NotImplementedException();
+            VertexSet positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position);
+            VertexSet normals = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal);
+            VertexSet colors = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0);
+            VertexSet uvs = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0);
+
+            var (distinctPositions, positionMap) = (positions?.Vector3Data).CreateDistinctMap();
+            var (distinctNormals, normalMap) = (normals?.Vector3Data).CreateDistinctMap();
+            var (distinctUvs, uvMap) = (uvs?.UVData).CreateDistinctMap();
+            var (distinctcolors, colorMap) = (colors?.ColorData).CreateDistinctMap();
+
+            if(positionMap == null && normalMap == null && uvMap == null && colorMap == null)
+                return;
+
+            // adjust the indices of the polygon corners
+            List<Mesh> meshes = new(OpaqueMeshes);
+            meshes.AddRange(TranslucentMeshes);
+
+            foreach(Mesh m in meshes)
+            {
+                for(int i = 0; i < m.Polys.Length; i++)
+                {
+                    Poly p = m.Polys[i];
+                    for(int j = 0; j < p.Corners.Length; j++)
+                    {
+                        Corner c = p.Corners[j];
+
+                        if(positionMap != null)
+                            c.PositionIndex = (ushort)positionMap[c.PositionIndex];
+
+                        if(normalMap != null)
+                            c.NormalIndex = (ushort)normalMap[c.NormalIndex];
+
+                        if(uvMap != null)
+                            c.UV0Index = (ushort)uvMap[c.UV0Index];
+
+                        if(colorMap != null)
+                            c.Color0Index = (ushort)colorMap[c.Color0Index];
+
+                        p.Corners[j] = c;
+                    }
+                }
+            }
+
+            void Replace(VertexSet orig, VertexSet replacement)
+            {
+                for(int i = 0; i < VertexData.Length; i++)
+                {
+                    if(VertexData[i] == orig)
+                    {
+                        VertexData[i] = replacement;
+                        return;
+                    }
+                }
+            }
+
+            // replace the vertex data
+            IndexAttributeParameter indexParam;
+            Mesh[] source = OpaqueMeshes;
+            if(source == null || source.Length == 0)
+                source = TranslucentMeshes;
+
+            indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributeFlags);
+
+            if(positionMap != null)
+            {
+                Replace(positions, new(distinctPositions, false));
+                if(distinctPositions.Length <= 256)
+                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Position16BitIndex;
+            }
+
+            if(normalMap != null)
+            {
+                Replace(normals, new(distinctNormals, true));
+                if(distinctNormals.Length <= 256)
+                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Normal16BitIndex;
+            }
+
+            if(uvMap != null)
+            {
+                Replace(uvs, new(distinctUvs));
+                if(distinctUvs.Length <= 256)
+                    indexParam.IndexAttributes &= ~IndexAttributeFlags.UV16BitIndex;
+            }
+
+            if(colorMap != null)
+            {
+                Replace(colors, new(distinctcolors));
+                if(distinctcolors.Length <= 256)
+                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Color16BitIndex;
+            }
+        }
+
+        public void OptimizePolygonData()
+        {
+            // we optimize the polygon data by re/calculating the strips for each mesh
+            void ProcessMesh(Mesh mesh)
+            {
+                // getting the current triangles
+                List<Corner> triangles = new();
+                foreach(Poly p in mesh.Polys)
+                {
+                    if(p.Type == PolyType.Triangles)
+                        triangles.AddRange(p.Corners);
+                    else if(p.Type == PolyType.TriangleStrip)
+                    {
+                        bool rev = false;
+                        for(int i = 0; i < p.Corners.Length - 2; i++)
+                        {
+                            if(rev)
+                            {
+                                triangles.Add(p.Corners[i + 1]);
+                                triangles.Add(p.Corners[i]);
+                            }
+                            else
+                            {
+                                triangles.Add(p.Corners[i]);
+                                triangles.Add(p.Corners[i + 1]);
+                            }
+
+                            triangles.Add(p.Corners[i + 2]);
+
+                            rev = !rev;
+                        }
+                    }
+                }
+                
+                // getting the distinct corners and generating strip information with them
+                var (distinct, map) = triangles.CreateDistinctMap();
+                if(map == null)
+                    return;
+
+                int[][] strips = Strippifier.Strip(map);
+
+                // putting them all together
+                List<Poly> polygons = new();
+                List<Corner> singleTris = new();
+
+                for(int i = 0; i < strips.Length; i++)
+                {
+                    int[] strip = strips[i];
+                    Corner[] stripCorners = strip.Select(x => distinct[x]).ToArray(); 
+                    if(stripCorners.Length == 3)
+                        singleTris.AddRange(stripCorners);
+                    else
+                        polygons.Add(new(PolyType.TriangleStrip, stripCorners));
+                }
+                if(singleTris.Count > 0)
+                    polygons.Add(new(PolyType.Triangles, singleTris.ToArray()));
+
+                mesh.Polys = polygons.ToArray();
+            }
+
+            foreach(Mesh m in OpaqueMeshes)
+                ProcessMesh(m);
+
+            foreach(Mesh m in TranslucentMeshes)
+                ProcessMesh(m);
         }
 
         /// <summary>
@@ -85,7 +240,7 @@ namespace SATools.SAModel.ModelData.GC
             // The struct is 36/0x24 bytes long
 
             uint vertexAddress = source.ToUInt32(address) - imageBase;
-            //uint gap = ByteConverter.ToUInt32(file, address + 4);
+            //uint gap = source.ToUInt32(address + 4);
             uint opaqueAddress = source.ToUInt32(address + 8) - imageBase;
             uint translucentAddress = source.ToUInt32(address + 12) - imageBase;
 
@@ -136,7 +291,7 @@ namespace SATools.SAModel.ModelData.GC
             throw new NotSupportedException("GC attach doesnt have an available NJA format");
         }
 
-        public override uint Write(EndianMemoryStream writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
+        public override uint Write(EndianWriter writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
         {
             // writing vertex data
             foreach(VertexSet vtx in VertexData)
@@ -144,7 +299,7 @@ namespace SATools.SAModel.ModelData.GC
                 vtx.WriteData(writer);
             }
 
-            uint vtxAddr = (uint)writer.Stream.Position + imageBase;
+            uint vtxAddr = writer.Position + imageBase;
 
             // writing vertex attributes
             foreach(VertexSet vtx in VertexData)
@@ -175,19 +330,19 @@ namespace SATools.SAModel.ModelData.GC
             }
 
             // writing geometry properties
-            uint opaqueAddress = (uint)writer.Stream.Position + imageBase;
+            uint opaqueAddress = writer.Position + imageBase;
             foreach(Mesh m in OpaqueMeshes)
             {
                 m.WriteProperties(writer, imageBase);
             }
-            uint translucentAddress = (uint)writer.Stream.Position + imageBase;
+            uint translucentAddress = writer.Position + imageBase;
             foreach(Mesh m in TranslucentMeshes)
             {
                 m.WriteProperties(writer, imageBase);
             }
 
-            uint address = (uint)writer.Stream.Position + imageBase;
-            labels.Add(Name, address);
+            uint address = writer.Position + imageBase;
+            labels.AddLabel(Name, address);
 
             writer.WriteUInt32(vtxAddr);
             writer.WriteUInt32(0);
@@ -199,177 +354,6 @@ namespace SATools.SAModel.ModelData.GC
             return address;
         }
 
-        internal override BufferMesh[] Buffer(bool optimize)
-        {
-            List<BufferMesh> meshes = new();
-
-            Vector3[] positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position)?.Vector3Data;
-            Vector3[] normals = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal)?.Vector3Data;
-            Color[] colors = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0)?.ColorData;
-            Vector2[] uvs = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0)?.UVData;
-
-            BufferMaterial material = new()
-            {
-                Diffuse = Color.White,
-                TextureFiltering = FilterMode.Bilinear,
-                MaterialFlags = MaterialFlags.noSpecular
-            };
-            material.SetFlag(MaterialFlags.Flat, colors != null);
-
-            BufferMesh ProcessMesh(Mesh m)
-            {
-                // setting the material properties according to the parameters
-                foreach(Parameter param in m.Parameters)
-                {
-                    switch(param.Type)
-                    {
-                        case ParameterType.BlendAlpha:
-                            BlendAlphaParameter blend = param as BlendAlphaParameter;
-                            material.SourceBlendMode = blend.SourceAlpha;
-                            material.DestinationBlendmode = blend.DestAlpha;
-                            break;
-                        case ParameterType.AmbientColor:
-                            AmbientColorParameter ambientCol = param as AmbientColorParameter;
-                            material.Ambient = ambientCol.AmbientColor;
-                            break;
-                        case ParameterType.Texture:
-                            material.SetFlag(MaterialFlags.useTexture, true);
-                            TextureParameter tex = param as TextureParameter;
-                            material.TextureIndex = tex.TextureID;
-                            material.MirrorU = tex.Tiling.HasFlag(GCTileMode.MirrorU);
-                            material.MirrorV = tex.Tiling.HasFlag(GCTileMode.MirrorV);
-
-                            if(tex.Tiling.HasFlag(GCTileMode.Unk_1))
-                            {
-                                material.WrapU = tex.Tiling.HasFlag(GCTileMode.WrapU);
-                                material.WrapV = tex.Tiling.HasFlag(GCTileMode.WrapV);
-                            }
-                            else
-                            {
-                                material.WrapU = true;
-                                material.WrapV = true;
-                            }
-                            break;
-                        case ParameterType.TexCoordGen:
-                            TexCoordGenParameter gen = param as TexCoordGenParameter;
-                            material.SetFlag(MaterialFlags.normalMapping, gen.TexGenSrc == TexGenSrc.Normal);
-                            break;
-                    }
-                }
-
-                // filtering out the double loops
-                List<BufferVertex> vertices = new();
-                List<BufferCorner> corners = new();
-                List<uint> trianglelist = new();
-
-                foreach(Poly p in m.Polys)
-                {
-                    // inverted culling is done manually in the gc strips, so we have to account for that
-                    bool rev = p.Corners[0].PositionIndex != p.Corners[1].PositionIndex;
-                    int offset = rev ? 0 : 1;
-                    uint[] indices = new uint[p.Corners.Length - offset];
-
-                    for(int i = offset; i < p.Corners.Length; i++)
-                    {
-                        Corner c = p.Corners[i];
-                        indices[i - offset] = (uint)corners.Count;
-                        corners.Add(new BufferCorner((ushort)vertices.Count, colors?[c.Color0Index] ?? Color.White, uvs?[c.UV0Index] ?? new Vector2()));
-                        vertices.Add(new BufferVertex(positions[c.PositionIndex], normals?[c.NormalIndex] ?? Vector3.UnitY, (ushort)vertices.Count));
-                    }
-
-
-                    // converting indices to triangles
-                    if(p.Type == PolyType.Triangles)
-                    {
-                        // gc has inverted culling, dont even ask me
-                        for(int i = 0; i < indices.Length; i += 3)
-                        {
-                            uint index = indices[i];
-                            indices[i] = indices[i + 1];
-                            indices[i + 1] = index;
-                        }
-                        trianglelist.AddRange(indices);
-
-                    }
-                    else if(p.Type == PolyType.TriangleStrip)
-                    {
-                        uint[] newIndices = new uint[(indices.Length - 2) * 3];
-                        for(int i = 0; i < indices.Length - 2; i++)
-                        {
-                            int index = i * 3;
-                            if(!rev)
-                            {
-                                newIndices[index] = indices[i];
-                                newIndices[index + 1] = indices[i + 1];
-                            }
-                            else
-                            {
-                                newIndices[index] = indices[i + 1];
-                                newIndices[index + 1] = indices[i];
-                            }
-
-                            newIndices[index + 2] = indices[i + 2];
-                            rev = !rev;
-                        }
-                        trianglelist.AddRange(newIndices);
-                    }
-                    else
-                        throw new Exception($"Primitive type {p.Type} not a valid triangle format");
-                }
-
-                return new BufferMesh(vertices.ToArray(), false, corners.ToArray(), trianglelist.ToArray(), material.Clone());
-            }
-
-            material.UseAlpha = false;
-            foreach(Mesh m in OpaqueMeshes)
-                meshes.Add(ProcessMesh(m));
-
-            material.UseAlpha = true;
-            material.Culling = true;
-            foreach(Mesh m in TranslucentMeshes)
-                meshes.Add(ProcessMesh(m));
-
-            if(optimize)
-            {
-                // all meshes should use the same vertices
-                BufferMesh[] meshData = new BufferMesh[meshes.Count];
-                List<BufferVertex> vertices = new();
-
-                int mi = 0;
-                foreach(BufferMesh m in meshes)
-                {
-                    ushort[] vIDs = new ushort[m.Vertices.Length];
-
-                    for(ushort i = 0; i < vIDs.Length; i++)
-                    {
-                        BufferVertex vtx = new(m.Vertices[i].Position, m.Vertices[i].Normal, (ushort)vertices.Count);
-                        int index = vertices.FindIndex(x => x.EqualPosNrm(vtx));
-                        if(index == -1)
-                        {
-                            vIDs[i] = vtx.Index;
-                            vertices.Add(vtx);
-                        }
-                        else
-                            vIDs[i] = (ushort)index;
-                    }
-
-                    for(int i = 0; i < m.Corners.Length; i++)
-                    {
-                        m.Corners[i].VertexIndex = vIDs[m.Corners[i].VertexIndex];
-                    }
-
-                    meshData[mi] = m.Optimize(vertices.ToArray(), false);
-                    mi++;
-                }
-
-                var firstMesh = meshData[0];
-                meshData[0] = new BufferMesh(vertices.ToArray(), false, firstMesh.Corners, firstMesh.TriangleList, firstMesh.Material);
-                return meshData;
-            }
-            else
-                return meshes.ToArray();
-        }
-
         public override Attach Clone() => new GCAttach(VertexData.ContentClone(), OpaqueMeshes.ContentClone(), TranslucentMeshes.ContentClone())
         {
             Name = Name,
@@ -377,19 +361,5 @@ namespace SATools.SAModel.ModelData.GC
         };
 
         public override string ToString() => $"{Name} - GC: {VertexData.Length} - {OpaqueMeshes.Length} - {TranslucentMeshes.Length}";
-    }
-}
-
-namespace SATools.SAModel.ModelData
-{
-    public static partial class AttachExtensions
-    {
-        public static GCAttach AsGC(this Attach atc)
-        {
-            return new GCAttach(atc.MeshData)
-            {
-                Name = atc.Name
-            };
-        }
     }
 }

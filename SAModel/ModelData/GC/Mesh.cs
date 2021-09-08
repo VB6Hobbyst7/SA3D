@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +17,12 @@ namespace SATools.SAModel.ModelData.GC
         /// <summary>
         /// The parameters that this mesh sets
         /// </summary>
-        public Parameter[] Parameters { get; }
+        public Parameter[] Parameters { get; internal set; }
 
         /// <summary>
         /// The polygon data
         /// </summary>
-        public Poly[] Polys { get; }
+        public Poly[] Polys { get; internal set; }
 
         /// <summary>
         /// The index attribute flags of this mesh. If it has no IndexAttribParam, it will return null
@@ -99,23 +100,23 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="writer">The ouput stream</param>
         /// <param name="indexFlags">The index flags</param>
-        public void WriteData(EndianMemoryStream writer, IndexAttributeFlags indexFlags)
+        public void WriteData(EndianWriter writer, IndexAttributeFlags indexFlags)
         {
-            _ParamAddress = (uint)writer.Stream.Position;
+            _ParamAddress = writer.Position;
 
             foreach(Parameter param in Parameters)
             {
                 param.Write(writer);
             }
 
-            _PolyAddress = (uint)writer.Stream.Position;
+            _PolyAddress = writer.Position;
 
             foreach(Poly prim in Polys)
             {
                 prim.Write(writer, indexFlags);
             }
 
-            _PolySize = (uint)writer.Stream.Position - _PolyAddress;
+            _PolySize = writer.Position - _PolyAddress;
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="writer">The output stream</param>
         /// <param name="imagebase">The imagebase</param>
-        public void WriteProperties(EndianMemoryStream writer, uint imagebase)
+        public void WriteProperties(EndianWriter writer, uint imagebase)
         {
             if(!_PolyAddress.HasValue)
                 throw new NullReferenceException("Data has not been written yet");

@@ -312,10 +312,10 @@ namespace SATools.SAModel.ModelData.GC
     [Flags]
     public enum GCTileMode
     {
-        WrapU = 1 << 0,
-        MirrorU = 1 << 1,
-        WrapV = 1 << 2,
-        MirrorV = 1 << 3,
+        WrapV = 1 << 0,
+        MirrorV = 1 << 1,
+        WrapU = 1 << 2,
+        MirrorU = 1 << 3,
         Unk_1 = 1 << 4,
         Mask = (1 << 5) - 1
     }

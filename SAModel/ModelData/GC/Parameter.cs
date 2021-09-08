@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using static SATools.SACommon.ByteConverter;
@@ -99,7 +100,7 @@ namespace SATools.SAModel.ModelData.GC
         /// Writes the parameter contents to a stream
         /// </summary>
         /// <param name="writer">The stream writer</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             writer.Write((uint)Type);
             writer.Write(_data);
@@ -164,16 +165,16 @@ namespace SATools.SAModel.ModelData.GC
             switch(vertexAttrib)
             {
                 case VertexAttribute.Position:
-                    Unknown = 5120;
+                    Unknown = 5120; // 0x1400
                     break;
                 case VertexAttribute.Normal:
-                    Unknown = 9216;
+                    Unknown = 9216; // 0x2400
                     break;
                 case VertexAttribute.Color0:
-                    Unknown = 27136;
+                    Unknown = 27136; // 0x6A00
                     break;
                 case VertexAttribute.Tex0:
-                    Unknown = 33544;
+                    Unknown = 33544; // 0x8308
                     break;
                 default:
                     break;
@@ -362,7 +363,8 @@ namespace SATools.SAModel.ModelData.GC
 
         public BlendAlphaParameter() : base(ParameterType.BlendAlpha)
         {
-
+            SourceAlpha = BlendMode.SrcAlpha;
+            DestAlpha = BlendMode.SrcAlphaInverted;
         }
 
         public override string ToString() => $"{Type}: {SourceAlpha} -> {DestAlpha}";
@@ -571,7 +573,10 @@ namespace SATools.SAModel.ModelData.GC
 
         public TexCoordGenParameter() : base(ParameterType.TexCoordGen)
         {
-
+            TexCoordID = TexCoordID.TexCoord0;
+            TexGenType = TexGenType.Matrix2x4;
+            TexGenSrc = TexGenSrc.TexCoord0;
+            MatrixID = TexGenMatrix.Identity;
         }
 
         /// <summary>
