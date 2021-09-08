@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
@@ -74,7 +75,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Writes the buffer vertex to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             Position.Write(writer, IOType.Float);
             Normal.Write(writer, IOType.Float);
@@ -144,32 +145,32 @@ namespace SATools.SAModel.ModelData.Buffer
         public Color Color { get; set; }
 
         /// <summary>
-        /// UV of the corner
+        /// Texcoordinate of the corner
         /// </summary>
-        public Vector2 Uv { get; set; }
+        public Vector2 Texcoord { get; set; }
 
         /// <summary>
         /// Creates a new buffer corner
         /// </summary>
         /// <param name="vertexIndex">Fuffer index for the vertex</param>
         /// <param name="color">Color</param>
-        /// <param name="uv">Texture coordinate</param>
-        public BufferCorner(ushort vertexIndex, Color color, Vector2 uv)
+        /// <param name="texcoord">Texture coordinate</param>
+        public BufferCorner(ushort vertexIndex, Color color, Vector2 texcoord)
         {
-            this.VertexIndex = vertexIndex;
-            this.Color = color;
-            this.Uv = uv;
+            VertexIndex = vertexIndex;
+            Color = color;
+            Texcoord = texcoord;
         }
 
         /// <summary>
         /// Writes the buffer corner to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             writer.WriteUInt16(VertexIndex);
             Color.Write(writer, IOType.ARGB8_32);
-            Uv.Write(writer, IOType.Float);
+            Texcoord.Write(writer, IOType.Float);
         }
 
         /// <summary>
@@ -183,14 +184,14 @@ namespace SATools.SAModel.ModelData.Buffer
             ushort index = source.ToUInt16(address);
             address += 2;
             Color col = Color.Read(source, ref address, IOType.ARGB8_32);
-            Vector2 uv = Vector2Extensions.Read(source, ref address, IOType.Float);
+            Vector2 texcoord = Vector2Extensions.Read(source, ref address, IOType.Float);
 
-            return new BufferCorner(index, col, uv);
+            return new BufferCorner(index, col, texcoord);
         }
 
         public override string ToString()
         {
-            return $"{VertexIndex}: \t{Color}; \t{Uv}";
+            return $"{VertexIndex}: \t{Color}; \t{Texcoord}";
         }
 
         public override bool Equals(object obj)
@@ -198,11 +199,11 @@ namespace SATools.SAModel.ModelData.Buffer
             return obj is BufferCorner corner &&
                    VertexIndex == corner.VertexIndex &&
                    Color == corner.Color &&
-                   Uv == corner.Uv;
+                   Texcoord == corner.Texcoord;
         }
 
-        public override int GetHashCode() 
-            => System.HashCode.Combine(VertexIndex, Color, Uv);
+        public override int GetHashCode()
+            => System.HashCode.Combine(VertexIndex, Color, Texcoord);
         bool IEquatable<BufferCorner>.Equals(BufferCorner other)
             => Equals(other);
 

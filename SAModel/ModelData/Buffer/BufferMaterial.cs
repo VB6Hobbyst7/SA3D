@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using static SATools.SACommon.ByteConverter;
@@ -66,12 +67,12 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// The diffuse color
         /// </summary>
-        public Color Diffuse { get; set; } = Color.Black;
+        public Color Diffuse { get; set; }
 
         /// <summary>
         /// The specular color
         /// </summary>
-        public Color Specular { get; set; } = Color.Black;
+        public Color Specular { get; set; }
 
         /// <summary>
         /// The specular exponent
@@ -81,7 +82,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// The Ambient color
         /// </summary>
-        public Color Ambient { get; set; } = Color.Black;
+        public Color Ambient { get; set; }
 
         /// <summary>
         /// The material flags, directly passable to the shader
@@ -175,6 +176,93 @@ namespace SATools.SAModel.ModelData.Buffer
 
         #endregion
 
+        #region GC related info
+
+        /// <summary>
+        /// Data container for all gamecube related info
+        /// </summary>
+        private uint _gcData;
+
+        /// <summary>
+        /// Shadow stencil for GC meshes
+        /// </summary>
+        public byte ShadowStencil
+        {
+            get => (byte)((_gcData >> 24) & 0xFF);
+            set
+            {
+                _gcData &= 0xFFFFFF;
+                _gcData |= (uint)value << 24;
+            }
+        }
+
+        public GC.TexCoordID TexCoordID
+        {
+            get => (GC.TexCoordID)((_gcData >> 16) & 0xFF);
+            set
+            {
+                _gcData &= 0xFF00FFFF;
+                _gcData |= (uint)value << 16;
+            }
+        }
+
+        /// <summary>
+        /// The function to use for generating the texture coordinates
+        /// </summary>
+        public GC.TexGenType TexGenType
+        {
+            get => (GC.TexGenType)((_gcData >> 12) & 0xF);
+            set
+            {
+                _gcData &= 0xFFFF0FFF;
+                _gcData |= (uint)value << 12;
+            }
+        }
+
+        /// <summary>
+        /// The source which should be used to generate the texture coordinates
+        /// </summary>
+        public GC.TexGenSrc TexGenSrc
+        {
+            get => (GC.TexGenSrc)((_gcData >> 4) & 0xFF);
+            set
+            {
+                _gcData &= 0xFFFFF00F;
+                _gcData |= (uint)value << 4;
+            }
+        }
+
+        /// <summary>
+        /// The id of the matrix to use for generating the texture coordinates
+        /// </summary>
+        public GC.TexGenMatrix MatrixID
+        {
+            get => (GC.TexGenMatrix)(_gcData & 0xF);
+            set
+            {
+                _gcData &= 0xFFFFFFF0;
+                _gcData |= (uint)value;
+            }
+        }
+
+        #endregion
+
+        public BufferMaterial()
+        {
+            Diffuse = Color.White;
+            Specular = Color.White;
+            SpecularExponent = 8;
+            Ambient = Color.Black;
+            SourceBlendMode = BlendMode.SrcAlpha;
+            DestinationBlendmode = BlendMode.SrcAlphaInverted;
+            TextureFiltering = FilterMode.Bilinear;
+            ShadowStencil = 1;
+            TexCoordID = GC.TexCoordID.TexCoord0;
+            TexGenType = GC.TexGenType.Matrix2x4;
+            TexGenSrc = GC.TexGenSrc.Tex0;
+            MatrixID = GC.TexGenMatrix.Identity;
+        }
+
         /// <summary>
         /// Sets flag/s in the material flags
         /// </summary>
@@ -199,7 +287,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Writes the material to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             Diffuse.Write(writer, IOType.ARGB8_32);
             Specular.Write(writer, IOType.ARGB8_32);
@@ -229,6 +317,8 @@ namespace SATools.SAModel.ModelData.Buffer
             flags |= (uint)TextureFiltering << 22;
 
             writer.WriteUInt32(flags);
+
+            writer.WriteUInt32(_gcData);
         }
 
         /// <summary>
@@ -255,6 +345,9 @@ namespace SATools.SAModel.ModelData.Buffer
             FilterMode texFilter = (FilterMode)(flags >> 22);
             address += 12;
 
+            uint gcData = source.ToUInt32(address);
+            address += 4;
+
             return new BufferMaterial()
             {
                 Diffuse = diffuse,
@@ -273,6 +366,7 @@ namespace SATools.SAModel.ModelData.Buffer
                 ClampV = states.HasFlag(MaterialStates.ClampV),
                 MirrorU = states.HasFlag(MaterialStates.MirrorU),
                 MirrorV = states.HasFlag(MaterialStates.MirrorV),
+                _gcData = gcData,
             };
         }
 

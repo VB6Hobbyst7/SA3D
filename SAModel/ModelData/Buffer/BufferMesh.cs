@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -30,13 +31,13 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Polygon corners <br/>
         /// Null if no corners exist
         /// </summary>
-        public BufferCorner[] Corners { get; }
+        public BufferCorner[] Corners { get; private set; }
 
         /// <summary>
         /// Index list for all triangles, which refer to the <see cref="Corners"/> <br/>
-        /// Null if no triangles exist
+        /// If null, use the corners in order
         /// </summary>
-        public uint[] TriangleList { get; }
+        public uint[] TriangleList { get; private set; }
 
         /// <summary>
         /// If true, the vertices will be added onto the existing buffered vertices
@@ -60,7 +61,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="continueWeight">Weight state</param>
         public BufferMesh(BufferVertex[] vertices, bool continueWeight, ushort vertexWriteOffset = 0)
         {
-            Vertices = vertices ?? throw new ArgumentNullException("Vertices", "Vertices can't be null");
+            Vertices = vertices == null || vertices.Length == 0 ? throw new ArgumentNullException(nameof(vertices), "Vertices can't be null") : vertices;
             ContinueWeight = continueWeight;
             VertexWriteOffset = vertexWriteOffset;
         }
@@ -76,9 +77,9 @@ namespace SATools.SAModel.ModelData.Buffer
         public BufferMesh(BufferVertex[] vertices, bool continueWeight, BufferCorner[] corners, uint[] triangleList, BufferMaterial material, ushort vertexWriteOffset = 0, ushort vertexReadOffset = 0)
             : this(vertices, continueWeight, vertexWriteOffset)
         {
-            Corners = corners ?? throw new ArgumentNullException("Corners", "Corners can't be null");
-            TriangleList = triangleList ?? throw new ArgumentNullException("TriangleList", "Triangle list can't be null");
-            Material = material ?? throw new ArgumentNullException("Material", "Material can't be null");
+            Corners = corners == null || corners.Length == 0 ? throw new ArgumentNullException(nameof(corners), "Corners can't be null or empty") : corners;
+            TriangleList = triangleList != null && triangleList.Length == 0 ? throw new ArgumentNullException(nameof(triangleList), "Triangle list cant be empty") : triangleList;
+            Material = material ?? throw new ArgumentNullException(nameof(material), "Material can't be null");
             VertexReadOffset = vertexReadOffset;
         }
 
@@ -90,130 +91,99 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="material">Material</param>
         public BufferMesh(BufferCorner[] corners, uint[] triangleList, BufferMaterial material, ushort vertexReadOffset = 0)
         {
-            Corners = corners ?? throw new ArgumentNullException("Corners", "Corners can't be null");
-            TriangleList = triangleList;
-            Material = material ?? throw new ArgumentNullException("Material", "Material can't be null");
+            Corners = corners == null || corners.Length == 0 ? throw new ArgumentNullException(nameof(corners), "Corners can't be null or empty") : corners;
+            TriangleList = triangleList != null && triangleList.Length == 0 ? throw new ArgumentNullException(nameof(triangleList), "Triangle list cant be empty") : triangleList;
+            Material = material ?? throw new ArgumentNullException(nameof(material), "Material can't be null");
             VertexReadOffset = vertexReadOffset;
-        }
-
-        /// <summary>
-        /// Optimizes the triangles and removes degenerate triangles <br/>
-        /// Since vertices might not be part of the mesh, manual reference is required<br/>
-        /// </summary>
-        /// <param name="vertices">Vertices used by the mesh</param>
-        /// <param name="ownsVertices">Whether the vertices passed belong to this mesh or are located in another mesh. <br/>
-        /// If set to false, the mesh wont hold any vertex data.</param>
-        /// <returns></returns>
-        public BufferMesh Optimize(BufferVertex[] vertices, bool ownsVertices)
-        {
-            return Optimize(vertices, ownsVertices, true);
         }
 
         /// <summary>
         /// Optimizes the triangles and removes degenerate triangles <br/>
         /// Keeps the original vertex data
         /// </summary>
-        /// <returns></returns>
-        public BufferMesh Optimize()
+        public void Optimize()
         {
-            return Optimize(null, false, false);
-        }
+            if(Corners == null)
+                return;
 
-        private BufferMesh Optimize(BufferVertex[] vertices, bool ownsVertices, bool useVertices)
-        {
+            BufferCorner[] corners = Corners;
+            if(TriangleList != null)
+            {
+                corners = new BufferCorner[TriangleList.Length];
+                for(int i = 0; i < TriangleList.Length; i++)
+                    corners[i] = Corners[TriangleList[i]];
+            }
+
             // filter degenerate triangles
-            List<uint> triangles = new();
-            if(!useVertices)
+            int newArraySize = corners.Length;
+            for(int i = 0; i < newArraySize; i += 3)
             {
-                for(int i = 0; i < TriangleList.Length; i += 3)
-                {
-                    ushort index1 = Corners[(int)TriangleList[i]].VertexIndex;
-                    ushort index2 = Corners[(int)TriangleList[i + 1]].VertexIndex;
-                    ushort index3 = Corners[(int)TriangleList[i + 2]].VertexIndex;
+                ushort index1 = corners[i].VertexIndex;
+                ushort index2 = corners[i + 1].VertexIndex;
+                ushort index3 = corners[i + 2].VertexIndex;
 
-                    if(index1 != index2 && index2 != index3 && index3 != index1)
-                        triangles.AddRange(new uint[] { TriangleList[i], TriangleList[i + 1], TriangleList[i + 2] });
+                if(index1 == index2 || index2 == index3 || index3 == index1)
+                {
+                    corners[i] = corners[newArraySize - 3];
+                    corners[i+1] = corners[newArraySize - 2];
+                    corners[i+2] = corners[newArraySize - 1];
+                    i -= 3;
+                    newArraySize -= 3;
                 }
             }
-            else
-            {
-                for(int i = 0; i < TriangleList.Length; i += 3)
-                {
-                    Vector3 pos1 = vertices[Corners[(int)TriangleList[i]].VertexIndex].Position;
-                    Vector3 pos2 = vertices[Corners[(int)TriangleList[i + 1]].VertexIndex].Position;
-                    Vector3 pos3 = vertices[Corners[(int)TriangleList[i + 2]].VertexIndex].Position;
-                    if(pos1 != pos2 && pos2 != pos3 && pos3 != pos1)
-                        triangles.AddRange(new uint[] { TriangleList[i], TriangleList[i + 1], TriangleList[i + 2] });
-                }
-            }
+            Array.Resize(ref corners, newArraySize);
 
+            // get the triangle mapping
+            (BufferCorner[] distinct, int[] map) = corners.CreateDistinctMap();
 
-            bool[] removedCorners = new bool[Corners.Length];
-            triangles.ForEach(x => removedCorners[(int)x] = true);
-
-            // filtering the double Corners
-            List<BufferCorner> distCorners = new();
-            uint[] cIDs = new uint[Corners.Length];
-            for(int i = 0; i < Corners.Length; i++)
-            {
-                if(!removedCorners[i])
-                    continue;
-                int index = distCorners.FindIndex(x => x == Corners[i]);
-                if(index < 0)
-                {
-                    cIDs[i] = (uint)distCorners.Count;
-                    distCorners.Add(Corners[i]);
-                }
-                else
-                    cIDs[i] = (uint)index;
-            }
-
-            // updating indices of the triangle list
-            for(int i = 0; i < triangles.Count; i++)
-                triangles[i] = cIDs[triangles[i]];
-
-            if(useVertices)
-            {
-                if(ownsVertices)
-                    return new BufferMesh(vertices, false, distCorners.ToArray(), triangles.ToArray(), Material);
-                else
-                    return new BufferMesh(distCorners.ToArray(), triangles.ToArray(), Material);
-            }
-            else
-            {
-                if(Vertices == null)
-                    return new BufferMesh(distCorners.ToArray(), triangles.ToArray(), Material);
-                else
-                    return new BufferMesh(Vertices, ContinueWeight, distCorners.ToArray(), triangles.ToArray(), Material);
-            }
+            Corners = distinct;
+            TriangleList = (uint[])(object)map; // i cant believe this works lol
         }
 
         /// <summary>
         /// Writes the buffer mesh to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public uint Write(EndianWriter writer, uint imageBase)
         {
+            uint vtxAddr = 0;
+            if(Vertices != null)
+            {
+                vtxAddr = writer.Position + imageBase;
+                foreach(BufferVertex vtx in Vertices)
+                    vtx.Write(writer);
+            }
+
+            uint cornerAddr = 0;
+            if(Corners != null)
+            {
+                cornerAddr = writer.Position + imageBase;
+                foreach(BufferCorner c in Corners)
+                    c.Write(writer);
+            }
+
+            uint triangleAddr = 0;
+            if(TriangleList != null)
+            {
+                triangleAddr = writer.Position + imageBase;
+                foreach(uint t in TriangleList)
+                    writer.WriteUInt32(t);
+            }
+
+            uint address = writer.Position + imageBase;
             writer.WriteUInt16((ushort)(Vertices == null ? 0 : Vertices.Length));
             writer.WriteUInt16((ushort)(ContinueWeight ? 1u : 0u));
             writer.WriteUInt32((uint)(Corners == null ? 0 : Corners.Length));
             writer.WriteUInt32((uint)(TriangleList == null ? 0 : TriangleList.Length));
             if(Material == null)
-                writer.Write(new byte[28]);
+                writer.Write(new byte[32]);
             else
                 Material.Write(writer);
+            writer.WriteUInt32(vtxAddr);
+            writer.WriteUInt32(cornerAddr);
+            writer.WriteUInt32(triangleAddr);
 
-            if(Vertices != null)
-                foreach(BufferVertex vtx in Vertices)
-                    vtx.Write(writer);
-
-            if(Corners != null)
-                foreach(BufferCorner c in Corners)
-                    c.Write(writer);
-
-            if(TriangleList != null)
-                foreach(uint t in TriangleList)
-                    writer.WriteUInt32(t);
+            return address;
         }
 
         /// <summary>
@@ -221,7 +191,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// </summary>
         /// <param name="source">Byte source</param>
         /// <param name="address">Address at which the buffermesh is located</param>
-        public static BufferMesh Read(byte[] source, ref uint address)
+        public static BufferMesh Read(byte[] source, uint address, uint imageBase)
         {
             BufferVertex[] vertices = new BufferVertex[source.ToUInt16(address)];
             bool continueWeight = source.ToUInt16(address + 2) != 0;
@@ -231,16 +201,22 @@ namespace SATools.SAModel.ModelData.Buffer
             address += 12;
             BufferMaterial material = BufferMaterial.Read(source, ref address);
 
+            uint tmpAddr = source.ToUInt32(address) - imageBase;
+
             for(int i = 0; i < vertices.Length; i++)
-                vertices[i] = BufferVertex.Read(source, ref address);
+                vertices[i] = BufferVertex.Read(source, ref tmpAddr);
+
+            tmpAddr = source.ToUInt32(address += 4) - imageBase;
 
             for(int i = 0; i < corners.Length; i++)
-                corners[i] = BufferCorner.Read(source, ref address);
+                corners[i] = BufferCorner.Read(source, ref tmpAddr);
+
+            tmpAddr = source.ToUInt32(address += 4) - imageBase;
 
             for(int i = 0; i < triangles.Length; i++)
             {
-                triangles[i] = source.ToUInt32(address);
-                address += 4;
+                triangles[i] = source.ToUInt32(tmpAddr);
+                tmpAddr += 4;
             }
 
             if(vertices.Length == 0)
