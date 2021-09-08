@@ -8,7 +8,7 @@ using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
-using static SATools.SACommon.MathHelper;
+using SATools.SACommon;
 
 namespace SATools.SAModel.ObjData
 {
@@ -24,6 +24,8 @@ namespace SATools.SAModel.ObjData
 
         private Vector3 _scale = Vector3.One;
 
+        internal Attach _attach;
+
         public const uint Size = 0x34;
 
         /// <summary>
@@ -34,7 +36,41 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Model data of the object
         /// </summary>
-        public Attach Attach { get; set; }
+        public Attach Attach
+        {
+            get => _attach;
+            set
+            {
+                foreach(NJObject o in GetObjects())
+                {
+                    if(o == this || o.Attach == null)
+                        continue;
+                    if(o.Attach.Format != _attach.Format)
+                        throw new FormatException($"Format of the attach doesnt match! Model is { o.Attach.Format }, while the new attach is { _attach.Format }");
+                }
+                _attach = value;
+            }
+        }
+
+        /// <summary>
+        /// The attach format of the model
+        /// </summary>
+        public AttachFormat AttachFormat
+        {
+            get
+            {
+                if(Attach != null)
+                    return Attach.Format;
+
+                foreach(NJObject obj in GetObjects())
+                {
+                    if(obj.Attach == null)
+                        continue;
+                    return obj.Attach.Format;
+                }
+                return AttachFormat.Buffer; // buffer is equal to none
+            }
+        }
 
         /// <summary>
         /// Local Position of the Object
@@ -281,7 +317,6 @@ namespace SATools.SAModel.ObjData
 
             return result;
         }
-
         /// <summary>
         /// Writes object (not its children) to a byte stream
         /// </summary>
@@ -290,9 +325,9 @@ namespace SATools.SAModel.ObjData
         /// <param name="DX">Whether to write for SADX</param>
         /// <param name="labels">C struct labels</param>
         /// <returns></returns>
-        public uint Write(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
+        public uint Write(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
-            uint address = (uint)writer.Stream.Position + imageBase;
+            uint address = writer.Position + imageBase;
 
             writer.WriteUInt32((uint)Flags);
             writer.WriteUInt32(Attach == null ? 0 : labels.ContainsKey(Attach.Name) ? labels[Attach.Name] : throw new NullReferenceException($"Attach \"{Attach.Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
@@ -305,7 +340,7 @@ namespace SATools.SAModel.ObjData
             NJObject sibling = Sibling;
             writer.WriteUInt32(sibling == null ? 0 : labels.ContainsKey(sibling.Name) ? labels[sibling.Name] : throw new NullReferenceException($"Sibling \"{sibling.Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
 
-            labels.Add(Name, address);
+            labels.AddLabel(Name, address);
             return address;
         }
 
@@ -317,21 +352,28 @@ namespace SATools.SAModel.ObjData
         /// <param name="DX">Whether the hierarchy is for SADX</param>
         /// <param name="labels">C struct labels</param>
         /// <returns></returns>
-        public uint WriteHierarchy(EndianMemoryStream writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
+        public uint WriteHierarchy(EndianWriter writer, uint imageBase, bool DX, bool writeBuffer, Dictionary<string, uint> labels)
         {
             // reserve object space
-            uint address = (uint)writer.Stream.Position + imageBase;
+            uint address = writer.Position + imageBase;
 
             NJObject[] models = GetObjects();
             writer.Write(new byte[models.Length * Size]);
-            uint modelsEnd = (uint)writer.Stream.Position;
+            uint modelsEnd = writer.Position;
 
             Attach[] attaches = models.Where(x => x.Attach != null).Select(x => x.Attach).ToArray();
 
             // write attaches
             foreach(var atc in attaches)
-                if(!labels.ContainsKey(atc.Name))
+            {
+                if(labels.ContainsKey(atc.Name))
+                    continue;
+                
+                if(writeBuffer)
+                    atc.WriteBuffer(writer, imageBase, labels);
+                else
                     atc.Write(writer, imageBase, DX, labels);
+            }
 
             // write models, but in reverse order
             writer.Stream.Seek(modelsEnd - Size, SeekOrigin.Begin);
@@ -391,6 +433,43 @@ namespace SATools.SAModel.ObjData
 
             writer.WriteLine("END");
             writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Converts the entire Model to a different attach format
+        /// </summary>
+        /// <param name="newAttachFormat">The attach format to convert to</param>
+        /// <param name="optimize">Optimize the converted data</param>
+        /// <param name="ignoreWeights">Convert regardless of weight information being lost</param>
+        public void ConvertAttachFormat(AttachFormat newAttachFormat, bool optimize, bool ignoreWeights = false, bool forceUpdate = false)
+        {
+            switch(newAttachFormat)
+            {
+                case AttachFormat.Buffer:
+                    switch(AttachFormat)
+                    {
+                        case AttachFormat.Buffer:
+                            return;
+                        case AttachFormat.BASIC:
+                            ModelData.BASIC.BasicAttachConverter.ConvertModelFromBasic(this, optimize);
+                            break;
+                        case AttachFormat.CHUNK:
+                            ModelData.CHUNK.ChunkAttachConverter.ConvertModelFromChunk(this, optimize);
+                            break;
+                        case AttachFormat.GC:
+                            ModelData.GC.GCAttachConverter.ConvertModelFromGC(this, optimize);
+                            break;
+                    }
+                    break;
+                case AttachFormat.BASIC:
+                    ModelData.BASIC.BasicAttachConverter.ConvertModelToBasic(this, optimize, ignoreWeights, forceUpdate);
+                    break;
+                case AttachFormat.CHUNK:
+                    throw new NotImplementedException();
+                case AttachFormat.GC:
+                    ModelData.GC.GCAttachConverter.ConvertModelToGC(this, optimize, ignoreWeights, forceUpdate);
+                    break;
+            }
         }
 
         #region hierarchy stuff
@@ -530,13 +609,19 @@ namespace SATools.SAModel.ObjData
 
         #endregion
 
+        /// <summary>
+        /// Creates a duplicate of the model, which will act as a new sibling to the old model
+        /// </summary>
+        /// <returns></returns>
         public NJObject Duplicate()
         {
             NJObject result = (NJObject)MemberwiseClone();
             result.Name += "_Clone";
             result._children = new List<NJObject>();
-            Parent.AddChild(result);
+            Parent?.AddChild(result);
             return result;
         }
+
+        public override string ToString() => Attach == null ? $"{Name}; / - /" : $"{Name}; {Attach.Format} - {Attach.Name}";
     }
 }

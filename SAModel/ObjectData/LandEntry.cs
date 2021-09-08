@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
@@ -22,7 +23,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Name of the Landentry
         /// </summary>
-        public string Name 
+        public string Name
             => _model.Name;
 
         /// <summary>
@@ -120,7 +121,7 @@ namespace SATools.SAModel.ObjData
         public LandEntry(Attach attach)
         {
             if(attach == null)
-                throw new ArgumentNullException("attach", "Attach cant be null!");
+                throw new ArgumentNullException(nameof(attach), "Attach cant be null!");
             _model = new NJObject()
             {
                 Attach = attach,
@@ -183,7 +184,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="writer">Ouput stream</param>
         /// <param name="imagebase">Imagebase for all addresses</param>
         /// <param name="labels">Already written labels</param>
-        public void WriteModel(EndianMemoryStream writer, uint imagebase, Dictionary<string, uint> labels)
+        public void WriteModel(EndianWriter writer, uint imagebase, Dictionary<string, uint> labels)
         {
             if(labels.ContainsKey(_model.Name))
                 return;
@@ -192,24 +193,29 @@ namespace SATools.SAModel.ObjData
 
         /// <summary>
         /// Writes landtable information of the geometry to a stream <br/>
-        /// Note: <see cref="WriteModel(EndianMemoryStream, uint, Dictionary{string, uint})"/> needs to have been called before
+        /// Note: <see cref="WriteModel(EndianWriter, uint, Dictionary{string, uint})"/> needs to have been called before
         /// </summary>
         /// <param name="writer">Output stream</param>
-        /// <param name="ltblFormat">Landtable format</param>
-        public void Write(EndianMemoryStream writer, LandtableFormat ltblFormat, Dictionary<string, uint> labels)
+        /// <param name="format">Landtable format</param>
+        public void Write(EndianWriter writer, LandtableFormat format, Dictionary<string, uint> labels)
         {
             if(!labels.ContainsKey(_model.Name))
                 throw new InvalidOperationException("Model has not been written!");
 
             ModelBounds.Write(writer);
-            if(ltblFormat < LandtableFormat.SA2)
+            if(format < LandtableFormat.SA2)
                 writer.Write(new byte[8]); //sa1 has unused radius y and radius z values
 
             writer.Write(labels[_model.Name]);
 
             writer.WriteUInt32(BlockBit);
 
-            if(ltblFormat >= LandtableFormat.SA2)
+            if(format == LandtableFormat.Buffer)
+            {
+                writer.WriteUInt32(Unknown);
+                writer.WriteUInt32((uint)SurfaceFlags);
+            }
+            else if(format >= LandtableFormat.SA2)
             {
                 writer.WriteUInt32(Unknown);
                 writer.WriteUInt32((uint)SurfaceFlags.ToSA2());
@@ -219,5 +225,13 @@ namespace SATools.SAModel.ObjData
                 writer.WriteUInt32((uint)SurfaceFlags.ToSA1());
             }
         }
+
+        /// <summary>
+        /// Creates a shallow copy of the landenty
+        /// </summary>
+        /// <returns></returns>
+        public LandEntry ShallowCopy() =>
+            // this works because the model doesn't (shouldn't) have a parent or children anyway
+            new(_model.Duplicate(), SurfaceFlags, BlockBit, Unknown, ModelBounds);
     }
 }

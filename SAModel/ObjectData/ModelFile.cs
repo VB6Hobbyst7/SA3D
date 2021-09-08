@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData.Animation;
 using static SATools.SACommon.ByteConverter;
@@ -33,6 +34,11 @@ namespace SATools.SAModel.ObjData
         private const ulong SA2BMDL = 0x4C444D42324153u;
 
         /// <summary>
+        /// BFMDL file header; "BFMDL"
+        /// </summary>
+        private const ulong BFMDL = 0x4C444D4642u;
+
+        /// <summary>
         /// Header mask 
         /// </summary>
         private const ulong HeaderMask = ~((ulong)0xFF << 56);
@@ -56,6 +62,11 @@ namespace SATools.SAModel.ObjData
         /// <see cref="SA2BMDL"/> with version integrated
         /// </summary>
         private const ulong SA2BMDLVer = SA2BMDL | (CurrentVersion << 56);
+
+        /// <summary>
+        /// BFMDL with version integrated
+        /// </summary>
+        private const ulong BFMDLVer = BFMDL | (CurrentVersion << 56);
 
         /// <summary>
         /// NJ header
@@ -140,7 +151,7 @@ namespace SATools.SAModel.ObjData
 
             AttachFormat? format = null;
             NJObject model;
-            Dictionary<uint,Attach> attaches = new();
+            Dictionary<uint, Attach> attaches = new();
             List<Motion> Animations = new();
             MetaData metaData = new();
             bool nj = false;
@@ -209,6 +220,9 @@ namespace SATools.SAModel.ObjData
                         break;
                     case SA2BMDL:
                         format = AttachFormat.GC;
+                        break;
+                    case BFMDL:
+                        format = AttachFormat.Buffer;
                         break;
                     default:
                         return null;
@@ -294,7 +308,8 @@ namespace SATools.SAModel.ObjData
         /// <param name="format">Format of the file</param>
         /// <param name="NJFile">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
-        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model) => Write(format, NJFile, model, new MetaData());
+        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model) 
+            => Write(format, NJFile, model, new MetaData());
 
         /// <summary>
         /// Writes a model hierarchy to stream and returns the contents
@@ -308,67 +323,59 @@ namespace SATools.SAModel.ObjData
         /// <param name="animFiles">Animation file paths</param>
         public static byte[] Write(AttachFormat format, bool NJFile, NJObject model, MetaData metaData)
         {
+            using ExtendedMemoryStream stream = new();
+            EndianWriter writer = new(stream);
+            uint imageBase = 0;
 
-            using(ExtendedMemoryStream stream = new())
+            if(NJFile)
             {
-                LittleEndianMemoryStream writer = new(stream);
-                uint imageBase = 0;
-
-                if(NJFile)
+                writer.WriteUInt16(NJ);
+                switch(format)
                 {
-                    writer.WriteUInt16(NJ);
-                    switch(format)
-                    {
-                        case AttachFormat.BASIC:
-                            writer.WriteUInt32(BM);
-                            break;
-                        case AttachFormat.CHUNK:
-                            writer.WriteUInt32(CM);
-                            break;
-                        default:
-                            throw new ArgumentException($"Attach format {format} not supported for NJ binaries");
-                    }
-                    writer.WriteUInt32(0); // file length placeholder
-                    imageBase = ~(8u);
+                    case AttachFormat.BASIC:
+                        writer.WriteUInt32(BM);
+                        break;
+                    case AttachFormat.CHUNK:
+                        writer.WriteUInt32(CM);
+                        break;
+                    default:
+                        throw new ArgumentException($"Attach format {format} not supported for NJ binaries");
                 }
-                else
+                writer.WriteUInt32(0); // file length placeholder
+                imageBase = ~(8u);
+            }
+            else
+            {
+                ulong header = 0;
+                header = format switch
                 {
-                    switch(format)
-                    {
-                        case AttachFormat.BASIC:
-                            writer.WriteUInt64(SA1MDLVer);
-                            break;
-                        case AttachFormat.CHUNK:
-                            writer.WriteUInt64(SA2MDLVer);
-                            break;
-                        case AttachFormat.GC:
-                            writer.WriteUInt64(SA2BMDLVer);
-                            break;
-                        default:
-                            throw new ArgumentException($"Attach format {format} not supported for SAMDL files");
-                    }
-                    writer.WriteUInt32(0x10);
-                    writer.WriteUInt32(0); // labels placeholder
-                }
-
-                Dictionary<string, uint> labels = new();
-                model.WriteHierarchy(writer, imageBase, false, labels);
-
-                if(NJFile)
-                {
-                    // replace size
-                    writer.Stream.Seek(4, SeekOrigin.Begin);
-                    writer.WriteUInt32((uint)writer.Stream.Length);
-                    writer.Stream.Seek(0, SeekOrigin.End);
-                }
-                else
-                {
-                    metaData.Write(writer, labels);
-                }
-
-                return stream.ToArray();
+                    AttachFormat.BASIC => SA1MDLVer,
+                    AttachFormat.CHUNK => SA2MDLVer,
+                    AttachFormat.GC => SA2BMDLVer,
+                    AttachFormat.Buffer => BFMDLVer,
+                    _ => throw new ArgumentException($"Attach format {format} not supported for SAMDL files"),
+                };
+                writer.WriteUInt64(header);
+                writer.WriteUInt32(0x10);
+                writer.WriteUInt32(0); // labels placeholder
             }
 
+            Dictionary<string, uint> labels = new();
+            model.WriteHierarchy(writer, imageBase, false, format == AttachFormat.Buffer, labels);
+
+            if(NJFile)
+            {
+                // replace size
+                writer.Stream.Seek(4, SeekOrigin.Begin);
+                writer.WriteUInt32((uint)writer.Stream.Length);
+                writer.Stream.Seek(0, SeekOrigin.End);
+            }
+            else
+            {
+                metaData.Write(writer, labels);
+            }
+
+            return stream.ToArray();
         }
 
         /// <summary>
@@ -395,38 +402,36 @@ namespace SATools.SAModel.ObjData
             }
 
             outputPath = Path.ChangeExtension(outputPath, ".NJA");
-            using(TextWriter writer = File.CreateText(outputPath))
+            using TextWriter writer = File.CreateText(outputPath);
+            List<string> labels = new();
+            foreach(var atc in attaches)
             {
-                List<string> labels = new();
-                foreach(var atc in attaches)
-                {
-                    atc.WriteNJA(writer, DX, labels, textures);
-                }
-
-                writer.WriteLine("OBJECT_START");
-                writer.WriteLine();
-
-                foreach(NJObject obj in objects.Reverse())
-                {
-                    obj.WriteNJA(writer, labels);
-                }
-
-                writer.WriteLine("OBJECT_END");
-                writer.WriteLine();
-
-                writer.WriteLine();
-                writer.WriteLine("DEFAULT_START");
-                writer.WriteLine();
-
-                writer.WriteLine("#ifndef DEFAULT_OBJECT_NAME");
-                writer.Write("#define DEFAULT_OBJECT_NAME ");
-                writer.WriteLine(model.Name);
-                writer.WriteLine("#endif");
-
-                writer.WriteLine();
-                writer.WriteLine("DEFAULT_END");
-                writer.WriteLine();
+                atc.WriteNJA(writer, DX, labels, textures);
             }
+
+            writer.WriteLine("OBJECT_START");
+            writer.WriteLine();
+
+            foreach(NJObject obj in objects.Reverse())
+            {
+                obj.WriteNJA(writer, labels);
+            }
+
+            writer.WriteLine("OBJECT_END");
+            writer.WriteLine();
+
+            writer.WriteLine();
+            writer.WriteLine("DEFAULT_START");
+            writer.WriteLine();
+
+            writer.WriteLine("#ifndef DEFAULT_OBJECT_NAME");
+            writer.Write("#define DEFAULT_OBJECT_NAME ");
+            writer.WriteLine(model.Name);
+            writer.WriteLine("#endif");
+
+            writer.WriteLine();
+            writer.WriteLine("DEFAULT_END");
+            writer.WriteLine();
         }
     }
 }

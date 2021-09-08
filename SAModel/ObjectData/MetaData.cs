@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 
@@ -231,10 +232,10 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="writer">Output stream</param>
         /// <param name="labels">New set of labels</param>
-        public void Write(EndianMemoryStream writer, Dictionary<string, uint> labels)
+        public void Write(EndianWriter writer, Dictionary<string, uint> labels)
         {
             // write meta data
-            uint metaAddr = (uint)writer.Stream.Position;
+            uint metaAddr = writer.Position;
             writer.Stream.Seek(0xC, SeekOrigin.Begin);
             writer.WriteUInt32(metaAddr);
             writer.Stream.Seek(0, SeekOrigin.End);

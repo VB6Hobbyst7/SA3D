@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData.Animation;
 using static SATools.SACommon.ByteConverter;
@@ -106,7 +107,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Format of the landtable
         /// </summary>
-        public LandtableFormat Format { get; }
+        public LandtableFormat Format { get; private set; }
 
         /// <summary>
         /// MetaData of/for a LVL file
@@ -127,9 +128,10 @@ namespace SATools.SAModel.ObjData
             Format = format;
             MetaData = new MetaData();
 
-            Name = "landtable_" + GenerateIdentifier();
-            GeoName = "collist_" + GenerateIdentifier();
-            GeoAnimName = "animlist_" + GenerateIdentifier();
+            string identifier = GenerateIdentifier();
+            Name = "landtable_" + identifier;
+            GeoName = "collist_" + identifier;
+            GeoAnimName = "animlist_" + identifier;
         }
 
         /// <summary>
@@ -150,6 +152,121 @@ namespace SATools.SAModel.ObjData
         public LandTable(LandtableFormat format) : this(new List<LandEntry>(), new List<LandEntryMotion>(), format)
         {
 
+        }
+
+        public void BufferLandtable(bool optimize = true)
+        {
+            LandtableFormat format = Format;
+            ConvertToFormat(LandtableFormat.Buffer, optimize, false);
+            Format = format;
+        }
+
+        public void ConvertToFormat(LandtableFormat newFormat, bool optimize, bool forceUpdate)
+        {
+            if(newFormat == Format && !forceUpdate)
+                return;
+
+            NJObject dummyModel = new();
+
+            void convertAttaches(AttachFormat format, HashSet<Attach> attaches, Dictionary<Attach, Attach> attachMap, HashSet<LandEntry> landentries)
+            {
+                foreach(Attach atc in attaches)
+                {
+                    dummyModel.Attach = atc;
+                    dummyModel.ConvertAttachFormat(format, optimize, false, forceUpdate);
+                    attachMap.Add(atc, dummyModel.Attach);
+                }
+
+                if(format == AttachFormat.Buffer)
+                    return;
+
+                foreach(LandEntry le in landentries)
+                {
+                    le.Attach = attachMap[le.Attach];
+                }
+            }
+
+            var newAtcFormat = newFormat switch
+            {
+                LandtableFormat.SA1 or LandtableFormat.SADX => AttachFormat.BASIC,
+                LandtableFormat.SA2 => AttachFormat.CHUNK,
+                LandtableFormat.SA2B => AttachFormat.GC,
+                _ => AttachFormat.Buffer,
+            };
+
+            if(newFormat <= LandtableFormat.SADX || newFormat == LandtableFormat.Buffer)
+            {
+                HashSet<Attach> attaches = Geometry.Select(x => x.Attach).ToHashSet();
+                convertAttaches(newAtcFormat, attaches, new(), new(Geometry));
+            }
+            else
+            {
+                if(Format <= LandtableFormat.SADX || Format == LandtableFormat.Buffer)
+                {
+                    // attaches that are used for rendering
+                    HashSet<Attach> visualAttaches = new();
+
+                    // Attaches that are used for collision
+                    HashSet<Attach> collisionAttaches = new();
+
+                    HashSet<LandEntry> visualLandEntries = new();
+                    HashSet<LandEntry> collisionLandEntries = new();
+
+                    // For sa1/dx, of which a landentry can be used for both, collision and rendering
+                    HashSet<LandEntry> hybridLandEntries = new();
+
+                    foreach(LandEntry le in Geometry)
+                    {
+                        bool isCollision = le.SurfaceFlags.IsCollision();
+                        bool isVisual = !isCollision || le.SurfaceFlags.HasFlag(SurfaceFlags.Visible);
+                        // if its neither, we'll just keep it as an invisible visual model. just in case
+
+                        if(isCollision)
+                        {
+                            collisionAttaches.Add(le.Attach);
+                            collisionLandEntries.Add(le);
+                        }
+
+                        if(isVisual)
+                        {
+                            visualAttaches.Add(le.Attach);
+                            visualLandEntries.Add(le);
+                        }
+
+                        if(isVisual && isCollision)
+                            hybridLandEntries.Add(le);
+                    }
+
+                    visualLandEntries.RemoveWhere(x => hybridLandEntries.Contains(x));
+                    collisionLandEntries.RemoveWhere(x => hybridLandEntries.Contains(x));
+
+                    Dictionary<Attach, Attach> visualAttachMap = new();
+                    convertAttaches(newAtcFormat, visualAttaches, visualAttachMap, visualLandEntries);
+
+                    Dictionary<Attach, Attach> collisionAttachMap = new();
+                    convertAttaches(AttachFormat.BASIC, collisionAttaches, collisionAttachMap, collisionLandEntries);
+
+                    foreach(LandEntry le in hybridLandEntries)
+                    {
+                        // the copy will act as collision
+                        LandEntry copy = le.ShallowCopy();
+                        copy.Attach = collisionAttachMap[le.Attach];
+                        Geometry.Add(copy);
+
+                        le.Attach = visualAttachMap[le.Attach];
+                    }
+                    
+                }
+                else // when converting between sa2 formats
+                {
+                    // the collision format for sa2 and sa2b is the same, no conversion needed
+                    HashSet<LandEntry> visualGeometry = Geometry.Where(x => x.Attach.Format != AttachFormat.BASIC).ToHashSet();
+                    HashSet<Attach> attaches = visualGeometry.Select(x => x.Attach).ToHashSet();
+                    convertAttaches(newAtcFormat, attaches, new(), new(visualGeometry));
+                }
+            }
+
+            Format = newFormat;
         }
 
         /// <summary>
@@ -228,6 +345,8 @@ namespace SATools.SAModel.ObjData
             float radius;
             uint flags = 0;
 
+            string identifier = GenerateIdentifier();
+
             List<LandEntry> geometry = new();
             string geomName;
             List<LandEntryMotion> anim = new();
@@ -259,7 +378,7 @@ namespace SATools.SAModel.ObjData
                         }
                     }
                     else
-                        geomName = "collist_" + GenerateIdentifier();
+                        geomName = "collist_" + identifier;
 
                     tmpaddr = source.ToUInt32(address + 0x10);
                     if(tmpaddr != 0)
@@ -274,7 +393,7 @@ namespace SATools.SAModel.ObjData
                         }
                     }
                     else
-                        animName = "animlist_" + GenerateIdentifier();
+                        animName = "animlist_" + identifier;
 
                     tmpaddr = source.ToUInt32(address + 0x14);
                     if(tmpaddr != 0)
@@ -305,9 +424,9 @@ namespace SATools.SAModel.ObjData
                         }
                     }
                     else
-                        geomName = "collist_" + GenerateIdentifier();
+                        geomName = "collist_" + identifier;
 
-                    animName = "animlist_" + GenerateIdentifier();
+                    animName = "animlist_" + identifier;
 
                     tmpaddr = source.ToUInt32(address + 0x18);
                     if(tmpaddr != 0)
@@ -350,38 +469,36 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public byte[] WriteFile()
         {
-            using(ExtendedMemoryStream stream = new())
+            using ExtendedMemoryStream stream = new();
+            using EndianWriter writer = new(stream);
+
+            // writing indicator
+            switch(Format)
             {
-                LittleEndianMemoryStream writer = new(stream);
-
-                // writing indicator
-                switch(Format)
-                {
-                    case LandtableFormat.SA1:
-                    case LandtableFormat.SADX:
-                        writer.WriteUInt64(SA1LVLVer);
-                        break;
-                    case LandtableFormat.SA2:
-                        writer.WriteUInt64(SA2LVLVer);
-                        break;
-                    case LandtableFormat.SA2B:
-                        writer.WriteUInt64(SA2BLVLVer);
-                        break;
-                }
-
-                writer.WriteUInt64(0); // placeholders for landtable address and meta address
-
-                Dictionary<string, uint> labels = new();
-
-                uint ltblAddress = Write(writer, 0, labels);
-                writer.Stream.Seek(8, SeekOrigin.Begin);
-                writer.WriteUInt32(ltblAddress);
-                writer.Stream.Seek(0, SeekOrigin.End);
-
-                MetaData.Write(writer, labels);
-
-                return stream.ToArray();
+                case LandtableFormat.SA1:
+                case LandtableFormat.SADX:
+                    writer.WriteUInt64(SA1LVLVer);
+                    break;
+                case LandtableFormat.SA2:
+                    writer.WriteUInt64(SA2LVLVer);
+                    break;
+                case LandtableFormat.SA2B:
+                    writer.WriteUInt64(SA2BLVLVer);
+                    break;
             }
+
+            writer.WriteUInt64(0); // placeholders for landtable address and meta address
+
+            Dictionary<string, uint> labels = new();
+
+            uint ltblAddress = Write(writer, 0, labels);
+            writer.Stream.Seek(8, SeekOrigin.Begin);
+            writer.WriteUInt32(ltblAddress);
+            writer.Stream.Seek(0, SeekOrigin.End);
+
+            MetaData.Write(writer, labels);
+
+            return stream.ToArray();
         }
 
         /// <summary>
@@ -391,13 +508,13 @@ namespace SATools.SAModel.ObjData
         /// <param name="imageBase">Image base for all addresses</param>
         /// <param name="labels">C struct labels</param>
         /// <returns></returns>
-        public uint Write(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
+        public uint Write(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
             // sort the landentries
-            List<Attach> attaches = new();
+            HashSet<Attach> attaches = new();
 
             ushort visCount = 0;
-            if(Format > LandtableFormat.SADX)
+            if(Format > LandtableFormat.SADX && Format != LandtableFormat.Buffer)
             {
                 List<LandEntry> visual = new();
                 List<LandEntry> basic = new();
@@ -410,7 +527,7 @@ namespace SATools.SAModel.ObjData
                         visual.Add(le);
                     attaches.Add(le.Attach);
                 }
-
+                
                 Geometry.Clear();
                 Geometry.AddRange(visual);
                 Geometry.AddRange(basic);
@@ -431,10 +548,18 @@ namespace SATools.SAModel.ObjData
             }
 
             // writing all attaches
-            foreach(var atc in attaches.Distinct())
+            if(Format == LandtableFormat.Buffer)
             {
-                atc.Write(writer, imageBase, false, labels);
+                foreach(var atc in attaches)
+                    atc.WriteBuffer(writer, imageBase, labels);
             }
+            else
+            {
+                foreach(var atc in attaches)
+                    atc.Write(writer, imageBase, false, labels);
+            }
+
+            var t  =labels.GroupBy(x => x.Value).Where(x => x.Count() > 1).ToList();
 
             // write the landentry models
             foreach(LandEntry le in Geometry)
@@ -444,9 +569,11 @@ namespace SATools.SAModel.ObjData
             foreach(LandEntryMotion lem in GeometryAnimations)
                 lem.Model.Write(writer, imageBase, labels);
 
+            Dictionary<Action, uint> actionAddresses = new();
+
             // write the landentry motion animations
             foreach(LandEntryMotion lem in GeometryAnimations)
-                lem.Write(writer, labels);
+                actionAddresses.Add(lem.MotionAction, lem.MotionAction.Write(writer, imageBase, Format == LandtableFormat.SADX, Format == LandtableFormat.Buffer, labels));
 
             // writing the geometry list
             uint geomAddr = 0;
@@ -456,8 +583,8 @@ namespace SATools.SAModel.ObjData
                     geomAddr = labels[GeoName];
                 else
                 {
-                    geomAddr = (uint)writer.Stream.Position + imageBase;
-                    labels.Add(GeoName, geomAddr);
+                    geomAddr = writer.Position + imageBase;
+                    labels.AddLabel(GeoName, geomAddr);
                     foreach(LandEntry le in Geometry)
                     {
                         le.Write(writer, Format, labels);
@@ -473,11 +600,11 @@ namespace SATools.SAModel.ObjData
                     animAddr = labels[GeoAnimName];
                 else
                 {
-                    animAddr = (uint)writer.Stream.Position + imageBase;
-                    labels.Add(GeoAnimName, animAddr);
+                    animAddr = writer.Position + imageBase;
+                    labels.AddLabel(GeoAnimName, animAddr);
                     foreach(LandEntryMotion lem in GeometryAnimations)
                     {
-                        lem.Write(writer, labels);
+                        lem.Write(writer, actionAddresses, labels);
                     }
                 }
             }
@@ -486,13 +613,13 @@ namespace SATools.SAModel.ObjData
             uint texNameAddr = 0;
             if(TextureFileName != null)
             {
-                texNameAddr = (uint)writer.Stream.Position + imageBase;
+                texNameAddr = writer.Position + imageBase;
                 writer.Write(Encoding.ASCII.GetBytes(TextureFileName));
                 writer.Write(new byte[1]);
             }
 
             // write the landtable struct itself
-            uint address = (uint)writer.Stream.Position + imageBase;
+            uint address = writer.Position + imageBase;
 
             writer.WriteUInt16((ushort)Geometry.Count);
             if(Format < LandtableFormat.SA2) // sa1 + sadx
@@ -517,7 +644,7 @@ namespace SATools.SAModel.ObjData
                 writer.WriteUInt32(TexListPtr);
             }
 
-            labels.Add(Name, address);
+            labels.AddLabel(Name, address);
             return address;
         }
     }

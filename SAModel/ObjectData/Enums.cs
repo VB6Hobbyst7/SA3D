@@ -3,7 +3,7 @@
 namespace SATools.SAModel.ObjData
 {
     /// <summary>
-    /// Land table formats
+    /// LandTable formats
     /// </summary>
     public enum LandtableFormat : int
     {
@@ -11,6 +11,7 @@ namespace SATools.SAModel.ObjData
         SADX = 1,
         SA2 = 2,
         SA2B = 3,
+        Buffer = 4
     }
 
     /// <summary>
@@ -333,6 +334,11 @@ namespace SATools.SAModel.ObjData
             return result;
         }
 
+        /// <summary>
+        /// Checks whether the Landentry is used for collision detection
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
         public static bool IsCollision(this SurfaceFlags flags)
         {
             return flags.HasFlag(SurfaceFlags.Solid)
