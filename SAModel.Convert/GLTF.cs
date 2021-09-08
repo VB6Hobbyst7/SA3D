@@ -13,6 +13,7 @@ using SharpGLTF.Memory;
 using System.IO;
 using SATools.SAModel.Structs;
 using Color = SATools.SAModel.Structs.Color;
+using Colourful;
 
 namespace SATools.SAModel.Convert
 {
@@ -38,14 +39,14 @@ namespace SATools.SAModel.Convert
             }
         }
 
-        public static Contents Read(string filepath, AttachFormat format, bool importTextures, float? animationFPS)
-            => Read(ModelRoot.Load(filepath), format, importTextures, animationFPS);
+        public static Contents Read(string filepath, bool importTextures, float? animationFPS)
+            => Read(ModelRoot.Load(filepath), importTextures, animationFPS);
 
-        public static Contents Read(ModelRoot gltfModel, AttachFormat format, bool importTextures, float? animationFPS)
+        public static Contents Read(ModelRoot gltfModel, bool importTextures, float? animationFPS)
         {
-            // First we'll get the textures, definitely the easiest part
+            // First we'll get the textures, by far the easiest part
             TextureSet textures = null;
-            if(importTextures)
+            if(importTextures && gltfModel.LogicalTextures.Count > 0)
             {
                 textures = new();
                 foreach(var t in gltfModel.LogicalTextures)
@@ -56,16 +57,40 @@ namespace SATools.SAModel.Convert
             }
 
             // lets first set up the object hierarchy
-            Dictionary<Node, NJObject> objects = new();
-            NJObject root = FromNode(gltfModel.LogicalNodes[0], objects);
+            Dictionary<Node, NJObject> objectsPairs = new();
+
+            List<NJObject> roots = new();
+            foreach(var n in gltfModel.LogicalNodes)
+            {
+                if(n.VisualParent == null)
+                {
+                    roots.Add(FromNode(n, objectsPairs));
+                }
+            }
+
+            NJObject root;
+            if(roots.Count > 1)
+            {
+                root = new NJObject()
+                {
+                    Name = "Root"
+                };
+
+                root.AddChildren(roots);
+            }
+            else
+            {
+                root = roots[0];
+            }
+
             Dictionary<Mesh, Attach> nonWeightAttaches = new();
 
-            NJObject[] objectList = new NJObject[gltfModel.LogicalNodes.Count];
-            for(int i = 0; i < objectList.Length; i++)
-                objectList[i] = objects[gltfModel.LogicalNodes[i]];
+            NJObject[] objects = root.GetObjects();
 
-            foreach((Node node, NJObject njo) in objects)
+            foreach(NJObject njo in objects)
             {
+                Node node = objectsPairs.First(x => x.Value == njo).Key;
+
                 if(node.Mesh == null)
                     continue;
 
@@ -73,7 +98,7 @@ namespace SATools.SAModel.Convert
                 {
                     if(!nonWeightAttaches.TryGetValue(node.Mesh, out Attach atc))
                     {
-                        atc = FromNoWeight(node.Mesh, format);
+                        atc = FromNoWeight(node.Mesh);
                         nonWeightAttaches.Add(node.Mesh, atc);
                     }
                     njo.Attach = atc;
@@ -87,12 +112,12 @@ namespace SATools.SAModel.Convert
                     for(int i = 0; i < skin.JointsCount; i++)
                     {
                         (Node bone, _) = skin.GetJoint(i);
-                        bones[i] = objects[bone];
+                        bones[i] = objectsPairs[bone];
                     }
 
-                    var weightData = FromWeight(node.Mesh);
+                    var (vertices, polydata) = FromWeight(node.Mesh);
                     Matrix4x4 meshMatrix = node.GetWorldMatrix(null, 0);
-                    AttachHelper.FromWeightedBuffer(bones, meshMatrix, weightData.vertices, weightData.polydata, format);
+                    AttachHelper.FromWeightedBuffer(bones, meshMatrix, vertices, polydata);
                 }
             }
 
@@ -110,7 +135,7 @@ namespace SATools.SAModel.Convert
             else
                 animations = Array.Empty<Motion>();
 
-            return new Contents(root, textures.Textures.Count == 0 ? null : textures, animations);
+            return new Contents(root, textures, animations);
         }
 
         private static NJObject FromNode(Node node, Dictionary<Node, NJObject> objects)
@@ -134,9 +159,12 @@ namespace SATools.SAModel.Convert
             return result;
         }
 
-        private static Attach FromNoWeight(Mesh mesh, AttachFormat format)
+        private static Attach FromNoWeight(Mesh mesh)
         {
             List<BufferMesh> result = new(mesh.Primitives.Count);
+
+            IColorConverter<LinearRGBColor, RGBColor> converter
+                = new ConverterBuilder().FromLinearRGB().ToRGB(RGBWorkingSpaces.sRGB).Build();
 
             foreach(var primitive in mesh.Primitives)
             {
@@ -168,7 +196,9 @@ namespace SATools.SAModel.Convert
                     Vector2 uv = uvArray?[i] ?? default;
                     Vector4 col = colorArray?[i] ?? Vector4.UnitW;
 
-                    corners[i] = new((ushort)i, new(col.X, col.Y, col.Z, col.W), uv);
+                    var linearCol = converter.Convert(new(col.X, col.Y, col.Z));
+
+                    corners[i] = new((ushort)i, new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
                 }
 
                 // Read indices
@@ -178,11 +208,11 @@ namespace SATools.SAModel.Convert
                 result.Add(new(vertices, false, corners, indices, GetMaterial(primitive.Material)));
             }
 
-            Attach atc = AttachHelper.FromBufferMesh(result.ToArray(), format);
+            Attach atc = new(result.ToArray());
             atc.Name = mesh.Name;
             return atc;
         }
-    
+
         private static (AttachHelper.VertexWeights[] vertices, BufferMesh[] polydata) FromWeight(Mesh mesh)
         {
             List<AttachHelper.VertexWeights> vertices = new();
@@ -302,7 +332,7 @@ namespace SATools.SAModel.Convert
                             result[i] = index + 1;
                             result[i + 1] = index;
                         }
-                        result[i+2] = index + 2;
+                        result[i + 2] = index + 2;
 
                         index++;
                     }
@@ -341,6 +371,11 @@ namespace SATools.SAModel.Convert
             BufferMaterial result = new();
             result.Diffuse = Color.White;
             result.Specular = Color.White;
+            result.SpecularExponent = 32f;
+
+            if(mat == null)
+                return result;
+
             result.SetFlag(MaterialFlags.Flat, mat.Unlit);
 
             var channels = mat.Channels.ToArray();
@@ -376,23 +411,15 @@ namespace SATools.SAModel.Convert
                                 break;
                         }
 
-                        switch(c.TextureSampler.MinFilter)
+                        result.TextureFiltering = c.TextureSampler.MinFilter switch
                         {
-                            case TextureMipMapFilter.NEAREST:
-                            case TextureMipMapFilter.NEAREST_MIPMAP_NEAREST:
-                            case TextureMipMapFilter.LINEAR_MIPMAP_NEAREST:
-                                result.TextureFiltering = FilterMode.PointSampled;
-                                break;
-                            case TextureMipMapFilter.LINEAR:
-                                result.TextureFiltering = FilterMode.Bilinear;
-                                break;
-                            case TextureMipMapFilter.DEFAULT:
-                            default:
-                            case TextureMipMapFilter.NEAREST_MIPMAP_LINEAR:
-                            case TextureMipMapFilter.LINEAR_MIPMAP_LINEAR:
-                                result.TextureFiltering = FilterMode.Trilinear;
-                                break;
-                        }
+                            TextureMipMapFilter.NEAREST 
+                            or TextureMipMapFilter.NEAREST_MIPMAP_NEAREST 
+                            or TextureMipMapFilter.LINEAR_MIPMAP_NEAREST 
+                                => FilterMode.PointSampled,
+                            TextureMipMapFilter.LINEAR => FilterMode.Bilinear,
+                            _ => FilterMode.Trilinear,
+                        };
                     }
                     result.Diffuse = new(c.Parameter.X, c.Parameter.Y, c.Parameter.Z, c.Parameter.W);
                 }
