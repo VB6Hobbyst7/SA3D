@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.IO;
@@ -306,7 +307,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// Writes the materials contents to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             DiffuseColor.Write(writer, IOType.ARGB8_32);
             SpecularColor.Write(writer, IOType.ARGB8_32);
@@ -331,13 +332,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
         public override int GetHashCode()
         {
-            var hashCode = -1598107806;
-            hashCode = hashCode * -1521134295 + DiffuseColor.GetHashCode();
-            hashCode = hashCode * -1521134295 + SpecularColor.GetHashCode();
-            hashCode = hashCode * -1521134295 + Exponent.GetHashCode();
-            hashCode = hashCode * -1521134295 + TextureID.GetHashCode();
-            hashCode = hashCode * -1521134295 + Flags.GetHashCode();
-            return hashCode;
+            return HashCode.Combine(DiffuseColor, SpecularColor, Exponent, TextureID, Flags);
         }
 
         public override string ToString() => $"{TextureID}";

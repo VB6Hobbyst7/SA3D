@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
 using System;
@@ -76,21 +77,18 @@ namespace SATools.SAModel.ModelData.BASIC
             Meshes = meshes;
             Materials = materials;
 
-            if(positions.Length != normals.Length)
+            if(normals != null && positions.Length != normals.Length)
                 throw new ArgumentException("Position and Normal count doesnt match!");
 
             MeshBounds = Bounds.FromPoints(positions);
 
-            Name = "attach_" + GenerateIdentifier();
-            MaterialName = "matlist_" + GenerateIdentifier();
-            MeshName = "meshlist_" + GenerateIdentifier();
-            PositionName = "vertex_" + GenerateIdentifier();
-            NormalName = "normal_" + GenerateIdentifier();
-        }
-
-        public BasicAttach(BufferMesh[] meshData) : base(meshData)
-        {
-            throw new NotImplementedException();
+            string identifier = GenerateIdentifier();
+            Name = "attach_" + identifier;
+            MaterialName = "matlist_" + identifier;
+            MeshName = "meshlist_" + identifier;
+            PositionName = "vertex_" + identifier;
+            if(normals != null)
+                NormalName = "normal_" + identifier;
         }
 
         /// <summary>
@@ -110,6 +108,8 @@ namespace SATools.SAModel.ModelData.BASIC
             else
                 name = "attach_" + address.ToString("X8");
 
+            string identifier = GenerateIdentifier();
+
             // creating the data sets
             Vector3[] positions = new Vector3[source.ToUInt32(address + 8)];
             Vector3[] normals = new Vector3[positions.Length];
@@ -126,11 +126,11 @@ namespace SATools.SAModel.ModelData.BASIC
                     positions[i] = Vector3Extensions.Read(source, ref posAddr, IOType.Float);
             }
             else
-                posName = "vertex_" + GenerateIdentifier();
+                posName = "vertex_" + identifier;
 
             // reading normals
             uint nrmAddr = source.ToUInt32(address + 4);
-            string nrmName;
+            string nrmName = null;
             if(nrmAddr != 0)
             {
                 nrmAddr -= imageBase;
@@ -140,9 +140,7 @@ namespace SATools.SAModel.ModelData.BASIC
             }
             else
             {
-                nrmName = "normal_" + GenerateIdentifier();
-                for(int i = 0; i < normals.Length; i++)
-                    normals[i] = Vector3.UnitY;
+                normals = null;
             }
 
             // reading meshes
@@ -163,7 +161,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 }
             }
             else
-                meshName = "meshlist_" + GenerateIdentifier();
+                meshName = "meshlist_" + identifier;
 
             // reading materials
             // fixes case where model declares material array as shorter than it really is
@@ -178,7 +176,7 @@ namespace SATools.SAModel.ModelData.BASIC
                     materials[i] = Material.Read(source, ref matAddr);
             }
             else
-                matName = "matlist_" + GenerateIdentifier();
+                matName = "matlist_" + identifier;
 
             address += 24;
             Bounds bounds = Bounds.Read(source, ref address);
@@ -194,7 +192,7 @@ namespace SATools.SAModel.ModelData.BASIC
             };
         }
 
-        public override uint Write(EndianMemoryStream writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
+        public override uint Write(EndianWriter writer, uint imageBase, bool DX, Dictionary<string, uint> labels)
         {
             // writing positions
             uint posAddress;
@@ -202,22 +200,25 @@ namespace SATools.SAModel.ModelData.BASIC
                 posAddress = labels[PositionName];
             else
             {
-                posAddress = (uint)writer.Stream.Position + imageBase;
-                labels.Add(PositionName, posAddress);
+                posAddress = writer.Position + imageBase;
+                labels.AddLabel(PositionName, posAddress);
                 foreach(Vector3 p in Positions)
                     p.Write(writer, IOType.Float);
             }
 
             // writing normals
-            uint nrmAddress;
-            if(labels.ContainsKey(NormalName))
-                nrmAddress = labels[NormalName];
-            else
+            uint nrmAddress = 0;
+            if(Normals != null)
             {
-                nrmAddress = (uint)writer.Stream.Position + imageBase;
-                labels.Add(NormalName, nrmAddress);
-                foreach(Vector3 p in Normals)
-                    p.Write(writer, IOType.Float);
+                if(labels.ContainsKey(NormalName))
+                    nrmAddress = labels[NormalName];
+                else
+                {
+                    nrmAddress = writer.Position + imageBase;
+                    labels.AddLabel(NormalName, nrmAddress);
+                    foreach(Vector3 p in Normals)
+                        p.Write(writer, IOType.Float);
+                }
             }
 
             // writing meshsets
@@ -230,8 +231,8 @@ namespace SATools.SAModel.ModelData.BASIC
                 foreach(Mesh m in Meshes)
                     m.WriteData(writer, imageBase, labels);
 
-                meshAddress = (uint)writer.Stream.Position + imageBase;
-                labels.Add(MeshName, meshAddress);
+                meshAddress = writer.Position + imageBase;
+                labels.AddLabel(MeshName, meshAddress);
                 foreach(Mesh m in Meshes)
                     m.WriteMeshset(writer, DX, labels);
             }
@@ -242,16 +243,16 @@ namespace SATools.SAModel.ModelData.BASIC
                 materialAddress = labels[MaterialName];
             else
             {
-                materialAddress = (uint)writer.Stream.Position + imageBase;
-                labels.Add(MaterialName, materialAddress);
+                materialAddress = writer.Position + imageBase;
+                labels.AddLabel(MaterialName, materialAddress);
                 foreach(Material m in Materials)
                     m.Write(writer);
             }
 
             // writing the attach
 
-            uint outAddress = (uint)writer.Stream.Position + imageBase;
-            labels.Add(Name, outAddress);
+            uint outAddress = writer.Position + imageBase;
+            labels.AddLabel(Name, outAddress);
 
             writer.WriteUInt32(posAddress);
             writer.WriteUInt32(nrmAddress);
@@ -404,121 +405,6 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteLine();
         }
 
-        internal override BufferMesh[] Buffer(bool optimize)
-        {
-            List<BufferMesh> meshes = new();
-            List<BufferVertex> vertices = new();
-
-            for(ushort i = 0; i < Positions.Length; i++)
-                vertices.Add(new BufferVertex(Positions[i], Normals[i], i));
-
-            BufferVertex[] verts = vertices.ToArray();
-
-            bool first = true;
-            foreach(Mesh mesh in Meshes)
-            {
-
-                // creating the material
-                Material mat = Materials != null && mesh.MaterialID < Materials.Length ? Materials[mesh.MaterialID] : null;
-                BufferMaterial bMat;
-                if(mat == null)
-                {
-                    bMat = new BufferMaterial()
-                    {
-                        Diffuse = new Color(0xF9, 0xF9, 0xF9, 0xFF),
-                        Specular = Color.White,
-                        SpecularExponent = 8
-                    };
-                }
-                else
-                {
-                    bMat = new BufferMaterial()
-                    {
-                        Diffuse = mat.DiffuseColor,
-                        Specular = mat.SpecularColor,
-                        SpecularExponent = mat.Exponent,
-                        TextureIndex = mat.TextureID,
-                        TextureFiltering = mat.FilterMode,
-                        MipmapDistanceAdjust = mat.MipmapDAdjust,
-                        AnisotropicFiltering = mat.SuperSample,
-                        ClampU = mat.ClampU,
-                        ClampV = mat.ClampV,
-                        MirrorU = mat.FlipU,
-                        MirrorV = mat.FlipV,
-                        UseAlpha = mat.UseAlpha,
-                        SourceBlendMode = mat.SourceAlpha,
-                        DestinationBlendmode = mat.DestinationAlpha,
-                        Culling = !mat.DoubleSided,
-                        MaterialFlags = MaterialFlags.noAmbient
-                    };
-                    //bMat.SetFlag(MaterialFlags.Flat, mesh.Colors != null);
-                    bMat.SetFlag(MaterialFlags.noDiffuse, mat.IgnoreLighting);
-                    bMat.SetFlag(MaterialFlags.noSpecular, mat.IgnoreSpecular);
-                    bMat.SetFlag(MaterialFlags.useTexture, mat.UseTexture);
-                    bMat.SetFlag(MaterialFlags.normalMapping, mat.EnvironmentMap);
-                }
-
-                List<BufferCorner> corners = new();
-                List<uint> triangles = new();
-                int polyIndex = 0;
-
-                foreach(Poly p in mesh.Polys)
-                {
-                    uint l = (uint)corners.Count;
-                    switch(mesh.PolyType)
-                    {
-                        case BASICPolyType.Triangles:
-                            triangles.AddRange(new uint[] { l, l + 1, l + 2 });
-                            break;
-                        case BASICPolyType.Quads:
-                            triangles.AddRange(new uint[] { l, l + 1, l + 2, /**/ l + 2, l + 1, l + 3 });
-                            break;
-                        case BASICPolyType.NPoly:
-                        case BASICPolyType.Strips:
-                            Strip s = (Strip)p;
-                            bool rev = s.Reversed;
-                            for(uint i = 2; i < s.Indices.Length; i++)
-                            {
-                                uint li = l + i;
-                                if(!rev)
-                                    triangles.AddRange(new uint[] { li - 2, li - 1, li });
-                                else
-                                    triangles.AddRange(new uint[] { li - 1, li - 2, li });
-                                rev = !rev;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                    for(int i = 0; i < p.Indices.Length; i++)
-                    {
-                        corners.Add(new BufferCorner(p.Indices[i], mesh.Colors?[polyIndex] ?? Color.White, mesh.UVs?[polyIndex] ?? Vector2.Zero));
-                        polyIndex++;
-                    }
-                }
-
-                if(first)
-                {
-                    meshes.Add(new BufferMesh(verts, false, corners.ToArray(), triangles.ToArray(), bMat));
-                    first = false;
-                }
-                else
-                    meshes.Add(new BufferMesh(corners.ToArray(), triangles.ToArray(), bMat));
-            }
-
-            if(optimize)
-            {
-                meshes[0] = meshes[0].Optimize(verts, true);
-                for(int i = 1; i < meshes.Count; i++)
-                {
-                    meshes[i] = meshes[i].Optimize(verts, false);
-                }
-            }
-
-            return meshes.ToArray();
-        }
-
         public override string ToString() => $"{Name} - BASIC";
 
         public override Attach Clone()
@@ -536,16 +422,3 @@ namespace SATools.SAModel.ModelData.BASIC
     }
 }
 
-namespace SATools.SAModel.ModelData
-{
-    public static partial class AttachExtensions
-    {
-        public static BASIC.BasicAttach AsBASIC(this Attach atc)
-        {
-            return new BASIC.BasicAttach(atc.MeshData)
-            {
-                Name = atc.Name
-            };
-        }
-    }
-}

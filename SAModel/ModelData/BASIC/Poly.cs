@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using System;
 using System.IO;
 using static SATools.SACommon.ByteConverter;
@@ -32,7 +33,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// Write the contents to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public virtual void Write(EndianMemoryStream writer)
+        public virtual void Write(EndianWriter writer)
         {
             foreach(ushort i in Indices)
                 writer.WriteUInt16(i);
@@ -60,18 +61,13 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <returns></returns>
         public static Poly Read(BASICPolyType type, byte[] source, ref uint address)
         {
-            switch(type)
+            return type switch
             {
-                case BASICPolyType.Triangles:
-                    return Triangle.Read(source, ref address);
-                case BASICPolyType.Quads:
-                    return Quad.Read(source, ref address);
-                case BASICPolyType.NPoly:
-                case BASICPolyType.Strips:
-                    return Strip.Read(source, ref address);
-                default:
-                    throw new ArgumentException("Unknown poly type!", "type");
-            }
+                BASICPolyType.Triangles => Triangle.Read(source, ref address),
+                BASICPolyType.Quads => Quad.Read(source, ref address),
+                BASICPolyType.NPoly or BASICPolyType.Strips => Strip.Read(source, ref address),
+                _ => throw new ArgumentException("Unknown poly type!", nameof(type)),
+            };
         }
 
         object ICloneable.Clone() => Clone();
@@ -117,6 +113,9 @@ namespace SATools.SAModel.ModelData.BASIC
             address += 6;
             return t;
         }
+
+        public override string ToString()
+            => $"Triangle: [{Indices[0]}, {Indices[1]}, {Indices[2]}]";
     }
 
     /// <summary>
@@ -210,7 +209,7 @@ namespace SATools.SAModel.ModelData.BASIC
             return new Strip(indices, reversed);
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             writer.WriteUInt16((ushort)((Indices.Length & 0x7FFF) | (Reversed ? 0x8000 : 0)));
             base.Write(writer);

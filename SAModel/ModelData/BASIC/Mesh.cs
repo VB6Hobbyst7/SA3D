@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,12 @@ namespace SATools.SAModel.ModelData.BASIC
     [Serializable]
     public class Mesh : ICloneable
     {
+        private Vector3[] _normals;
+
+        private Color[] _colors;
+
+        private Vector2[] _texcoords;
+
         /// <summary>
         /// Material ID
         /// </summary>
@@ -39,6 +46,11 @@ namespace SATools.SAModel.ModelData.BASIC
         public ReadOnlyCollection<Poly> Polys { get; }
 
         /// <summary>
+        /// The amount of corners/loops in the polygons. Determines the lengths of the other arrays
+        /// </summary>
+        public int PolygonCornerCount { get; }
+
+        /// <summary>
         /// Primitive attribute (unused)
         /// </summary>
         public uint PolyAttributes { get; set; }
@@ -51,7 +63,16 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Additional normal data (used for morphs)
         /// </summary>
-        public Vector3[] Normals { get; }
+        public Vector3[] Normals
+        {
+            get => _normals;
+            set
+            {
+                if(value != null && value.Length != PolygonCornerCount)
+                    throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
+                _normals = value;
+            }
+        }
 
         /// <summary>
         /// Vertex color data name
@@ -61,25 +82,43 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Vertex color data
         /// </summary>
-        public Color[] Colors { get; }
+        public Color[] Colors
+        {
+            get => _colors;
+            set
+            {
+                if(value != null && value.Length != PolygonCornerCount)
+                    throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
+                _colors = value;
+            }
+        }
 
         /// <summary>
         /// Texture coordinate data name
         /// </summary>
-        public string UVName { get; set; }
+        public string TexcoordName { get; set; }
 
         /// <summary>
         /// Texture coordinate data
         /// </summary>
-        public Vector2[] UVs { get; }
+        public Vector2[] Texcoords
+        {
+            get => _texcoords;
+            set
+            {
+                if(value != null && value.Length != PolygonCornerCount)
+                    throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
+                _texcoords = value;
+            }
+        }
 
-        private Mesh(BASICPolyType polyType, Poly[] polys, Vector3[] normals, Color[] colors, Vector2[] uvs)
+        private Mesh(BASICPolyType polyType, Poly[] polys, Vector3[] normals, Color[] colors, Vector2[] texcoords)
         {
             PolyType = polyType;
             Polys = new ReadOnlyCollection<Poly>(polys);
             Normals = normals;
             Colors = colors;
-            UVs = uvs;
+            Texcoords = texcoords;
         }
 
         /// <summary>
@@ -89,34 +128,36 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="polys">Polygons to use</param>
         /// <param name="hasNormal">Whether the mesh uses additional normal data</param>
         /// <param name="hasColor">Whether the model uses color data</param>
-        /// <param name="hasUV">Whether the model uses texture coordinate data</param>
+        /// <param name="hasTexcoords">Whether the model uses texture coordinate data</param>
         /// <param name="materialID">Material index</param>
-        public Mesh(BASICPolyType polyType, Poly[] polys, bool hasNormal, bool hasColor, bool hasUV, ushort materialID)
+        public Mesh(BASICPolyType polyType, Poly[] polys, bool hasNormal, bool hasColor, bool hasTexcoords, ushort materialID)
         {
             PolyType = polyType;
             MaterialID = materialID;
             Polys = new ReadOnlyCollection<Poly>(polys);
+            string identifier = GenerateIdentifier();
 
             int cornerCount = 0;
             foreach(Poly p in polys)
                 cornerCount += p.Indices.Length;
+            PolygonCornerCount = cornerCount;
 
-            PolyName = "poly_" + GenerateIdentifier();
+            PolyName = "poly_" + identifier;
 
             if(hasNormal)
             {
                 Normals = new Vector3[cornerCount];
-                NormalName = "polynormal_" + GenerateIdentifier();
+                NormalName = "polynormal_" + identifier;
             }
             if(hasColor)
             {
                 Colors = new Color[cornerCount];
-                ColorName = "vcolor_" + GenerateIdentifier();
+                ColorName = "vcolor_" + identifier;
             }
-            if(hasUV)
+            if(hasTexcoords)
             {
-                UVs = new Vector2[cornerCount];
-                UVName = "uv_" + GenerateIdentifier();
+                Texcoords = new Vector2[cornerCount];
+                TexcoordName = "uv_" + identifier;
             }
         }
 
@@ -129,15 +170,15 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="polys">Polygons to use</param>
         /// <param name="normalName">Name of the normal data <br/> null if data doesnt exist</param>
         /// <param name="colorName">Name of color data <br/> null if data doesnt exist</param>
-        /// <param name="uvName">Name of uv data <br/> null if data doesnt exist</param>
+        /// <param name="texcoordName">Name of texcoord data <br/> null if data doesnt exist</param>
         /// <param name="materialID">Material index</param>
-        public Mesh(BASICPolyType polyType, string polyName, Poly[] polys, string normalName, string colorName, string uvName, ushort materialID)
-            : this(polyType, polys, normalName != null, colorName != null, uvName != null, materialID)
+        public Mesh(BASICPolyType polyType, string polyName, Poly[] polys, string normalName, string colorName, string texcoordName, ushort materialID)
+            : this(polyType, polys, normalName != null, colorName != null, texcoordName != null, materialID)
         {
             PolyName = polyName;
             NormalName = normalName;
             ColorName = colorName;
-            UVName = UVName;
+            TexcoordName = texcoordName;
         }
 
         /// <summary>
@@ -169,12 +210,12 @@ namespace SATools.SAModel.ModelData.BASIC
             uint colorAddr = source.ToUInt32(address + 16);
             string colorName = colorAddr == 0 ? null : labels.ContainsKey(colorAddr -= imageBase) ? labels[colorAddr] : "vcolor_" + colorAddr.ToString("X8");
 
-            // uvs
-            uint uvAddr = source.ToUInt32(address + 20);
-            string uvName = uvAddr == 0 ? null : labels.ContainsKey(uvAddr -= imageBase) ? labels[uvAddr] : "uv_" + uvAddr.ToString("X8");
+            // texcoords
+            uint texcoordAddr = source.ToUInt32(address + 20);
+            string texcoordName = texcoordAddr == 0 ? null : labels.ContainsKey(texcoordAddr -= imageBase) ? labels[texcoordAddr] : "uv_" + texcoordAddr.ToString("X8");
 
             // reading polygons
-            Poly[] polys = new Poly[0];
+            Poly[] polys = Array.Empty<Poly>();
             if(polyAddr > 0)
             {
                 polys = new Poly[polyCount];
@@ -184,7 +225,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
 
             // creating the mesh
-            Mesh result = new(polyType, polyName, polys, normalName, colorName, uvName, materialID)
+            Mesh result = new(polyType, polyName, polys, normalName, colorName, texcoordName, materialID)
             {
                 PolyAttributes = source.ToUInt32(address + 8)
             };
@@ -200,10 +241,10 @@ namespace SATools.SAModel.ModelData.BASIC
                 for(int i = 0; i < result.Colors.Length; i++)
                     result.Colors[i] = Color.Read(source, ref colorAddr, IOType.ARGB8_32);
 
-            // reading uvs
-            if(uvAddr != 0)
-                for(int i = 0; i < result.UVs.Length; i++)
-                    result.UVs[i] = Vector2Extensions.Read(source, ref uvAddr, IOType.Short) / 256f;
+            // reading texcoords
+            if(texcoordAddr != 0)
+                for(int i = 0; i < result.Texcoords.Length; i++)
+                    result.Texcoords[i] = Vector2Extensions.Read(source, ref texcoordAddr, IOType.Short) / 256f;
 
             address += 24;
 
@@ -283,26 +324,26 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(ColorName);
             }
 
-            if(!labels.Contains(UVName) && UVs != null)
+            if(!labels.Contains(TexcoordName) && Texcoords != null)
             {
                 writer.Write("VERTUV ");
-                writer.Write(UVName);
+                writer.Write(TexcoordName);
                 writer.WriteLine("[]");
 
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Vector2 uv in UVs)
+                foreach(Vector2 texcoord in Texcoords)
                 {
                     writer.Write("\tUV ");
-                    (uv * 256).WriteNJA(writer, IOType.Short);
+                    (texcoord * 256).WriteNJA(writer, IOType.Short);
                     writer.WriteLine(",");
                 }
 
                 writer.WriteLine("END");
                 writer.WriteLine();
 
-                labels.Add(UVName);
+                labels.Add(TexcoordName);
             }
         }
 
@@ -312,35 +353,35 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="writer">Output stream</param>
         /// <param name="imageBase">Image base for all addresses</param>
         /// <param name="labels">C struct labels</param>
-        public void WriteData(EndianMemoryStream writer, uint imageBase, Dictionary<string, uint> labels)
+        public void WriteData(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
 
             if(!labels.ContainsKey(PolyName))
             {
-                labels.Add(PolyName, (uint)writer.Stream.Position + imageBase);
+                labels.AddLabel(PolyName, writer.Position + imageBase);
                 foreach(Poly p in Polys)
                     p.Write(writer);
             }
 
             if(Normals != null && !labels.ContainsKey(NormalName))
             {
-                labels.Add(NormalName, (uint)writer.Stream.Position + imageBase);
+                labels.AddLabel(NormalName, writer.Position + imageBase);
                 foreach(Vector3 n in Normals)
                     n.Write(writer, IOType.Float);
             }
 
             if(Colors != null && !labels.ContainsKey(ColorName))
             {
-                labels.Add(ColorName, (uint)writer.Stream.Position + imageBase);
+                labels.AddLabel(ColorName, writer.Position + imageBase);
                 foreach(Color c in Colors)
                     c.Write(writer, IOType.ARGB8_32);
             }
 
-            if(UVs != null && !labels.ContainsKey(UVName))
+            if(Texcoords != null && !labels.ContainsKey(TexcoordName))
             {
-                labels.Add(UVName, (uint)writer.Stream.Position + imageBase);
-                foreach(Vector2 uv in UVs)
-                    (uv * 256f).Write(writer, IOType.Short);
+                labels.AddLabel(TexcoordName, writer.Position + imageBase);
+                foreach(Vector2 texcoord in Texcoords)
+                    (texcoord * 256f).Write(writer, IOType.Short);
             }
         }
 
@@ -378,7 +419,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteLine(", ");
 
             writer.Write("VertUV \t\t");
-            writer.Write(UVs != null ? UVName : "NULL");
+            writer.Write(Texcoords != null ? TexcoordName : "NULL");
 
             if(DX)
             {
@@ -395,7 +436,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         /// <param name="writer">Ouput stream</param>
         /// <param name="DX">Whether the mesh should be written for SADX</param>
-        public void WriteMeshset(EndianMemoryStream writer, bool DX, Dictionary<string, uint> labels)
+        public void WriteMeshset(EndianWriter writer, bool DX, Dictionary<string, uint> labels)
         {
             if(!labels.ContainsKey(PolyName))
                 throw new NullReferenceException("Data has not been written yet");
@@ -408,7 +449,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt32(PolyAttributes);
             writer.WriteUInt32(Normals == null ? 0 : labels[NormalName]);
             writer.WriteUInt32(Colors == null ? 0 : labels[ColorName]);
-            writer.WriteUInt32(UVs == null ? 0 : labels[UVName]);
+            writer.WriteUInt32(Texcoords == null ? 0 : labels[TexcoordName]);
             if(DX)
                 writer.WriteUInt32(0);
         }
@@ -417,14 +458,14 @@ namespace SATools.SAModel.ModelData.BASIC
 
         public Mesh Clone()
         {
-            return new Mesh(PolyType, Polys.ToArray().ContentClone(), (Vector3[])Normals?.Clone(), (Color[])Colors?.Clone(), (Vector2[])UVs?.Clone())
+            return new Mesh(PolyType, Polys.ToArray().ContentClone(), (Vector3[])Normals?.Clone(), (Color[])Colors?.Clone(), (Vector2[])Texcoords?.Clone())
             {
                 MaterialID = MaterialID,
                 PolyName = PolyName,
                 PolyAttributes = PolyAttributes,
                 NormalName = NormalName,
                 ColorName = ColorName,
-                UVName = UVName
+                TexcoordName = TexcoordName
             };
         }
 
