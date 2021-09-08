@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
@@ -126,7 +127,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// Write the chunk to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public virtual void Write(EndianMemoryStream writer)
+        public virtual void Write(EndianWriter writer)
         {
             writer.WriteUInt16((ushort)((byte)Type | (ushort)(Flags << 8)));
         }
@@ -385,7 +386,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             };
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             base.Write(writer);
             writer.WriteUInt16(Data);
@@ -407,7 +408,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         public PolyChunkSize(ChunkType type) : base(type) { }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             base.Write(writer);
             writer.WriteUInt16(Size);
@@ -563,7 +564,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             return mat;
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             base.Write(writer);
             if(_diffuse.HasValue)
@@ -611,7 +612,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             };
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             base.Write(writer);
             writer.WriteUInt16(DX);
@@ -674,7 +675,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return tri;
             }
 
-            public override void Write(EndianMemoryStream writer, byte userFlags)
+            public override void Write(EndianWriter writer, byte userFlags)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
@@ -735,7 +736,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return tri;
             }
 
-            public override void Write(EndianMemoryStream writer, byte userFlags)
+            public override void Write(EndianWriter writer, byte userFlags)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
@@ -838,7 +839,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return r;
             }
 
-            public override void Write(EndianMemoryStream writer, byte userflags)
+            public override void Write(EndianWriter writer, byte userflags)
             {
 
                 bool flag1 = userflags > 0;
@@ -904,7 +905,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             /// <param name="writer">Output stream</param>
             /// <param name="userFlags">Userflag count (0 - 3)</param>
-            public abstract void Write(EndianMemoryStream writer, byte userFlags);
+            public abstract void Write(EndianWriter writer, byte userFlags);
 
             object ICloneable.Clone() => Clone();
 
@@ -983,7 +984,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             return cnk;
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             // updating the size
             uint size = 2;
@@ -1165,7 +1166,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// <param name="HDUV">Whether the uv data repeats at 1024, not 256</param>
             /// <param name="hasNormal">Whether the polygons carry normal data</param>
             /// <param name="hasColor">Whether the polygons carry color data</param>
-            public void Write(EndianMemoryStream writer, byte userflags, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
+            public void Write(EndianWriter writer, byte userflags, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
             {
                 short length = (short)Math.Min(Corners.Length, short.MaxValue);
                 writer.WriteInt16(Reversed ? (short)-length : length);
@@ -1552,7 +1553,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             return cnk;
         }
 
-        public override void Write(EndianMemoryStream writer)
+        public override void Write(EndianWriter writer)
         {
             bool hasUV = HasUV;
             bool uvhd = UVHD;

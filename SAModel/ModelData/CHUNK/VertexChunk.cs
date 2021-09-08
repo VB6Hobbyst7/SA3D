@@ -1,4 +1,5 @@
 ﻿using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -224,7 +225,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// Writes a vertex chunk to a stream, and splits it up if necessary
         /// </summary>
         /// <param name="writer">Output stream</param>
-        public void Write(EndianMemoryStream writer)
+        public void Write(EndianWriter writer)
         {
             if(Vertices.Length > short.MaxValue)
                 throw new InvalidOperationException($"Vertex count ({Vertices.Length}) exceeds maximum vertex count (32767)");
