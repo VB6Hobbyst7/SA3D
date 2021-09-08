@@ -29,7 +29,7 @@ namespace SATools.SAArchive
             tw.Flush();
             tw.Close();
         }
-        
+
         /// <summary>
         /// Reads a dat archive from a file
         /// </summary>

@@ -8,9 +8,9 @@ namespace SATools.SAArchive
 {
     public class NjArchive : Archive
     {
-        public override void CreateIndexFile(string path) 
+        public override void CreateIndexFile(string path)
             => throw new NotImplementedException();
-        public override byte[] GetBytes() 
+        public override byte[] GetBytes()
             => throw new NotImplementedException();
 
         public static NjArchive Read(byte[] source)

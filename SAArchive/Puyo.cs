@@ -142,76 +142,76 @@ namespace SATools.SAArchive
             puyoArchiveWriter.Flush();
             return pvmStream.ToArray();
         }
-    
+
         public class PVMEntry : ArchiveEntry
-    {
-        public uint GBIX;
-        public PvpPalette Palette;
-
-        public PVMEntry(byte[] pvrdata, string name)
         {
-            Name = name;
-            Data = pvrdata;
-            PvrTexture pvrt = new PvrTexture(pvrdata);
-            GBIX = pvrt.GlobalIndex;
+            public uint GBIX;
+            public PvpPalette Palette;
+
+            public PVMEntry(byte[] pvrdata, string name)
+            {
+                Name = name;
+                Data = pvrdata;
+                PvrTexture pvrt = new PvrTexture(pvrdata);
+                GBIX = pvrt.GlobalIndex;
+            }
+
+            public PVMEntry(string filename)
+            {
+                Name = Path.GetFileName(filename);
+                Data = File.ReadAllBytes(filename);
+                PvrTexture pvrt = new PvrTexture(Data);
+                GBIX = pvrt.GlobalIndex;
+            }
+
+            public uint GetGBIX()
+            {
+                return GBIX;
+            }
+
+            public override Bitmap GetBitmap()
+            {
+                PvrTexture pvrt = new PvrTexture(Data);
+                if(pvrt.NeedsExternalPalette)
+                    pvrt.SetPalette(Palette);
+                return pvrt.ToBitmap();
+            }
         }
 
-        public PVMEntry(string filename)
+        public class GVMEntry : ArchiveEntry
         {
-            Name = Path.GetFileName(filename);
-            Data = File.ReadAllBytes(filename);
-            PvrTexture pvrt = new PvrTexture(Data);
-            GBIX = pvrt.GlobalIndex;
-        }
+            public uint GBIX;
+            public GvpPalette Palette;
 
-        public uint GetGBIX()
-        {
-            return GBIX;
-        }
+            public GVMEntry(byte[] gvrdata, string name)
+            {
+                Name = name;
+                Data = gvrdata;
+                GvrTexture gvrt = new GvrTexture(gvrdata);
+                GBIX = gvrt.GlobalIndex;
+            }
 
-        public override Bitmap GetBitmap()
-        {
-            PvrTexture pvrt = new PvrTexture(Data);
-            if(pvrt.NeedsExternalPalette)
-                pvrt.SetPalette(Palette);
-            return pvrt.ToBitmap();
-        }
-    }
+            public GVMEntry(string filename)
+            {
+                Name = Path.GetFileName(filename);
+                Data = File.ReadAllBytes(filename);
+                GvrTexture gvrt = new GvrTexture(Data);
+                GBIX = gvrt.GlobalIndex;
+            }
 
-    public class GVMEntry : ArchiveEntry
-    {
-        public uint GBIX;
-        public GvpPalette Palette;
+            public uint GetGBIX()
+            {
+                return GBIX;
+            }
 
-        public GVMEntry(byte[] gvrdata, string name)
-        {
-            Name = name;
-            Data = gvrdata;
-            GvrTexture gvrt = new GvrTexture(gvrdata);
-            GBIX = gvrt.GlobalIndex;
+            public override Bitmap GetBitmap()
+            {
+                GvrTexture gvrt = new GvrTexture(Data);
+                if(gvrt.NeedsExternalPalette)
+                    gvrt.SetPalette(Palette);
+                return gvrt.ToBitmap();
+            }
         }
-
-        public GVMEntry(string filename)
-        {
-            Name = Path.GetFileName(filename);
-            Data = File.ReadAllBytes(filename);
-            GvrTexture gvrt = new GvrTexture(Data);
-            GBIX = gvrt.GlobalIndex;
-        }
-
-        public uint GetGBIX()
-        {
-            return GBIX;
-        }
-
-        public override Bitmap GetBitmap()
-        {
-            GvrTexture gvrt = new GvrTexture(Data);
-            if(gvrt.NeedsExternalPalette)
-                gvrt.SetPalette(Palette);
-            return gvrt.ToBitmap();
-        }
-    }
     }
 
 

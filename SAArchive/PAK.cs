@@ -101,7 +101,7 @@ namespace SATools.SAArchive
         public List<PAKEntry> GetSortedEntries(string fileNoExt)
         {
             ArchiveEntry infEntry = Entries.Find(
-                x => x.Name.Equals( $"{fileNoExt}\\{fileNoExt}.inf", StringComparison.OrdinalIgnoreCase));
+                x => x.Name.Equals($"{fileNoExt}\\{fileNoExt}.inf", StringComparison.OrdinalIgnoreCase));
 
             // Get texture names from PAK INF, if it exists
             if(infEntry != null)
@@ -118,7 +118,7 @@ namespace SATools.SAArchive
                             break;
                     }
 
-                    string infName =  Encoding.UTF8.GetString(inf, i, j);
+                    string infName = Encoding.UTF8.GetString(inf, i, j);
 
                     ArchiveEntry gen = Entries.First(
                         (x) => x.Name.Equals($"{fileNoExt}\\{infName}.dds", StringComparison.OrdinalIgnoreCase));
