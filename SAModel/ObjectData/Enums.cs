@@ -46,10 +46,10 @@ namespace SATools.SAModel.ObjData
     }
 
     /// <summary>
-    /// Struct enum
+    /// Struct enum (only used for NJA)
     /// </summary>
     [Flags]
-    public enum NJD_EVAL
+    internal enum NJD_EVAL
     {
         NJD_EVAL_UNIT_POS = 0x01, /* ignore translation */
         NJD_EVAL_UNIT_ANG = 0x02, /* ignore rotation */

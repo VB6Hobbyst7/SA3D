@@ -32,9 +32,9 @@ namespace SATools.SA3D.XAML.UserControls
             // the scrollviewer and stackpanel are not worth to create an xaml file for tbh
             Title = "Control Settings";
             Width = 410;
+            Height = 650;
             MinWidth = Width;
             MaxWidth = Width;
-            Height = 650;
             Closing += (e, o) => DebugSettings.Default.Save();
 
             ScrollViewer scroll = new();
