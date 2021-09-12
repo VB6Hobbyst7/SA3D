@@ -12,7 +12,7 @@ namespace SATools.SAModel.ModelData.GC
     public enum ParameterType : uint
     {
         VtxAttrFmt = 0,
-        IndexAttributeFlags = 1,
+        IndexAttributes = 1,
         Lighting = 2,
         Unused = 3,
         BlendAlpha = 4,
@@ -68,7 +68,7 @@ namespace SATools.SAModel.ModelData.GC
                 case ParameterType.VtxAttrFmt:
                     result = new VtxAttrFmtParameter(VertexAttribute.Null);
                     break;
-                case ParameterType.IndexAttributeFlags:
+                case ParameterType.IndexAttributes:
                     result = new IndexAttributeParameter();
                     break;
                 case ParameterType.Lighting:
@@ -204,11 +204,11 @@ namespace SATools.SAModel.ModelData.GC
         /// <summary>
         /// Holds information about the vertex data thats stored in the geometry 
         /// </summary>
-        public IndexAttributeFlags IndexAttributes
+        public IndexAttributes IndexAttributes
         {
             get
             {
-                return (IndexAttributeFlags)_data;
+                return (IndexAttributes)_data;
             }
             set
             {
@@ -219,19 +219,19 @@ namespace SATools.SAModel.ModelData.GC
         /// <summary>
         /// Creates an empty index attribute parameter
         /// </summary>
-        public IndexAttributeParameter() : base(ParameterType.IndexAttributeFlags)
+        public IndexAttributeParameter() : base(ParameterType.IndexAttributes)
         {
             //this always exists
-            IndexAttributes &= IndexAttributeFlags.HasPosition;
+            IndexAttributes &= IndexAttributes.HasPosition;
         }
 
         /// <summary>
-        /// Creates an index attribute parameter based on existing flags
+        /// Creates an index attribute parameter based on existing attributes
         /// </summary>
-        /// <param name="flags"></param>
-        public IndexAttributeParameter(IndexAttributeFlags flags) : base(ParameterType.IndexAttributeFlags)
+        /// <param name="attribs"></param>
+        public IndexAttributeParameter(IndexAttributes attribs) : base(ParameterType.IndexAttributes)
         {
-            IndexAttributes = flags;
+            IndexAttributes = attribs;
         }
 
         public override string ToString() => $"{Type}: {(uint)IndexAttributes}";
@@ -244,9 +244,9 @@ namespace SATools.SAModel.ModelData.GC
     public class LightingParameter : Parameter
     {
         /// <summary>
-        /// Lighting flags. Pretty much unknown how they work
+        /// Lighting attributes. Pretty much unknown how they work
         /// </summary>
-        public ushort LightingFlags
+        public ushort LightingAttributes
         {
             get
             {
@@ -308,17 +308,17 @@ namespace SATools.SAModel.ModelData.GC
         public LightingParameter() : base(ParameterType.Lighting)
         {
             //default value
-            LightingFlags = 0xB11;
+            LightingAttributes = 0xB11;
             ShadowStencil = 1;
         }
 
-        public LightingParameter(ushort lightingFlags, byte shadowStencil) : base(ParameterType.Lighting)
+        public LightingParameter(ushort lightingAttribs, byte shadowStencil) : base(ParameterType.Lighting)
         {
-            LightingFlags = lightingFlags;
+            LightingAttributes = lightingAttribs;
             ShadowStencil = shadowStencil;
         }
 
-        public override string ToString() => $"{Type}: {LightingFlags} - {ShadowStencil} - {Unknown1} - {Unknown2}";
+        public override string ToString() => $"{Type}: {LightingAttributes} - {ShadowStencil} - {Unknown1} - {Unknown2}";
     }
 
     /// <summary>

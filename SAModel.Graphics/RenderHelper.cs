@@ -180,7 +180,7 @@ namespace SATools.SAModel.Graphics
                     if(bm.Material == null)
                         continue;
 
-                    int index = bm.Material.HasFlag(MaterialFlags.useTexture) ? (int)bm.Material.TextureIndex : -1;
+                    int index = bm.Material.HasAttribute(MaterialAttributes.useTexture) ? (int)bm.Material.TextureIndex : -1;
 
                     Dictionary<BufferMesh, List<RenderMatrices>> buffers;
                     if(bm.Material.UseAlpha)

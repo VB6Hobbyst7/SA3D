@@ -137,45 +137,45 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Channels that are used
         /// </summary>
-        public AnimFlags Type
+        public AnimationAttributes Type
         {
             get
             {
-                AnimFlags flags = 0;
+                AnimationAttributes attribs = 0;
 
                 if(Position.Count > 0)
-                    flags |= AnimFlags.Position;
+                    attribs |= AnimationAttributes.Position;
                 if(Rotation.Count > 0)
-                    flags |= AnimFlags.Rotation;
+                    attribs |= AnimationAttributes.Rotation;
                 if(Scale.Count > 0)
-                    flags |= AnimFlags.Scale;
+                    attribs |= AnimationAttributes.Scale;
                 if(Vector.Count > 0)
-                    flags |= AnimFlags.Vector;
+                    attribs |= AnimationAttributes.Vector;
                 if(Vertex.Count > 0)
-                    flags |= AnimFlags.Vertex;
+                    attribs |= AnimationAttributes.Vertex;
                 if(Normal.Count > 0)
-                    flags |= AnimFlags.Normal;
+                    attribs |= AnimationAttributes.Normal;
                 if(Target.Count > 0)
-                    flags |= AnimFlags.Target;
+                    attribs |= AnimationAttributes.Target;
                 if(Roll.Count > 0)
-                    flags |= AnimFlags.Roll;
+                    attribs |= AnimationAttributes.Roll;
                 if(Angle.Count > 0)
-                    flags |= AnimFlags.Angle;
+                    attribs |= AnimationAttributes.Angle;
                 if(LightColor.Count > 0)
-                    flags |= AnimFlags.LightColor;
+                    attribs |= AnimationAttributes.LightColor;
                 if(Intensity.Count > 0)
-                    flags |= AnimFlags.Intensity;
+                    attribs |= AnimationAttributes.Intensity;
                 if(Spot.Count > 0)
-                    flags |= AnimFlags.Spot;
+                    attribs |= AnimationAttributes.Spot;
                 if(Point.Count > 0)
-                    flags |= AnimFlags.Point;
+                    attribs |= AnimationAttributes.Point;
 
-                return flags;
+                return attribs;
             }
         }
 
-        private readonly static AnimFlags[] AllAnimFlags
-            = Enum.GetValues<AnimFlags>();
+        private static readonly AnimationAttributes[] AllAnimAttributes
+            = Enum.GetValues<AnimationAttributes>();
 
         /// <summary>
         /// Creates an empty keyframe storage
@@ -529,7 +529,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="type">Which channels should be read</param>
         /// <param name="shortRot">Whether to read Rotations using 16Bit BAMS</param>
         /// <returns></returns>
-        public static Keyframes Read(byte[] source, ref uint address, uint imageBase, int channels, AnimFlags type, bool shortRot = false)
+        public static Keyframes Read(byte[] source, ref uint address, uint imageBase, int channels, AnimationAttributes type, bool shortRot = false)
         {
             uint[] addresses = new uint[channels];
             uint[] frameCounts = new uint[channels];
@@ -549,7 +549,7 @@ namespace SATools.SAModel.ObjData.Animation
             int channelIndex = 0;
             Keyframes result = new();
 
-            foreach(AnimFlags flag in AllAnimFlags)
+            foreach(AnimationAttributes flag in AllAnimAttributes)
             {
                 if(!type.HasFlag(flag))
                     continue;
@@ -560,46 +560,46 @@ namespace SATools.SAModel.ObjData.Animation
                     uint frameCount = frameCounts[channelIndex];
                     switch(flag)
                     {
-                        case AnimFlags.Position:
+                        case AnimationAttributes.Position:
                             ReadVector3Set(source, taddr, frameCount, result.Position, IOType.Float);
                             break;
-                        case AnimFlags.Rotation:
+                        case AnimationAttributes.Rotation:
                             ReadVector3Set(source, taddr, frameCount, result.Rotation, shortRot ? IOType.BAMS16 : IOType.BAMS32);
                             break;
-                        case AnimFlags.Scale:
+                        case AnimationAttributes.Scale:
                             ReadVector3Set(source, taddr, frameCount, result.Scale, IOType.Float);
                             break;
-                        case AnimFlags.Vector:
+                        case AnimationAttributes.Vector:
                             ReadVector3Set(source, taddr, frameCount, result.Vector, IOType.Float);
                             break;
-                        case AnimFlags.Vertex:
+                        case AnimationAttributes.Vertex:
                             ReadVector3ArraySet(source, taddr, imageBase, frameCount, result.Vertex);
                             break;
-                        case AnimFlags.Normal:
+                        case AnimationAttributes.Normal:
                             ReadVector3ArraySet(source, taddr, imageBase, frameCount, result.Normal);
                             break;
-                        case AnimFlags.Target:
+                        case AnimationAttributes.Target:
                             ReadVector3Set(source, taddr, frameCount, result.Target, IOType.Float);
                             break;
-                        case AnimFlags.Roll:
+                        case AnimationAttributes.Roll:
                             ReadFloatSet(source, taddr, frameCount, result.Roll, true);
                             break;
-                        case AnimFlags.Angle:
+                        case AnimationAttributes.Angle:
                             ReadFloatSet(source, taddr, frameCount, result.Angle, true);
                             break;
-                        case AnimFlags.LightColor:
+                        case AnimationAttributes.LightColor:
                             ReadColorSet(source, taddr, frameCount, result.LightColor, IOType.ARGB8_32);
                             break;
-                        case AnimFlags.Intensity:
+                        case AnimationAttributes.Intensity:
                             ReadFloatSet(source, taddr, frameCount, result.Intensity, false);
                             break;
-                        case AnimFlags.Spot:
+                        case AnimationAttributes.Spot:
                             ReadSpotSet(source, taddr, frameCount, result.Spot);
                             break;
-                        case AnimFlags.Point:
+                        case AnimationAttributes.Point:
                             ReadVector2Set(source, taddr, frameCount, result.Point, IOType.Float);
                             break;
-                        case AnimFlags.Quaternion:
+                        case AnimationAttributes.Quaternion:
                             ReadVector3Set(source, taddr, frameCount, result.Rotation, IOType.Quaternion);
                             result.WasQuaternion = true;
                             break;
@@ -620,12 +620,12 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="channels">Channel count (derived from type)</param>
         /// <param name="type">Which channels should be written</param>
         /// <param name="shortRot">Whether to write rotation in </param>
-        public (uint address, uint count)[] Write(EndianWriter writer, uint imageBase, int channels, AnimFlags type, bool shortRot = false)
+        public (uint address, uint count)[] Write(EndianWriter writer, uint imageBase, int channels, AnimationAttributes type, bool shortRot = false)
         {
             (uint address, uint count)[] keyframeLocs = new (uint address, uint count)[channels];
             int channelIndex = 0;
 
-            bool ContinueWrite(int count, AnimFlags flag)
+            bool ContinueWrite(int count, AnimationAttributes flag)
             {
                 if(type.HasFlag(flag))
                 {
@@ -641,7 +641,7 @@ namespace SATools.SAModel.ObjData.Animation
                 return false;
             }
 
-            void WriteVector3(SortedDictionary<uint, Vector3> dict, IOType ioType, AnimFlags flag)
+            void WriteVector3(SortedDictionary<uint, Vector3> dict, IOType ioType, AnimationAttributes flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -653,7 +653,7 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            void WriteVector2(SortedDictionary<uint, Vector2> dict, IOType ioType, AnimFlags flag)
+            void WriteVector2(SortedDictionary<uint, Vector2> dict, IOType ioType, AnimationAttributes flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -666,7 +666,7 @@ namespace SATools.SAModel.ObjData.Animation
             }
 
 
-            void WriteColor(SortedDictionary<uint, Color> dict, IOType ioType, AnimFlags flag)
+            void WriteColor(SortedDictionary<uint, Color> dict, IOType ioType, AnimationAttributes flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -678,7 +678,7 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            void WriteVector3Array(SortedDictionary<uint, Vector3[]> dict, AnimFlags flag)
+            void WriteVector3Array(SortedDictionary<uint, Vector3[]> dict, AnimationAttributes flag)
             {
                 if(type.HasFlag(flag))
                 {
@@ -708,7 +708,7 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            void WriteFloat(SortedDictionary<uint, float> dict, bool BAMS, AnimFlags flag)
+            void WriteFloat(SortedDictionary<uint, float> dict, bool BAMS, AnimationAttributes flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -723,7 +723,7 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            void WriteSpotlight(SortedDictionary<uint, Spotlight> dict, AnimFlags flag)
+            void WriteSpotlight(SortedDictionary<uint, Spotlight> dict, AnimationAttributes flag)
             {
                 if(!ContinueWrite(dict.Count, flag))
                     return;
@@ -735,19 +735,19 @@ namespace SATools.SAModel.ObjData.Animation
                 }
             }
 
-            WriteVector3(Position, IOType.Float, AnimFlags.Position);
-            WriteVector3(Rotation, shortRot ? IOType.BAMS16 : IOType.BAMS32, AnimFlags.Rotation);
-            WriteVector3(Scale, IOType.Float, AnimFlags.Scale);
-            WriteVector3(Vector, IOType.Float, AnimFlags.Vector);
-            WriteVector3Array(Vertex, AnimFlags.Vertex);
-            WriteVector3Array(Normal, AnimFlags.Normal);
-            WriteVector3(Target, IOType.Float, AnimFlags.Target);
-            WriteFloat(Roll, true, AnimFlags.Roll);
-            WriteFloat(Angle, true, AnimFlags.Angle);
-            WriteColor(LightColor, IOType.ARGB8_32, AnimFlags.LightColor);
-            WriteFloat(Intensity, false, AnimFlags.Intensity);
-            WriteSpotlight(Spot, AnimFlags.Spot);
-            WriteVector2(Point, IOType.Float, AnimFlags.Point);
+            WriteVector3(Position, IOType.Float, AnimationAttributes.Position);
+            WriteVector3(Rotation, shortRot ? IOType.BAMS16 : IOType.BAMS32, AnimationAttributes.Rotation);
+            WriteVector3(Scale, IOType.Float, AnimationAttributes.Scale);
+            WriteVector3(Vector, IOType.Float, AnimationAttributes.Vector);
+            WriteVector3Array(Vertex, AnimationAttributes.Vertex);
+            WriteVector3Array(Normal, AnimationAttributes.Normal);
+            WriteVector3(Target, IOType.Float, AnimationAttributes.Target);
+            WriteFloat(Roll, true, AnimationAttributes.Roll);
+            WriteFloat(Angle, true, AnimationAttributes.Angle);
+            WriteColor(LightColor, IOType.ARGB8_32, AnimationAttributes.LightColor);
+            WriteFloat(Intensity, false, AnimationAttributes.Intensity);
+            WriteSpotlight(Spot, AnimationAttributes.Spot);
+            WriteVector2(Point, IOType.Float, AnimationAttributes.Point);
 
             return keyframeLocs;
         }

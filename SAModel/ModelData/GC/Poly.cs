@@ -75,27 +75,27 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         /// <param name="source">The files contents as a byte array</param>
         /// <param name="address">The starting address of the primitive</param>
-        /// <param name="indexFlags">How the indices of the loops are structured</param>
-        public static Poly Read(byte[] source, ref uint address, IndexAttributeFlags indexFlags)
+        /// <param name="indexAttribs">How the indices of the loops are structured</param>
+        public static Poly Read(byte[] source, ref uint address, IndexAttributes indexAttribs)
         {
             PushBigEndian(true);
 
             PolyType type = (PolyType)source[address];
             ushort vtxCount = source.ToUInt16(address + 1);
 
-            // checking the flags
-            bool hasFlag(IndexAttributeFlags flag) => indexFlags.HasFlag(flag);
+            // checking the attributes
+            bool hasFlag(IndexAttributes attrib) => indexAttribs.HasFlag(attrib);
 
             // position always exists
-            bool hasCol = hasFlag(IndexAttributeFlags.HasColor);
-            bool hasNrm = hasFlag(IndexAttributeFlags.HasNormal);
-            bool hasUV = hasFlag(IndexAttributeFlags.HasUV);
+            bool hasCol = hasFlag(IndexAttributes.HasColor);
+            bool hasNrm = hasFlag(IndexAttributes.HasNormal);
+            bool hasUV = hasFlag(IndexAttributes.HasUV);
 
             //whether any of the indices use 16 bits instead of 8
-            bool shortPos = hasFlag(IndexAttributeFlags.Position16BitIndex);
-            bool shortCol = hasFlag(IndexAttributeFlags.Color16BitIndex);
-            bool shortNrm = hasFlag(IndexAttributeFlags.Normal16BitIndex);
-            bool shortUV = hasFlag(IndexAttributeFlags.UV16BitIndex);
+            bool shortPos = hasFlag(IndexAttributes.Position16BitIndex);
+            bool shortCol = hasFlag(IndexAttributes.Color16BitIndex);
+            bool shortNrm = hasFlag(IndexAttributes.Normal16BitIndex);
+            bool shortUV = hasFlag(IndexAttributes.UV16BitIndex);
 
             address += 3;
 
@@ -173,26 +173,26 @@ namespace SATools.SAModel.ModelData.GC
         /// Write the contents
         /// </summary>
         /// <param name="writer">The output stream</param>
-        /// <param name="indexFlags">How the indices of the loops are structured</param>
-        public void Write(EndianWriter writer, IndexAttributeFlags indexFlags)
+        /// <param name="indexAttribs">How the indices of the loops are structured</param>
+        public void Write(EndianWriter writer, IndexAttributes indexAttribs)
         {
             writer.PushBigEndian(true);
 
             writer.Write((byte)Type);
             writer.Write((ushort)Corners.Length);
 
-            // checking the flags
-            bool hasFlag(IndexAttributeFlags flag) => indexFlags.HasFlag(flag);
+            // checking the attributes
+            bool hasFlag(IndexAttributes attrib) => indexAttribs.HasFlag(attrib);
 
             // position always exists
-            bool hasCol = hasFlag(IndexAttributeFlags.HasColor);
-            bool hasNrm = hasFlag(IndexAttributeFlags.HasNormal);
-            bool hasUV = hasFlag(IndexAttributeFlags.HasUV);
+            bool hasCol = hasFlag(IndexAttributes.HasColor);
+            bool hasNrm = hasFlag(IndexAttributes.HasNormal);
+            bool hasUV = hasFlag(IndexAttributes.HasUV);
 
-            bool shortPos = hasFlag(IndexAttributeFlags.Position16BitIndex);
-            bool shortCol = hasFlag(IndexAttributeFlags.Color16BitIndex);
-            bool shortNrm = hasFlag(IndexAttributeFlags.Normal16BitIndex);
-            bool shortUV = hasFlag(IndexAttributeFlags.UV16BitIndex);
+            bool shortPos = hasFlag(IndexAttributes.Position16BitIndex);
+            bool shortCol = hasFlag(IndexAttributes.Color16BitIndex);
+            bool shortNrm = hasFlag(IndexAttributes.Normal16BitIndex);
+            bool shortUV = hasFlag(IndexAttributes.UV16BitIndex);
 
             foreach(Corner v in Corners)
             {

@@ -257,7 +257,7 @@ namespace SATools.SAModel.Graphics
             SphereMesh = ModelFile.Read(sphere).Model.Attach.MeshData[0];
 
             BufferMaterial mat = SphereMesh.Material;
-            mat.MaterialFlags = MaterialFlags.noDiffuse | MaterialFlags.noSpecular;
+            mat.MaterialAttributes = MaterialAttributes.noDiffuse | MaterialAttributes.noSpecular;
             mat.UseAlpha = true;
             mat.Culling = true;
             mat.SourceBlendMode = ModelData.BlendMode.SrcAlpha;

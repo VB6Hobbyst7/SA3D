@@ -20,9 +20,9 @@ namespace SATools.SAModel.ModelData.CHUNK
         public ChunkType Type { get; protected set; }
 
         /// <summary>
-        /// Flag byte of the poly chunk
+        /// Attribute byte of the poly chunk
         /// </summary>
-        public byte Flags { get; set; }
+        public byte Attributes { get; set; }
 
         /// <summary>
         /// Size of the chunk in bytes
@@ -46,7 +46,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             ushort header = source.ToUInt16(address);
             ChunkType type = (ChunkType)(header & 0xFF);
-            byte flags = (byte)(header >> 8);
+            byte attribs = (byte)(header >> 8);
 
             PolyChunk chunk;
             switch(type)
@@ -118,7 +118,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 default:
                     throw new InvalidOperationException($"Chunk {type} is not a valid poly chunk type at {address.ToString("X8")}");
             }
-            chunk.Flags = flags;
+            chunk.Attributes = attribs;
             address += chunk.ByteSize;
             return chunk;
         }
@@ -129,7 +129,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <param name="writer">Output stream</param>
         public virtual void Write(EndianWriter writer)
         {
-            writer.WriteUInt16((ushort)((byte)Type | (ushort)(Flags << 8)));
+            writer.WriteUInt16((ushort)((byte)Type | (ushort)(Attributes << 8)));
         }
 
         object ICloneable.Clone() => Clone();
@@ -177,8 +177,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public BlendMode SourceAlpha
         {
-            get => (BlendMode)((Flags >> 3) & 7);
-            set => Flags = (byte)((Flags & ~0x38) | ((byte)value << 3));
+            get => (BlendMode)((Attributes >> 3) & 7);
+            set => Attributes = (byte)((Attributes & ~0x38) | ((byte)value << 3));
         }
 
         /// <summary>
@@ -186,8 +186,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public BlendMode DestinationAlpha
         {
-            get => (BlendMode)(Flags & 7);
-            set => Flags = (byte)((Flags & ~7) | (byte)value);
+            get => (BlendMode)(Attributes & 7);
+            set => Attributes = (byte)((Attributes & ~7) | (byte)value);
         }
 
         public PolyChunkBlendAlpha() : base(ChunkType.Bits_BlendAlpha) { }
@@ -206,8 +206,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public float MipmapDAdjust
         {
-            get => (Flags & 0xF) * 0.25f;
-            set => Flags = (byte)((Flags & 0xF0) | (byte)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))));
+            get => (Attributes & 0xF) * 0.25f;
+            set => Attributes = (byte)((Attributes & 0xF0) | (byte)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))));
         }
 
         public PolyChunksMipmapDAdjust() : base(ChunkType.Bits_MipmapDAdjust) { }
@@ -225,8 +225,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public byte SpecularExponent
         {
-            get => (byte)(Flags & 0x1F);
-            set => Flags = (byte)((Flags & ~0x1F) | Math.Min(value, (byte)16));
+            get => (byte)(Attributes & 0x1F);
+            set => Attributes = (byte)((Attributes & ~0x1F) | Math.Min(value, (byte)16));
         }
 
         public PolyChunkSpecularExponent() : base(ChunkType.Bits_SpecularExponent) { }
@@ -243,8 +243,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public byte List
         {
-            get => Flags;
-            set => Flags = value;
+            get => Attributes;
+            set => Attributes = value;
         }
 
         public PolyChunkCachePolygonList() : base(ChunkType.Bits_CachePolygonList) { }
@@ -261,8 +261,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public byte List
         {
-            get => Flags;
-            set => Flags = value;
+            get => Attributes;
+            set => Attributes = value;
         }
 
         public PolyChunkDrawPolygonList() : base(ChunkType.Bits_DrawPolygonList) { }
@@ -291,8 +291,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public float MipmapDAdjust
         {
-            get => (Flags & 0xF) * 0.25f;
-            set => Flags = (byte)((Flags & 0xF0) | (byte)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))));
+            get => (Attributes & 0xF) * 0.25f;
+            set => Attributes = (byte)((Attributes & 0xF0) | (byte)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))));
         }
 
         /// <summary>
@@ -300,8 +300,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool ClampV
         {
-            get => (Flags & 0x10) != 0;
-            set => _ = value ? Flags |= 0x10 : Flags &= 0xEF;
+            get => (Attributes & 0x10) != 0;
+            set => _ = value ? Attributes |= 0x10 : Attributes &= 0xEF;
         }
 
         /// <summary>
@@ -309,8 +309,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool ClampU
         {
-            get => (Flags & 0x20) != 0;
-            set => _ = value ? Flags |= 0x20 : Flags &= 0xDF;
+            get => (Attributes & 0x20) != 0;
+            set => _ = value ? Attributes |= 0x20 : Attributes &= 0xDF;
         }
 
         /// <summary>
@@ -318,8 +318,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool MirrorV
         {
-            get => (Flags & 0x40) != 0;
-            set => _ = value ? Flags |= 0x40 : Flags &= 0xBF;
+            get => (Attributes & 0x40) != 0;
+            set => _ = value ? Attributes |= 0x40 : Attributes &= 0xBF;
         }
 
         /// <summary>
@@ -327,8 +327,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool MirrorU
         {
-            get => (Flags & 0x80) != 0;
-            set => _ = value ? Flags |= 0x80 : Flags &= 0x7F;
+            get => (Attributes & 0x80) != 0;
+            set => _ = value ? Attributes |= 0x80 : Attributes &= 0x7F;
         }
 
 
@@ -376,12 +376,12 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             ushort header = source.ToUInt16(address);
             ChunkType type = (ChunkType)(header & 0xFF);
-            byte flags = (byte)(header >> 8);
+            byte attribs = (byte)(header >> 8);
             ushort data = source.ToUInt16(address + 2);
 
             return new PolyChunkTextureID(type == ChunkType.Tiny_TextureID2)
             {
-                Flags = flags,
+                Attributes = attribs,
                 Data = data
             };
         }
@@ -431,7 +431,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         public bool Second
         {
             get => ((byte)Type & 0x08) != 0;
-            set => TypeFlag(0x08, value);
+            set => TypeAttribute(0x08, value);
         }
 
         public override ushort Size
@@ -454,8 +454,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public BlendMode SourceAlpha
         {
-            get => (BlendMode)((Flags >> 3) & 7);
-            set => Flags = (byte)((Flags & ~0x38) | ((byte)value << 3));
+            get => (BlendMode)((Attributes >> 3) & 7);
+            set => Attributes = (byte)((Attributes & ~0x38) | ((byte)value << 3));
         }
 
         /// <summary>
@@ -463,8 +463,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public BlendMode DestinationAlpha
         {
-            get => (BlendMode)(Flags & 7);
-            set => Flags = (byte)((Flags & ~7) | (byte)value);
+            get => (BlendMode)(Attributes & 7);
+            set => Attributes = (byte)((Attributes & ~7) | (byte)value);
         }
 
         /// <summary>
@@ -475,7 +475,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             get => _diffuse;
             set
             {
-                TypeFlag(0x01, value.HasValue);
+                TypeAttribute(0x01, value.HasValue);
                 _diffuse = value;
             }
         }
@@ -488,7 +488,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             get => _ambient;
             set
             {
-                TypeFlag(0x02, value.HasValue);
+                TypeAttribute(0x02, value.HasValue);
                 _ambient = value;
             }
         }
@@ -501,7 +501,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             get => _specular;
             set
             {
-                TypeFlag(0x04, value.HasValue);
+                TypeAttribute(0x04, value.HasValue);
                 _specular = value;
             }
         }
@@ -514,7 +514,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         public PolyChunkMaterial() : base(ChunkType.Material) { }
 
-        private void TypeFlag(byte val, bool state)
+        private void TypeAttribute(byte val, bool state)
         {
             byte type = (byte)Type;
             if(state)
@@ -533,12 +533,12 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             ushort header = source.ToUInt16(address);
             ChunkType type = (ChunkType)(header & 0xFF);
-            byte flags = (byte)(header >> 8);
+            byte attribs = (byte)(header >> 8);
             address += 4;
 
             PolyChunkMaterial mat = new()
             {
-                Flags = flags
+                Attributes = attribs
             };
 
             if(((byte)type & 0x01) != 0)
@@ -597,12 +597,12 @@ namespace SATools.SAModel.ModelData.CHUNK
         public static PolyChunkMaterialBump Read(byte[] source, uint address)
         {
             ushort header = source.ToUInt16(address);
-            byte flags = (byte)(header >> 8);
+            byte attrib = (byte)(header >> 8);
             address += 4;
 
             return new PolyChunkMaterialBump()
             {
-                Flags = flags,
+                Attributes = attrib,
                 DX = source.ToUInt16(address),
                 DY = source.ToUInt16(address += 2),
                 DZ = source.ToUInt16(address += 2),
@@ -634,18 +634,18 @@ namespace SATools.SAModel.ModelData.CHUNK
         public sealed class Triangle : Poly
         {
             /// <summary>
-            /// Userflags of the triangle
+            /// user attributes of the triangle
             /// </summary>
-            public ushort[] UserFlags { get; private set; }
+            public ushort[] UserAttributes { get; private set; }
 
-            public override ushort Size(byte userFlags)
+            public override ushort Size(byte userAttributes)
             {
-                return (ushort)(6u + userFlags * 2u);
+                return (ushort)(6u + userAttributes * 2u);
             }
 
             public Triangle() : base()
             {
-                UserFlags = new ushort[3];
+                UserAttributes = new ushort[3];
                 Indices = new ushort[3];
             }
 
@@ -654,9 +654,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             /// <param name="source">Byte source</param>
             /// <param name="address">Address at which the strip is located</param>
-            /// <param name="userflags">Amount of userflags to read</param>
+            /// <param name="userAttribs">Amount of user attributes to read</param>
             /// <returns></returns>
-            public static Triangle Read(byte[] source, ref uint address, byte userflags)
+            public static Triangle Read(byte[] source, ref uint address, byte userAttribs)
             {
                 Triangle tri = new();
 
@@ -666,27 +666,27 @@ namespace SATools.SAModel.ModelData.CHUNK
                     address += 2;
                 }
 
-                for(int i = 0; i < userflags; i++)
+                for(int i = 0; i < userAttribs; i++)
                 {
-                    tri.UserFlags[i] = source.ToUInt16(address);
+                    tri.UserAttributes[i] = source.ToUInt16(address);
                     address += 2;
                 }
 
                 return tri;
             }
 
-            public override void Write(EndianWriter writer, byte userFlags)
+            public override void Write(EndianWriter writer, byte userAttribs)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
-                for(int i = 0; i < userFlags; i++)
-                    writer.WriteUInt16(UserFlags[i]);
+                for(int i = 0; i < userAttribs; i++)
+                    writer.WriteUInt16(UserAttributes[i]);
             }
 
             public override Poly Clone()
             {
                 Triangle p = (Triangle)base.Clone();
-                p.UserFlags = (ushort[])UserFlags.Clone();
+                p.UserAttributes = (ushort[])UserAttributes.Clone();
                 return p;
             }
         }
@@ -695,18 +695,18 @@ namespace SATools.SAModel.ModelData.CHUNK
         public sealed class Quad : Poly
         {
             /// <summary>
-            /// Userflags of the Quad
+            /// user attributes of the Quad
             /// </summary>
-            public ushort[] UserFlags { get; private set; }
+            public ushort[] UserAttributes { get; private set; }
 
-            public override ushort Size(byte userFlags)
+            public override ushort Size(byte userAttributes)
             {
-                return (ushort)(8u + userFlags * 2u);
+                return (ushort)(8u + userAttributes * 2u);
             }
 
             public Quad() : base()
             {
-                UserFlags = new ushort[4];
+                UserAttributes = new ushort[4];
                 Indices = new ushort[3];
             }
 
@@ -715,9 +715,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             /// <param name="source">Byte source</param>
             /// <param name="address">Address at which the strip is located</param>
-            /// <param name="userflags">Amount of userflags to read</param>
+            /// <param name="userAttribs">Amount of user attributes to read</param>
             /// <returns></returns>
-            public static Quad Read(byte[] source, ref uint address, byte userflags)
+            public static Quad Read(byte[] source, ref uint address, byte userAttribs)
             {
                 Quad tri = new();
 
@@ -727,27 +727,27 @@ namespace SATools.SAModel.ModelData.CHUNK
                     address += 2;
                 }
 
-                for(int i = 0; i < userflags; i++)
+                for(int i = 0; i < userAttribs; i++)
                 {
-                    tri.UserFlags[i] = source.ToUInt16(address);
+                    tri.UserAttributes[i] = source.ToUInt16(address);
                     address += 2;
                 }
 
                 return tri;
             }
 
-            public override void Write(EndianWriter writer, byte userFlags)
+            public override void Write(EndianWriter writer, byte userAttributes)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
-                for(int i = 0; i < userFlags; i++)
-                    writer.WriteUInt16(UserFlags[i]);
+                for(int i = 0; i < userAttributes; i++)
+                    writer.WriteUInt16(UserAttributes[i]);
             }
 
             public override Poly Clone()
             {
                 Quad p = (Quad)base.Clone();
-                p.UserFlags = (ushort[])UserFlags.Clone();
+                p.UserAttributes = (ushort[])UserAttributes.Clone();
                 return p;
             }
         }
@@ -761,40 +761,40 @@ namespace SATools.SAModel.ModelData.CHUNK
             public bool Reversed { get; private set; }
 
             /// <summary>
-            /// First userflags of the strip
+            /// First user attributes of the strip
             /// </summary>
-            public ushort[] UserFlags1 { get; private set; }
+            public ushort[] UserAttributes1 { get; private set; }
 
             /// <summary>
-            /// Second userflags of the strip
+            /// Second user attributes of the strip
             /// </summary>
-            public ushort[] UserFlags2 { get; private set; }
+            public ushort[] UserAttributes2 { get; private set; }
 
             /// <summary>
-            /// Third userflags of the strip
+            /// Third user attributes of the strip
             /// </summary>
-            public ushort[] UserFlags3 { get; private set; }
+            public ushort[] UserAttributes3 { get; private set; }
 
-            public override ushort Size(byte userFlags)
+            public override ushort Size(byte userAttributes)
             {
-                return (ushort)(2u + Indices.Length * (2u + userFlags * 2u));
+                return (ushort)(2u + Indices.Length * (2u + userAttributes * 2u));
             }
 
             public Strip(int size, bool rev) : base()
             {
                 Indices = new ushort[size];
-                UserFlags1 = new ushort[size - 2];
-                UserFlags2 = new ushort[UserFlags1.Length];
-                UserFlags3 = new ushort[UserFlags1.Length];
+                UserAttributes1 = new ushort[size - 2];
+                UserAttributes2 = new ushort[UserAttributes1.Length];
+                UserAttributes3 = new ushort[UserAttributes1.Length];
                 Reversed = rev;
             }
 
             public Strip(ushort[] indices, bool rev) : base()
             {
                 Indices = indices;
-                UserFlags1 = new ushort[Indices.Length - 2];
-                UserFlags2 = new ushort[UserFlags1.Length];
-                UserFlags3 = new ushort[UserFlags1.Length];
+                UserAttributes1 = new ushort[Indices.Length - 2];
+                UserAttributes2 = new ushort[UserAttributes1.Length];
+                UserAttributes3 = new ushort[UserAttributes1.Length];
                 Reversed = rev;
             }
 
@@ -803,17 +803,17 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             /// <param name="source">Byte source</param>
             /// <param name="address">Address at which the strip is located</param>
-            /// <param name="userflags">Amount of userflags to read</param>
+            /// <param name="userAttribs">Amount of user attributes to read</param>
             /// <returns></returns>
-            public static Strip Read(byte[] source, ref uint address, byte userflags)
+            public static Strip Read(byte[] source, ref uint address, byte userAttribs)
             {
                 short header = source.ToInt16(address);
                 Strip r = new(Math.Abs(header), header < 0);
                 address += 2;
 
-                bool flag1 = userflags > 0;
-                bool flag2 = userflags > 1;
-                bool flag3 = userflags > 2;
+                bool flag1 = userAttribs > 0;
+                bool flag2 = userAttribs > 1;
+                bool flag3 = userAttribs > 2;
 
                 r.Indices[0] = source.ToUInt16(address);
                 r.Indices[1] = source.ToUInt16(address += 2);
@@ -824,13 +824,13 @@ namespace SATools.SAModel.ModelData.CHUNK
                     if(flag1)
                     {
                         int j = i - 2;
-                        r.UserFlags1[j] = source.ToUInt16(address += 2);
+                        r.UserAttributes1[j] = source.ToUInt16(address += 2);
                         if(flag2)
                         {
-                            r.UserFlags2[j] = source.ToUInt16(address += 2);
+                            r.UserAttributes2[j] = source.ToUInt16(address += 2);
                             if(flag3)
                             {
-                                r.UserFlags3[j] = source.ToUInt16(address += 2);
+                                r.UserAttributes3[j] = source.ToUInt16(address += 2);
                             }
                         }
                     }
@@ -839,12 +839,12 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return r;
             }
 
-            public override void Write(EndianWriter writer, byte userflags)
+            public override void Write(EndianWriter writer, byte userAttribs)
             {
 
-                bool flag1 = userflags > 0;
-                bool flag2 = userflags > 1;
-                bool flag3 = userflags > 2;
+                bool flag1 = userAttribs > 0;
+                bool flag2 = userAttribs > 1;
+                bool flag3 = userAttribs > 2;
 
                 short count = (short)Math.Min(Indices.Length, short.MaxValue);
                 writer.WriteInt16(Reversed ? (short)-count : count);
@@ -857,13 +857,13 @@ namespace SATools.SAModel.ModelData.CHUNK
                     if(flag1)
                     {
                         int j = i - 2;
-                        writer.WriteUInt16(UserFlags1[j]);
+                        writer.WriteUInt16(UserAttributes1[j]);
                         if(flag2)
                         {
-                            writer.WriteUInt16(UserFlags2[j]);
+                            writer.WriteUInt16(UserAttributes2[j]);
                             if(flag3)
                             {
-                                writer.WriteUInt16(UserFlags3[j]);
+                                writer.WriteUInt16(UserAttributes3[j]);
                             }
                         }
                     }
@@ -875,9 +875,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             public override Poly Clone()
             {
                 Strip r = (Strip)base.Clone();
-                r.UserFlags1 = (ushort[])UserFlags1.Clone();
-                r.UserFlags2 = (ushort[])UserFlags2.Clone();
-                r.UserFlags3 = (ushort[])UserFlags3.Clone();
+                r.UserAttributes1 = (ushort[])UserAttributes1.Clone();
+                r.UserAttributes2 = (ushort[])UserAttributes2.Clone();
+                r.UserAttributes3 = (ushort[])UserAttributes3.Clone();
                 return r;
             }
         }
@@ -898,14 +898,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// <summary>
             /// Size of the polygon in bytes
             /// </summary>
-            public abstract ushort Size(byte userFlags);
+            public abstract ushort Size(byte userAttributes);
 
             /// <summary>
             /// Write the polygon to a stream
             /// </summary>
             /// <param name="writer">Output stream</param>
-            /// <param name="userFlags">Userflag count (0 - 3)</param>
-            public abstract void Write(EndianWriter writer, byte userFlags);
+            /// <param name="userAttribs">Userflag count (0 - 3)</param>
+            public abstract void Write(EndianWriter writer, byte userAttribs);
 
             object ICloneable.Clone() => Clone();
 
@@ -923,9 +923,9 @@ namespace SATools.SAModel.ModelData.CHUNK
         public Poly[] Polys { get; private set; }
 
         /// <summary>
-        /// User flag count (ranges from 0 to 3)
+        /// User attribute count (ranges from 0 to 3)
         /// </summary>
-        public byte UserFlags { get; private set; }
+        public byte UserAttributes { get; private set; }
 
         /// <summary>
         /// Creates a new volume chunk
@@ -934,7 +934,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         public PolyChunkVolume(uint polyType, ushort polycount, byte userFlagCount) : base(polyType > 4 ? ChunkType.Volume_Strip : polyType == 4 ? ChunkType.Volume_Polygon4 : ChunkType.Volume_Polygon3)
         {
             Polys = new Poly[polycount];
-            UserFlags = userFlagCount;
+            UserAttributes = userFlagCount;
         }
 
         /// <summary>
@@ -950,14 +950,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             ushort Header2 = source.ToUInt16(address + 4);
 
             ChunkType type = (ChunkType)(header & 0xFF);
-            byte flags = (byte)(header >> 8);
+            byte attrib = (byte)(header >> 8);
             uint polyType = (type - ChunkType.Volume) + 3u;
             ushort polyCount = (ushort)(Header2 & 0x3FFFu);
-            byte userFlags = (byte)(Header2 >> 14);
+            byte userAttribs = (byte)(Header2 >> 14);
 
-            PolyChunkVolume cnk = new(polyType, polyCount, userFlags)
+            PolyChunkVolume cnk = new(polyType, polyCount, userAttribs)
             {
-                Flags = flags,
+                Attributes = attrib,
                 Size = size,
             };
 
@@ -967,15 +967,15 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 case ChunkType.Volume_Polygon3:
                     for(int i = 0; i < polyCount; i++)
-                        cnk.Polys[i] = Triangle.Read(source, ref address, userFlags);
+                        cnk.Polys[i] = Triangle.Read(source, ref address, userAttribs);
                     break;
                 case ChunkType.Volume_Polygon4:
                     for(int i = 0; i < polyCount; i++)
-                        cnk.Polys[i] = Quad.Read(source, ref address, userFlags);
+                        cnk.Polys[i] = Quad.Read(source, ref address, userAttribs);
                     break;
                 case ChunkType.Volume_Strip:
                     for(int i = 0; i < polyCount; i++)
-                        cnk.Polys[i] = Strip.Read(source, ref address, userFlags);
+                        cnk.Polys[i] = Strip.Read(source, ref address, userAttribs);
                     break;
                 default:
                     break;
@@ -989,7 +989,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             // updating the size
             uint size = 2;
             foreach(Poly p in Polys)
-                size += p.Size(UserFlags);
+                size += p.Size(UserAttributes);
             size /= 2;
             if(size > ushort.MaxValue)
                 throw new InvalidOperationException($"Volume chunk size ({size}) exceeds maximum ({ushort.MaxValue})");
@@ -1000,11 +1000,11 @@ namespace SATools.SAModel.ModelData.CHUNK
             if(Polys.Length > 0x3FFF)
                 throw new InvalidOperationException($"Poly count ({Polys.Length}) exceeds maximum ({0x3FFF})");
 
-            writer.WriteUInt16((ushort)(Math.Min(Polys.Length, 0x3FFFu) | (ushort)(UserFlags << 14)));
+            writer.WriteUInt16((ushort)(Math.Min(Polys.Length, 0x3FFFu) | (ushort)(UserAttributes << 14)));
 
             foreach(Poly p in Polys)
             {
-                p.Write(writer, UserFlags);
+                p.Write(writer, UserAttributes);
             }
         }
 
@@ -1090,9 +1090,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Corners = corners;
             }
 
-            public uint Size(byte userFlags, bool hasUV, bool hasNormal, bool hasColor)
+            public uint Size(byte userAttributes, bool hasUV, bool hasNormal, bool hasColor)
             {
-                return (uint)(2u + Corners.Length * (2 + (hasUV ? 4u : 0u) + (hasNormal ? 12u : 0u) + (hasColor ? 4u : 0u)) + ((Corners.Length - 2) * userFlags * 2));
+                return (uint)(2u + Corners.Length * (2 + (hasUV ? 4u : 0u) + (hasNormal ? 12u : 0u) + (hasColor ? 4u : 0u)) + ((Corners.Length - 2) * userAttributes * 2));
             }
 
             /// <summary>
@@ -1100,21 +1100,21 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             /// <param name="source">Byte source</param>
             /// <param name="address">Address at which the strip is located</param>
-            /// <param name="userflags">Amount of userflags</param>
+            /// <param name="userAttributes">Amount of user attributes</param>
             /// <param name="hasUV">Whether the polygons carry uv data</param>
             /// <param name="HDUV">Whether the uv data repeats at 1024, not 256</param>
             /// <param name="hasNormal">Whether the polygons carry normal data</param>
             /// <param name="hasColor">Whether the polygons carry color data</param>
             /// <returns></returns>
-            public static Strip Read(byte[] source, ref uint address, byte userflags, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
+            public static Strip Read(byte[] source, ref uint address, byte userAttributes, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
             {
                 short header = source.ToInt16(address);
                 bool reverse = header < 0;
                 Corner[] corners = new Corner[Math.Abs(header)];
 
-                bool flag1 = userflags > 0;
-                bool flag2 = userflags > 1;
-                bool flag3 = userflags > 2;
+                bool flag1 = userAttributes > 0;
+                bool flag2 = userAttributes > 1;
+                bool flag3 = userAttributes > 2;
 
                 float multiplier = HDUV ? 1f / 1024f : 1f / 256f;
 
@@ -1161,19 +1161,19 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// Writes the strip to a byte stream
             /// </summary>
             /// <param name="writer">Output stream</param>
-            /// <param name="userflags">Amount of userflags</param>
+            /// <param name="userAttribs">Amount of user attributes</param>
             /// <param name="hasUV">Whether the polygons carry uv data</param>
             /// <param name="HDUV">Whether the uv data repeats at 1024, not 256</param>
             /// <param name="hasNormal">Whether the polygons carry normal data</param>
             /// <param name="hasColor">Whether the polygons carry color data</param>
-            public void Write(EndianWriter writer, byte userflags, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
+            public void Write(EndianWriter writer, byte userAttribs, bool hasUV, bool HDUV, bool hasNormal, bool hasColor)
             {
                 short length = (short)Math.Min(Corners.Length, short.MaxValue);
                 writer.WriteInt16(Reversed ? (short)-length : length);
 
-                bool flag1 = userflags > 0;
-                bool flag2 = userflags > 1;
-                bool flag3 = userflags > 2;
+                bool flag1 = userAttribs > 0;
+                bool flag2 = userAttribs > 1;
+                bool flag3 = userAttribs > 2;
                 float multiplier = HDUV ? 1024 : 256;
 
                 for(int i = 0; i < length; i++)
@@ -1434,8 +1434,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool IgnoreLight
         {
-            get => (Flags & 1) != 0;
-            set => _ = value ? Flags |= 0x01 : Flags &= 0xFE;
+            get => (Attributes & 1) != 0;
+            set => _ = value ? Attributes |= 0x01 : Attributes &= 0xFE;
         }
 
         /// <summary>
@@ -1443,8 +1443,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool IgnoreSpecular
         {
-            get => (Flags & 2) != 0;
-            set => _ = value ? Flags |= 0x02 : Flags &= 0xFD;
+            get => (Attributes & 2) != 0;
+            set => _ = value ? Attributes |= 0x02 : Attributes &= 0xFD;
         }
 
         /// <summary>
@@ -1452,8 +1452,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool IgnoreAmbient
         {
-            get => (Flags & 4) != 0;
-            set => _ = value ? Flags |= 0x04 : Flags &= 0xFB;
+            get => (Attributes & 4) != 0;
+            set => _ = value ? Attributes |= 0x04 : Attributes &= 0xFB;
         }
 
         /// <summary>
@@ -1461,8 +1461,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool UseAlpha
         {
-            get => (Flags & 8) != 0;
-            set => _ = value ? Flags |= 0x08 : Flags &= 0xF7;
+            get => (Attributes & 8) != 0;
+            set => _ = value ? Attributes |= 0x08 : Attributes &= 0xF7;
         }
 
         /// <summary>
@@ -1470,8 +1470,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool DoubleSide
         {
-            get => (Flags & 0x10) != 0;
-            set => _ = value ? Flags |= 0x10 : Flags &= 0xEF;
+            get => (Attributes & 0x10) != 0;
+            set => _ = value ? Attributes |= 0x10 : Attributes &= 0xEF;
         }
 
         /// <summary>
@@ -1479,8 +1479,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool FlatShading
         {
-            get => (Flags & 0x20) != 0;
-            set => _ = value ? Flags |= 0x20 : Flags &= 0xDF;
+            get => (Attributes & 0x20) != 0;
+            set => _ = value ? Attributes |= 0x20 : Attributes &= 0xDF;
         }
 
         /// <summary>
@@ -1488,8 +1488,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool EnvironmentMapping
         {
-            get => (Flags & 0x40) != 0;
-            set => _ = value ? Flags |= 0x40 : Flags &= 0xBF;
+            get => (Attributes & 0x40) != 0;
+            set => _ = value ? Attributes |= 0x40 : Attributes &= 0xBF;
         }
 
         /// <summary>
@@ -1497,8 +1497,8 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public bool Unknown7
         {
-            get => (Flags & 0x80) != 0;
-            set => _ = value ? Flags |= 0x80 : Flags &= 0x7F;
+            get => (Attributes & 0x80) != 0;
+            set => _ = value ? Attributes |= 0x80 : Attributes &= 0x7F;
         }
 
         /// <summary>
@@ -1509,12 +1509,12 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// User flag count (ranges from 0 to 3)
         /// </summary>
-        public byte UserFlags { get; private set; }
+        public byte UserAttributes { get; private set; }
 
         public PolyChunkStrip(ushort stripCount, byte userFlagCount) : base(ChunkType.Strip)
         {
             Strips = new Strip[stripCount];
-            UserFlags = userFlagCount;
+            UserAttributes = userFlagCount;
         }
 
         public static PolyChunkStrip Read(byte[] source, uint address)
@@ -1524,17 +1524,17 @@ namespace SATools.SAModel.ModelData.CHUNK
             ushort Header2 = source.ToUInt16(address + 4);
 
             ChunkType type = (ChunkType)(header & 0xFF);
-            byte flags = (byte)(header >> 8);
+            byte attribs = (byte)(header >> 8);
             ushort polyCount = (ushort)(Header2 & 0x3FFFu);
-            byte userFlags = (byte)(Header2 >> 14);
+            byte userAttribs = (byte)(Header2 >> 14);
 
             if(type >= ChunkType.Strip_Strip2)
                 throw new NotImplementedException("Param2 types for strips not supported");
 
-            PolyChunkStrip cnk = new(polyCount, userFlags)
+            PolyChunkStrip cnk = new(polyCount, userAttribs)
             {
                 Type = type,
-                Flags = flags,
+                Attributes = attribs,
                 Size = size
             };
 
@@ -1547,7 +1547,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             for(int i = 0; i < polyCount; i++)
             {
-                cnk.Strips[i] = Strip.Read(source, ref address, userFlags, hasUV, UVHD, hasNormal, hasColor);
+                cnk.Strips[i] = Strip.Read(source, ref address, userAttribs, hasUV, UVHD, hasNormal, hasColor);
             }
 
             return cnk;
@@ -1563,7 +1563,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             // recalculating the size
             uint size = 2;
             foreach(Strip str in Strips)
-                size += str.Size(UserFlags, hasUV, hasNormal, hasColor);
+                size += str.Size(UserAttributes, hasUV, hasNormal, hasColor);
             size /= 2;
 
             if(size > ushort.MaxValue)
@@ -1575,10 +1575,10 @@ namespace SATools.SAModel.ModelData.CHUNK
             if(Strips.Length > 0x3FFF)
                 throw new InvalidOperationException($"Strip count ({Strips.Length}) exceeds maximum ({0x3FFF})");
 
-            writer.WriteUInt16((ushort)(Math.Min(Strips.Length, 0x3FFFu) | (ushort)(UserFlags << 14)));
+            writer.WriteUInt16((ushort)(Math.Min(Strips.Length, 0x3FFFu) | (ushort)(UserAttributes << 14)));
 
             foreach(Strip s in Strips)
-                s.Write(writer, UserFlags, hasUV, uvhd, hasNormal, hasColor);
+                s.Write(writer, UserAttributes, hasUV, uvhd, hasNormal, hasColor);
         }
 
         public override PolyChunk Clone()

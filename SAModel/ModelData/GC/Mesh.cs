@@ -25,11 +25,11 @@ namespace SATools.SAModel.ModelData.GC
         public Poly[] Polys { get; internal set; }
 
         /// <summary>
-        /// The index attribute flags of this mesh. If it has no IndexAttribParam, it will return null
+        /// The index attributes of this mesh. If it has no IndexAttribParam, it will return null
         /// </summary>
-        public IndexAttributeFlags? IndexFlags
+        public IndexAttributes? IndexAttributes
         {
-            get => ((IndexAttributeParameter)Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributeFlags))?.IndexAttributes;
+            get => ((IndexAttributeParameter)Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes))?.IndexAttributes;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace SATools.SAModel.ModelData.GC
             Polys = polys;
         }
 
-        public static Mesh Read(byte[] source, uint address, uint imageBase, ref IndexAttributeFlags indexFlags)
+        public static Mesh Read(byte[] source, uint address, uint imageBase, ref IndexAttributes indexAttribs)
         {
             // getting the addresses and sizes
             uint parameters_addr = source.ToUInt32(address) - imageBase;
@@ -76,9 +76,9 @@ namespace SATools.SAModel.ModelData.GC
             }
 
             // getting the index attribute parameter
-            IndexAttributeFlags? flags = ((IndexAttributeParameter)parameters.Find(x => x.Type == ParameterType.IndexAttributeFlags))?.IndexAttributes;
-            if(flags.HasValue)
-                indexFlags = flags.Value;
+            IndexAttributes? attribs = ((IndexAttributeParameter)parameters.Find(x => x.Type == ParameterType.IndexAttributes))?.IndexAttributes;
+            if(attribs.HasValue)
+                indexAttribs = attribs.Value;
 
             // reading the primitives
             List<Poly> primitives = new();
@@ -89,7 +89,7 @@ namespace SATools.SAModel.ModelData.GC
                 // if the primitive isnt valid
                 if(source[primitives_addr] == 0)
                     break;
-                primitives.Add(Poly.Read(source, ref primitives_addr, indexFlags));
+                primitives.Add(Poly.Read(source, ref primitives_addr, indexAttribs));
             }
 
             return new Mesh(parameters.ToArray(), primitives.ToArray());
@@ -99,8 +99,8 @@ namespace SATools.SAModel.ModelData.GC
         /// Writes the parameters and primitives to a stream
         /// </summary>
         /// <param name="writer">The ouput stream</param>
-        /// <param name="indexFlags">The index flags</param>
-        public void WriteData(EndianWriter writer, IndexAttributeFlags indexFlags)
+        /// <param name="indexAttribs">The index attributes</param>
+        public void WriteData(EndianWriter writer, IndexAttributes indexAttribs)
         {
             _ParamAddress = writer.Position;
 
@@ -113,7 +113,7 @@ namespace SATools.SAModel.ModelData.GC
 
             foreach(Poly prim in Polys)
             {
-                prim.Write(writer, indexFlags);
+                prim.Write(writer, indexAttribs);
             }
 
             _PolySize = writer.Position - _PolyAddress;
@@ -144,6 +144,6 @@ namespace SATools.SAModel.ModelData.GC
 
         public Mesh Clone() => new(Parameters.ContentClone(), Polys.ContentClone());
 
-        public override string ToString() => (IndexFlags.HasValue ? ((uint)IndexFlags.Value).ToString() : "null") + $" - {Parameters.Length} - {Polys.Length}";
+        public override string ToString() => (IndexAttributes.HasValue ? ((uint)IndexAttributes.Value).ToString() : "null") + $" - {Parameters.Length} - {Polys.Length}";
     }
 }

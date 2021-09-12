@@ -77,10 +77,10 @@ namespace SATools.SAModel.ModelData.BASIC
                         mat.DestinationAlpha = bmat.DestinationBlendmode;
                         mat.DoubleSided = !bmat.Culling;
 
-                        mat.IgnoreLighting = bmat.HasFlag(MaterialFlags.noDiffuse);
-                        mat.IgnoreSpecular = bmat.HasFlag(MaterialFlags.noSpecular);
-                        mat.UseTexture = bmat.HasFlag(MaterialFlags.useTexture);
-                        mat.EnvironmentMap = bmat.HasFlag(MaterialFlags.normalMapping);
+                        mat.IgnoreLighting = bmat.HasAttribute(MaterialAttributes.noDiffuse);
+                        mat.IgnoreSpecular = bmat.HasAttribute(MaterialAttributes.noSpecular);
+                        mat.UseTexture = bmat.HasAttribute(MaterialAttributes.useTexture);
+                        mat.EnvironmentMap = bmat.HasAttribute(MaterialAttributes.normalMapping);
                     }
                     materials[i] = mat;
 
@@ -216,13 +216,13 @@ namespace SATools.SAModel.ModelData.BASIC
                             SourceBlendMode = mat.SourceAlpha,
                             DestinationBlendmode = mat.DestinationAlpha,
                             Culling = !mat.DoubleSided,
-                            MaterialFlags = MaterialFlags.noAmbient
+                            MaterialAttributes = MaterialAttributes.noAmbient
                         };
-                        //bMat.SetFlag(MaterialFlags.Flat, mesh.Colors != null);
-                        bMat.SetFlag(MaterialFlags.noDiffuse, mat.IgnoreLighting);
-                        bMat.SetFlag(MaterialFlags.noSpecular, mat.IgnoreSpecular);
-                        bMat.SetFlag(MaterialFlags.useTexture, mat.UseTexture);
-                        bMat.SetFlag(MaterialFlags.normalMapping, mat.EnvironmentMap);
+                        //bMat.SetAttribute(MaterialAttributes.Flat, mesh.Colors != null);
+                        bMat.SetAttribute(MaterialAttributes.noDiffuse, mat.IgnoreLighting);
+                        bMat.SetAttribute(MaterialAttributes.noSpecular, mat.IgnoreSpecular);
+                        bMat.SetAttribute(MaterialAttributes.useTexture, mat.UseTexture);
+                        bMat.SetAttribute(MaterialAttributes.normalMapping, mat.EnvironmentMap);
                     }
 
                     List<BufferCorner> corners = new();

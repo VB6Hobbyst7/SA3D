@@ -114,7 +114,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     BufferMaterial material = new()
                     {
-                        MaterialFlags = MaterialFlags.useTexture
+                        MaterialAttributes = MaterialAttributes.useTexture
                     };
                     foreach(PolyChunk cnk in active)
                     {
@@ -186,11 +186,11 @@ namespace SATools.SAModel.ModelData.CHUNK
                             case ChunkType.Strip_StripUVH2:
                                 PolyChunkStrip stripCnk = (PolyChunkStrip)cnk;
 
-                                material.SetFlag(MaterialFlags.Flat, stripCnk.FlatShading);
-                                material.SetFlag(MaterialFlags.noAmbient, stripCnk.IgnoreAmbient);
-                                material.SetFlag(MaterialFlags.noDiffuse, stripCnk.IgnoreLight);
-                                material.SetFlag(MaterialFlags.noSpecular, stripCnk.IgnoreSpecular);
-                                material.SetFlag(MaterialFlags.normalMapping, stripCnk.EnvironmentMapping);
+                                material.SetAttribute(MaterialAttributes.Flat, stripCnk.FlatShading);
+                                material.SetAttribute(MaterialAttributes.noAmbient, stripCnk.IgnoreAmbient);
+                                material.SetAttribute(MaterialAttributes.noDiffuse, stripCnk.IgnoreLight);
+                                material.SetAttribute(MaterialAttributes.noSpecular, stripCnk.IgnoreSpecular);
+                                material.SetAttribute(MaterialAttributes.normalMapping, stripCnk.EnvironmentMapping);
                                 material.UseAlpha = stripCnk.UseAlpha;
                                 material.Culling = !stripCnk.DoubleSide;
 

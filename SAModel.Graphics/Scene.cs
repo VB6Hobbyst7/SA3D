@@ -81,12 +81,12 @@ namespace SATools.SAModel.Graphics
 
         public LandEntry[] VisualGeometry
         {
-            get => _visualCollision ? CollisionGeometry : Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceFlags.HasFlag(SurfaceFlags.Visible)).ToArray();
+            get => _visualCollision ? CollisionGeometry : Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible)).ToArray();
         }
 
         public LandEntry[] CollisionGeometry
         {
-            get => Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceFlags.IsCollision()).ToArray();
+            get => Geometry == null ? Array.Empty<LandEntry>() : Geometry.Where(x => x.SurfaceAttributes.IsCollision()).ToArray();
         }
 
         internal Scene(float cameraAspect, BufferingBridge bufferbridge)

@@ -85,9 +85,9 @@ namespace SATools.SAModel.ObjData
         public string GeoAnimName { get; set; }
 
         /// <summary>
-        /// Landtable flags
+        /// Landtable attributes
         /// </summary>
-        public uint Flags { get; set; }
+        public LandtableAttributes Attributes { get; set; }
 
         /// <summary>
         /// Draw distance
@@ -217,8 +217,8 @@ namespace SATools.SAModel.ObjData
 
                     foreach(LandEntry le in Geometry)
                     {
-                        bool isCollision = le.SurfaceFlags.IsCollision();
-                        bool isVisual = !isCollision || le.SurfaceFlags.HasFlag(SurfaceFlags.Visible);
+                        bool isCollision = le.SurfaceAttributes.IsCollision();
+                        bool isVisual = !isCollision || le.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible);
                         // if its neither, we'll just keep it as an invisible visual model. just in case
 
                         if(isCollision)
@@ -343,7 +343,7 @@ namespace SATools.SAModel.ObjData
         {
             string name = labels.ContainsKey(address) ? labels[address] : "landtable_" + address.ToString("X8");
             float radius;
-            uint flags = 0;
+            LandtableAttributes attribs = 0;
 
             string identifier = GenerateIdentifier();
 
@@ -362,7 +362,7 @@ namespace SATools.SAModel.ObjData
                 case LandtableFormat.SA1:
                 case LandtableFormat.SADX:
                     short anicnt = source.ToInt16(address + 2);
-                    flags = source.ToUInt32(address + 4);
+                    attribs = (LandtableAttributes)source.ToUInt32(address + 4);
                     radius = source.ToSingle(address + 8);
 
                     tmpaddr = source.ToUInt32(address + 0xC);
@@ -445,7 +445,7 @@ namespace SATools.SAModel.ObjData
             {
                 Name = name,
                 DrawDistance = radius,
-                Flags = flags,
+                Attributes = attribs,
                 GeoName = geomName,
                 GeoAnimName = animName,
                 TexListPtr = texListPtr,
@@ -625,7 +625,7 @@ namespace SATools.SAModel.ObjData
             if(Format < LandtableFormat.SA2) // sa1 + sadx
             {
                 writer.WriteUInt16((ushort)GeometryAnimations.Count);
-                writer.WriteUInt32(Flags);
+                writer.WriteUInt32((uint)Attributes);
                 writer.WriteSingle(DrawDistance);
                 writer.WriteUInt32(geomAddr);
                 writer.WriteUInt32(animAddr);

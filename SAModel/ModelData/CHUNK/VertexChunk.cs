@@ -35,17 +35,17 @@ namespace SATools.SAModel.ModelData.CHUNK
         public Color Specular;
 
         /// <summary>
-        /// Flags (either ninja flags or user flags)
+        /// Attributes (either ninja or user)
         /// </summary>
-        public uint Flags;
+        public uint Attributes;
 
         /// <summary>
         /// Cache index
         /// </summary>
         public ushort Index
         {
-            get => (ushort)(Flags & 0xFFFF);
-            set => Flags = (Flags & ~0xFFFFu) | Index;
+            get => (ushort)(Attributes & 0xFFFF);
+            set => Attributes = (Attributes & ~0xFFFFu) | Index;
         }
 
         /// <summary>
@@ -53,15 +53,15 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public float Weight
         {
-            get => ((Flags >> 16) & 0xFFu) / 255f;
-            set => Flags = (Flags & ~0xFF0000u) | (((uint)(value * 255)) << 16);
+            get => ((Attributes >> 16) & 0xFFu) / 255f;
+            set => Attributes = (Attributes & ~0xFF0000u) | (((uint)(value * 255)) << 16);
         }
 
-        public ChunkVertex(Vector3 position, Vector3 normal, uint flags) : this()
+        public ChunkVertex(Vector3 position, Vector3 normal, uint attribs) : this()
         {
             Position = position;
             Normal = normal;
-            Flags = flags;
+            Attributes = attribs;
             Weight = 1;
         }
 
@@ -92,14 +92,14 @@ namespace SATools.SAModel.ModelData.CHUNK
         public ChunkType Type { get; }
 
         /// <summary>
-        /// Various flags
+        /// Various attributes
         /// </summary>
-        public byte Flags { get; }
+        public byte Attributes { get; }
 
         /// <summary>
         /// Weight status of the chunk
         /// </summary>
-        public WeightStatus WeightStatus => (WeightStatus)(Flags & 3);
+        public WeightStatus WeightStatus => (WeightStatus)(Attributes & 3);
 
         /// <summary>
         /// Offset that gets added to every index in the vertices
@@ -109,7 +109,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Whether the chunk has weighted vertex data
         /// </summary>
-        public bool HasWeight => Type == ChunkType.Vertex_VertexNinjaFlags || Type == ChunkType.Vertex_VertexNormalNinjaFlags;
+        public bool HasWeight => Type == ChunkType.Vertex_VertexNinjaAttributes || Type == ChunkType.Vertex_VertexNormalNinjaAttributes;
 
         /// <summary>
         /// Vertices of the chunk
@@ -120,15 +120,15 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// Creates a new Vertex chunk with all relevant data
         /// </summary>
         /// <param name="type">Chunk type (has to be a vertex type)</param>
-        /// <param name="flags">Flags of the chunk</param>
+        /// <param name="attribs">Attributes of the chunk</param>
         /// <param name="indexOffset">Index offset for all vertices</param>
         /// <param name="vertices">Vertex data</param>
-        public VertexChunk(ChunkType type, byte flags, ushort indexOffset, ChunkVertex[] vertices)
+        public VertexChunk(ChunkType type, byte attribs, ushort indexOffset, ChunkVertex[] vertices)
         {
             if(!type.IsVertex())
                 throw new ArgumentException($"Chunktype {type} not a valid vertex type");
             Type = type;
-            Flags = flags;
+            Attributes = attribs;
             IndexOffset = indexOffset;
             Vertices = vertices;
         }
@@ -160,7 +160,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             ChunkType type = (ChunkType)(header1 & 0xFF);
             if(type == ChunkType.End)
                 return null;
-            byte flags = (byte)((header1 >> 8) & 0xFF);
+            byte attribs = (byte)((header1 >> 8) & 0xFF);
 
             ushort indexOffset = (ushort)(header2 & 0xFFFF);
             ChunkVertex[] vertices = new ChunkVertex[(ushort)(header2 >> 16)];
@@ -206,11 +206,11 @@ namespace SATools.SAModel.ModelData.CHUNK
                         vtx.Diffuse = Color.Read(source, ref address, IOType.ARGB4);
                         vtx.Specular = Color.Read(source, ref address, IOType.RGB565);
                         break;
-                    case ChunkType.Vertex_VertexUserFlags:
-                    case ChunkType.Vertex_VertexNinjaFlags:
-                    case ChunkType.Vertex_VertexNormalUserFlags:
-                    case ChunkType.Vertex_VertexNormalNinjaFlags:
-                        vtx.Flags = source.ToUInt32(address);
+                    case ChunkType.Vertex_VertexUserAttributes:
+                    case ChunkType.Vertex_VertexNinjaAttributes:
+                    case ChunkType.Vertex_VertexNormalUserAttributes:
+                    case ChunkType.Vertex_VertexNormalNinjaAttributes:
+                        vtx.Attributes = source.ToUInt32(address);
                         address += 4;
                         break;
                 }
@@ -218,7 +218,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 vertices[i] = vtx;
             }
 
-            return new VertexChunk(type, flags, indexOffset, vertices);
+            return new VertexChunk(type, attribs, indexOffset, vertices);
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             ushort vertSize = Type.Size();
             ushort vertLimit = (ushort)((ushort.MaxValue - 1) / vertSize); // -1 because header2 also counts as part of the size, which is always there
             List<ChunkVertex> remainingVerts = Vertices.ToList();
-            uint header1Base = (uint)Type | (uint)(Flags << 8);
+            uint header1Base = (uint)Type | (uint)(Attributes << 8);
             ushort offset = IndexOffset;
 
             bool hasNormal = Type.HasNormal();
@@ -278,11 +278,11 @@ namespace SATools.SAModel.ModelData.CHUNK
                             vtx.Diffuse.Write(writer, IOType.ARGB4);
                             vtx.Specular.Write(writer, IOType.RGB565);
                             break;
-                        case ChunkType.Vertex_VertexUserFlags:
-                        case ChunkType.Vertex_VertexNinjaFlags:
-                        case ChunkType.Vertex_VertexNormalUserFlags:
-                        case ChunkType.Vertex_VertexNormalNinjaFlags:
-                            writer.Write(vtx.Flags);
+                        case ChunkType.Vertex_VertexUserAttributes:
+                        case ChunkType.Vertex_VertexNinjaAttributes:
+                        case ChunkType.Vertex_VertexNormalUserAttributes:
+                        case ChunkType.Vertex_VertexNormalNinjaAttributes:
+                            writer.Write(vtx.Attributes);
                             break;
                     }
                 }
@@ -291,7 +291,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 if(vertCount == vertLimit)
                 {
                     remainingVerts = remainingVerts.Skip(vertCount).ToList();
-                    if(Type != ChunkType.Vertex_VertexNinjaFlags && Type != ChunkType.Vertex_VertexNormalNinjaFlags)
+                    if(Type != ChunkType.Vertex_VertexNinjaAttributes && Type != ChunkType.Vertex_VertexNormalNinjaAttributes)
                         offset += vertCount;
                 }
                 else

@@ -86,33 +86,33 @@ namespace SATools.SAModel.ModelData.GC
                 bool first = true;
                 VertexSet[] vertexData = new VertexSet[2 + (hasUVs ? 1 : 0)];
 
-                IndexAttributeParameter iaParam = new(IndexAttributeFlags.HasPosition);
+                IndexAttributeParameter iaParam = new(IndexAttributes.HasPosition);
                 if(positions.Length > 256)
-                    iaParam.IndexAttributes |= IndexAttributeFlags.Position16BitIndex;
+                    iaParam.IndexAttributes |= IndexAttributes.Position16BitIndex;
                 vertexData[0] = new VertexSet(positions, false);
 
                 if(hasColors)
                 {
-                    iaParam.IndexAttributes |= IndexAttributeFlags.HasColor;
+                    iaParam.IndexAttributes |= IndexAttributes.HasColor;
                     if(colors.Length > 256)
-                        iaParam.IndexAttributes |= IndexAttributeFlags.Color16BitIndex;
+                        iaParam.IndexAttributes |= IndexAttributes.Color16BitIndex;
 
                     vertexData[1] = new VertexSet(colors);
                 }
                 else
                 {
-                    iaParam.IndexAttributes |= IndexAttributeFlags.HasNormal;
+                    iaParam.IndexAttributes |= IndexAttributes.HasNormal;
                     if(normals.Length > 256)
-                        iaParam.IndexAttributes |= IndexAttributeFlags.Normal16BitIndex;
+                        iaParam.IndexAttributes |= IndexAttributes.Normal16BitIndex;
 
                     vertexData[1] = new VertexSet(normals, true);
                 }
 
                 if(hasUVs)
                 {
-                    iaParam.IndexAttributes |= IndexAttributeFlags.HasUV;
+                    iaParam.IndexAttributes |= IndexAttributes.HasUV;
                     if(texcoords.Length > 256)
-                        iaParam.IndexAttributes |= IndexAttributeFlags.UV16BitIndex;
+                        iaParam.IndexAttributes |= IndexAttributes.UV16BitIndex;
                     vertexData[2] = new VertexSet(texcoords);
                 }
 
@@ -138,7 +138,7 @@ namespace SATools.SAModel.ModelData.GC
                         {
                             currentMaterial = new BufferMaterial()
                             {
-                                MaterialFlags = MaterialFlags.noSpecular
+                                MaterialAttributes = MaterialAttributes.noSpecular
                             };
                         }
                         else
@@ -240,7 +240,7 @@ namespace SATools.SAModel.ModelData.GC
                             parameters.Add(new TexCoordGenParameter(
                                 currentMaterial.TexCoordID,
                                 currentMaterial.TexGenType,
-                                currentMaterial.HasFlag(MaterialFlags.normalMapping) ? TexGenSrc.Normal : currentMaterial.TexGenSrc,
+                                currentMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : currentMaterial.TexGenSrc,
                                 currentMaterial.MatrixID));
                         }
 
@@ -328,9 +328,9 @@ namespace SATools.SAModel.ModelData.GC
 
                 BufferMaterial material = new()
                 { 
-                    MaterialFlags = MaterialFlags.noSpecular
+                    MaterialAttributes = MaterialAttributes.noSpecular
                 };
-                material.SetFlag(MaterialFlags.Flat, colors != null);
+                material.SetAttribute(MaterialAttributes.Flat, colors != null);
                 float uvFac = 1;
 
                 // the generates vertices
@@ -377,7 +377,7 @@ namespace SATools.SAModel.ModelData.GC
                                 material.Ambient = ambientCol.AmbientColor;
                                 break;
                             case ParameterType.Texture:
-                                material.SetFlag(MaterialFlags.useTexture, true);
+                                material.SetAttribute(MaterialAttributes.useTexture, true);
                                 TextureParameter tex = param as TextureParameter;
                                 material.TextureIndex = tex.TextureID;
                                 material.MirrorU = tex.Tiling.HasFlag(GCTileMode.MirrorU);
@@ -396,7 +396,7 @@ namespace SATools.SAModel.ModelData.GC
                                 break;
                             case ParameterType.TexCoordGen:
                                 TexCoordGenParameter gen = param as TexCoordGenParameter;
-                                material.SetFlag(MaterialFlags.normalMapping, gen.TexGenSrc == TexGenSrc.Normal);
+                                material.SetAttribute(MaterialAttributes.normalMapping, gen.TexGenSrc == TexGenSrc.Normal);
                                 material.MatrixID = gen.MatrixID;
                                 material.TexCoordID = gen.TexCoordID;
                                 material.TexGenSrc = gen.TexGenSrc;

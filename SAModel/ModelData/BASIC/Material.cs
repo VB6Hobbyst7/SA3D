@@ -37,21 +37,21 @@ namespace SATools.SAModel.ModelData.BASIC
         public uint TextureID { get; set; }
 
         /// <summary>
-        /// Flags containing various information
+        /// Attributes containing various information
         /// </summary>
-        public uint Flags { get; set; }
+        public uint Attributes { get; set; }
 
         #endregion
 
         #region Accessors (user use)
 
         /// <summary>
-        /// User defined flags
+        /// User defined attributes
         /// </summary>
-        public byte UserFlags
+        public byte UserAttributes
         {
-            get => (byte)(Flags & 0x7Fu);
-            set => Flags = (Flags & ~0x7Fu) | (value & 0x7Fu);
+            get => (byte)(Attributes & 0x7Fu);
+            set => Attributes = (Attributes & ~0x7Fu) | (value & 0x7Fu);
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool PickStatus
         {
-            get => (Flags & 0x80u) != 0;
-            set => _ = value ? (Flags |= 0x80u) : (Flags &= ~0x80u);
+            get => (Attributes & 0x80u) != 0;
+            set => _ = value ? (Attributes |= 0x80u) : (Attributes &= ~0x80u);
         }
 
         /// <summary>
@@ -68,8 +68,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public float MipmapDAdjust
         {
-            get => ((Flags & 0xF0u) >> 4) * 0.25f;
-            set => Flags = (Flags & ~0xF0u) | ((uint)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))) << 4);
+            get => ((Attributes & 0xF0u) >> 4) * 0.25f;
+            set => Attributes = (Attributes & ~0xF0u) | ((uint)Math.Max(0, Math.Min(0xF, Math.Round(value / 0.25, MidpointRounding.AwayFromZero))) << 4);
         }
 
         /// <summary>
@@ -77,8 +77,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool SuperSample
         {
-            get => (Flags & 0x1000u) != 0;
-            set => _ = value ? (Flags |= 0x1000u) : (Flags &= ~0x1000u);
+            get => (Attributes & 0x1000u) != 0;
+            set => _ = value ? (Attributes |= 0x1000u) : (Attributes &= ~0x1000u);
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public FilterMode FilterMode
         {
-            get => (FilterMode)((Flags >> 13) & 3);
-            set => Flags = (Flags & ~0x6000u) | ((uint)value << 13);
+            get => (FilterMode)((Attributes >> 13) & 3);
+            set => Attributes = (Attributes & ~0x6000u) | ((uint)value << 13);
         }
 
         /// <summary>
@@ -95,8 +95,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool ClampV
         {
-            get => (Flags & 0x8000u) != 0;
-            set => _ = value ? (Flags |= 0x8000u) : (Flags &= ~0x8000u);
+            get => (Attributes & 0x8000u) != 0;
+            set => _ = value ? (Attributes |= 0x8000u) : (Attributes &= ~0x8000u);
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool ClampU
         {
-            get => (Flags & 0x10000u) != 0;
-            set => _ = value ? (Flags |= 0x10000u) : (Flags &= ~0x10000u);
+            get => (Attributes & 0x10000u) != 0;
+            set => _ = value ? (Attributes |= 0x10000u) : (Attributes &= ~0x10000u);
         }
 
         /// <summary>
@@ -113,8 +113,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool FlipV
         {
-            get => (Flags & 0x20000u) != 0;
-            set => _ = value ? (Flags |= 0x20000u) : (Flags &= ~0x20000u);
+            get => (Attributes & 0x20000u) != 0;
+            set => _ = value ? (Attributes |= 0x20000u) : (Attributes &= ~0x20000u);
         }
 
         /// <summary>
@@ -122,8 +122,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool FlipU
         {
-            get => (Flags & 0x40000u) != 0;
-            set => _ = value ? (Flags |= 0x40000u) : (Flags &= ~0x40000u);
+            get => (Attributes & 0x40000u) != 0;
+            set => _ = value ? (Attributes |= 0x40000u) : (Attributes &= ~0x40000u);
         }
 
         /// <summary>
@@ -131,8 +131,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool IgnoreSpecular
         {
-            get => (Flags & 0x80000u) != 0;
-            set => _ = value ? (Flags |= 0x80000u) : (Flags &= ~0x80000u);
+            get => (Attributes & 0x80000u) != 0;
+            set => _ = value ? (Attributes |= 0x80000u) : (Attributes &= ~0x80000u);
         }
 
         /// <summary>
@@ -140,8 +140,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool UseAlpha
         {
-            get => (Flags & 0x100000u) != 0;
-            set => _ = value ? (Flags |= 0x100000u) : (Flags &= ~0x100000u);
+            get => (Attributes & 0x100000u) != 0;
+            set => _ = value ? (Attributes |= 0x100000u) : (Attributes &= ~0x100000u);
         }
 
         /// <summary>
@@ -149,8 +149,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool UseTexture
         {
-            get => (Flags & 0x200000u) != 0;
-            set => _ = value ? (Flags |= 0x200000u) : (Flags &= ~0x200000u);
+            get => (Attributes & 0x200000u) != 0;
+            set => _ = value ? (Attributes |= 0x200000u) : (Attributes &= ~0x200000u);
         }
 
         /// <summary>
@@ -158,8 +158,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool EnvironmentMap
         {
-            get => (Flags & 0x400000) != 0;
-            set => _ = value ? (Flags |= 0x400000u) : (Flags &= ~0x400000u);
+            get => (Attributes & 0x400000) != 0;
+            set => _ = value ? (Attributes |= 0x400000u) : (Attributes &= ~0x400000u);
         }
 
         /// <summary>
@@ -167,8 +167,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool DoubleSided
         {
-            get => (Flags & 0x800000) != 0;
-            set => _ = value ? (Flags |= 0x800000u) : (Flags &= ~0x800000u);
+            get => (Attributes & 0x800000) != 0;
+            set => _ = value ? (Attributes |= 0x800000u) : (Attributes &= ~0x800000u);
         }
 
         /// <summary>
@@ -176,8 +176,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool FlatShading
         {
-            get => (Flags & 0x1000000) != 0;
-            set => _ = value ? (Flags |= 0x1000000u) : (Flags &= ~0x1000000u);
+            get => (Attributes & 0x1000000) != 0;
+            set => _ = value ? (Attributes |= 0x1000000u) : (Attributes &= ~0x1000000u);
         }
 
         /// <summary>
@@ -185,8 +185,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public bool IgnoreLighting
         {
-            get => (Flags & 0x2000000) != 0;
-            set => _ = value ? (Flags |= 0x2000000u) : (Flags &= ~0x2000000u);
+            get => (Attributes & 0x2000000) != 0;
+            set => _ = value ? (Attributes |= 0x2000000u) : (Attributes &= ~0x2000000u);
         }
 
         /// <summary>
@@ -194,8 +194,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public BlendMode DestinationAlpha
         {
-            get => (BlendMode)((Flags >> 26) & 7);
-            set => Flags = (uint)((Flags & ~0x1C000000) | ((uint)value << 26));
+            get => (BlendMode)((Attributes >> 26) & 7);
+            set => Attributes = (uint)((Attributes & ~0x1C000000) | ((uint)value << 26));
         }
 
         /// <summary>
@@ -203,8 +203,8 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         public BlendMode SourceAlpha
         {
-            get => (BlendMode)((Flags >> 29) & 7);
-            set => Flags = (Flags & ~0xE0000000) | ((uint)value << 29);
+            get => (BlendMode)((Attributes >> 29) & 7);
+            set => Attributes = (Attributes & ~0xE0000000) | ((uint)value << 29);
         }
 
         #endregion
@@ -242,7 +242,7 @@ namespace SATools.SAModel.ModelData.BASIC
             Color spec = Color.Read(source, ref address, IOType.ARGB8_32);
             float exp = source.ToSingle(address);
             uint texID = source.ToUInt32(address + 4);
-            uint flags = source.ToUInt32(address + 8);
+            uint attribs = source.ToUInt32(address + 8);
             address += 12;
 
             return new Material()
@@ -251,7 +251,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 SpecularColor = spec,
                 Exponent = exp,
                 TextureID = texID,
-                Flags = flags
+                Attributes = attribs
             };
         }
 
@@ -292,11 +292,11 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.Write(textures[texid].MakeIdentifier());
             writer.WriteLine("),");
 
-            // writing flags
+            // writing attributes
             writer.Write("AttrFlags \t( ");
-            writer.Write(((StructEnums.MaterialFlags)(Flags & ~0x7F)).ToString().Replace(", ", " | "));
-            if(UserFlags != 0)
-                writer.Write(" | 0x" + UserFlags.ToString("X"));
+            writer.Write(((StructEnums.MaterialAttributes)(Attributes & ~0x7F)).ToString().Replace(", ", " | "));
+            if(UserAttributes != 0)
+                writer.Write(" | 0x" + UserAttributes.ToString("X"));
             writer.WriteLine(")");
 
             // ending the material
@@ -313,7 +313,7 @@ namespace SATools.SAModel.ModelData.BASIC
             SpecularColor.Write(writer, IOType.ARGB8_32);
             writer.WriteSingle(Exponent);
             writer.WriteUInt32(TextureID);
-            writer.WriteUInt32(Flags);
+            writer.WriteUInt32(Attributes);
         }
 
         object ICloneable.Clone() => Clone();
@@ -327,12 +327,12 @@ namespace SATools.SAModel.ModelData.BASIC
                    SpecularColor == material.SpecularColor &&
                    Exponent == material.Exponent &&
                    TextureID == material.TextureID &&
-                   Flags == material.Flags;
+                   Attributes == material.Attributes;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(DiffuseColor, SpecularColor, Exponent, TextureID, Flags);
+            return HashCode.Combine(DiffuseColor, SpecularColor, Exponent, TextureID, Attributes);
         }
 
         public override string ToString() => $"{TextureID}";

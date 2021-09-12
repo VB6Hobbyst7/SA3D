@@ -376,7 +376,7 @@ namespace SATools.SAModel.Convert
             if(mat == null)
                 return result;
 
-            result.SetFlag(MaterialFlags.Flat, mat.Unlit);
+            result.SetAttribute(MaterialAttributes.Flat, mat.Unlit);
 
             var channels = mat.Channels.ToArray();
 
@@ -386,7 +386,7 @@ namespace SATools.SAModel.Convert
                 {
                     if(c.Texture != null)
                     {
-                        result.SetFlag(MaterialFlags.useTexture, true);
+                        result.SetAttribute(MaterialAttributes.useTexture, true);
                         result.TextureIndex = (uint)c.Texture.LogicalIndex;
 
                         switch(c.TextureSampler.WrapS)

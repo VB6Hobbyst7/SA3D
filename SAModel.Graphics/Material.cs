@@ -85,9 +85,9 @@ namespace SATools.SAModel.Graphics
 
             _bufferWriter.Write(BufferMaterial.SpecularExponent);
 
-            var matFlags = BufferMaterial.MaterialFlags;
+            var matFlags = BufferMaterial.MaterialAttributes;
             if(BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
-                matFlags &= ~MaterialFlags.useTexture;
+                matFlags &= ~MaterialAttributes.useTexture;
 
             int flags = (ushort)matFlags;
             _bufferWriter.Write(flags);

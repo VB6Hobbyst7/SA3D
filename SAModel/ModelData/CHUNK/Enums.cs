@@ -55,21 +55,21 @@
         Vertex_VertexNormalSH = Vertex + 1,
         Vertex_Vertex = Vertex + 2,
         Vertex_VertexDiffuse8 = Vertex + 3,
-        Vertex_VertexUserFlags = Vertex + 4,
-        Vertex_VertexNinjaFlags = Vertex + 5,
+        Vertex_VertexUserAttributes = Vertex + 4,
+        Vertex_VertexNinjaAttributes = Vertex + 5,
         Vertex_VertexDiffuseSpecular5 = Vertex + 6,
         Vertex_VertexDiffuseSpecular4 = Vertex + 7,
         Vertex_VertexDiffuseSpecular16 = Vertex + 8,
         Vertex_VertexNormal = Vertex + 9,
         Vertex_VertexNormalDiffuse8 = Vertex + 10,
-        Vertex_VertexNormalUserFlags = Vertex + 11,
-        Vertex_VertexNormalNinjaFlags = Vertex + 12,
+        Vertex_VertexNormalUserAttributes = Vertex + 11,
+        Vertex_VertexNormalNinjaAttributes = Vertex + 12,
         Vertex_VertexNormalDiffuseSpecular5 = Vertex + 13,
         Vertex_VertexNormalDiffuseSpecular4 = Vertex + 14,
         Vertex_VertexNormalDiffuseSpecular16 = Vertex + 15,
         Vertex_VertexNormalX = Vertex + 16,
         Vertex_VertexNormalXDiffuse8 = Vertex + 17,
-        Vertex_VertexNormalXUserFlags = Vertex + 18,
+        Vertex_VertexNormalXUserAttributes = Vertex + 18,
         Volume = 56,
         Volume_Polygon3 = Volume + 0,
         Volume_Polygon4 = Volume + 1,
@@ -99,7 +99,7 @@
         /// <returns></returns>
         public static bool IsVertex(this ChunkType type)
         {
-            return type >= ChunkType.Vertex && type <= ChunkType.Vertex_VertexNormalXUserFlags;
+            return type >= ChunkType.Vertex && type <= ChunkType.Vertex_VertexNormalXUserAttributes;
         }
 
         /// <summary>
@@ -135,16 +135,16 @@
                     return 3;
                 case ChunkType.Vertex_VertexSH:
                 case ChunkType.Vertex_VertexDiffuse8:
-                case ChunkType.Vertex_VertexUserFlags:
-                case ChunkType.Vertex_VertexNinjaFlags:
+                case ChunkType.Vertex_VertexUserAttributes:
+                case ChunkType.Vertex_VertexNinjaAttributes:
                 case ChunkType.Vertex_VertexDiffuseSpecular5:
                 case ChunkType.Vertex_VertexDiffuseSpecular4:
                     return 4;
                 case ChunkType.Vertex_VertexNormal:
                     return 6;
                 case ChunkType.Vertex_VertexNormalDiffuse8:
-                case ChunkType.Vertex_VertexNormalUserFlags:
-                case ChunkType.Vertex_VertexNormalNinjaFlags:
+                case ChunkType.Vertex_VertexNormalUserAttributes:
+                case ChunkType.Vertex_VertexNormalNinjaAttributes:
                 case ChunkType.Vertex_VertexNormalDiffuseSpecular5:
                 case ChunkType.Vertex_VertexNormalDiffuseSpecular4:
                     return 7;

@@ -7,10 +7,10 @@ using static SATools.SACommon.ByteConverter;
 namespace SATools.SAModel.ModelData.Buffer
 {
     /// <summary>
-    /// Rendering flags which are checked in the renderer
+    /// Rendering attributes which are checked in the renderer
     /// </summary>
     [Flags]
-    public enum MaterialFlags : byte
+    public enum MaterialAttributes : byte
     {
         /// <summary>
         /// Renders vertex colors instead of normals
@@ -85,9 +85,9 @@ namespace SATools.SAModel.ModelData.Buffer
         public Color Ambient { get; set; }
 
         /// <summary>
-        /// The material flags, directly passable to the shader
+        /// The material attributes, directly passable to the shader
         /// </summary>
-        public MaterialFlags MaterialFlags { get; set; }
+        public MaterialAttributes MaterialAttributes { get; set; }
         #endregion
 
         #region Blending
@@ -264,24 +264,24 @@ namespace SATools.SAModel.ModelData.Buffer
         }
 
         /// <summary>
-        /// Sets flag/s in the material flags
+        /// Set material attribute/s
         /// </summary>
-        /// <param name="flag">The flag/s</param>
-        /// <param name="state">New state for the flag/s</param>
-        public void SetFlag(MaterialFlags flag, bool state)
+        /// <param name="attrib">The attribute/s</param>
+        /// <param name="state">New state for the attribute/s</param>
+        public void SetAttribute(MaterialAttributes attrib, bool state)
         {
             if(state)
-                MaterialFlags |= flag;
+                MaterialAttributes |= attrib;
             else
-                MaterialFlags &= ~flag;
+                MaterialAttributes &= ~attrib;
         }
 
         /// <summary>
-        /// Checks if the flag//s 
+        /// Checks if the materials attribute/s is/are set
         /// </summary>
-        /// <param name="flag">The flag/s to check</param>
+        /// <param name="attrib">The attribute/s to check</param>
         /// <returns></returns>
-        public bool HasFlag(MaterialFlags flag) => MaterialFlags.HasFlag(flag);
+        public bool HasAttribute(MaterialAttributes attrib) => MaterialAttributes.HasFlag(attrib);
 
         /// <summary>
         /// Writes the material to a stream
@@ -310,13 +310,13 @@ namespace SATools.SAModel.ModelData.Buffer
             if(MirrorV)
                 states |= MaterialStates.MirrorV;
 
-            uint flags = (uint)MaterialFlags;
-            flags |= (uint)states << 8;
-            flags |= (uint)SourceBlendMode << 16;
-            flags |= (uint)DestinationBlendmode << 19;
-            flags |= (uint)TextureFiltering << 22;
+            uint attribs = (uint)MaterialAttributes;
+            attribs |= (uint)states << 8;
+            attribs |= (uint)SourceBlendMode << 16;
+            attribs |= (uint)DestinationBlendmode << 19;
+            attribs |= (uint)TextureFiltering << 22;
 
-            writer.WriteUInt32(flags);
+            writer.WriteUInt32(attribs);
 
             writer.WriteUInt32(_gcData);
         }
@@ -337,12 +337,12 @@ namespace SATools.SAModel.ModelData.Buffer
             uint texID = source.ToUInt32(address);
             float mipmapDA = source.ToSingle(address + 4);
 
-            uint flags = source.ToUInt32(address + 8);
-            MaterialFlags mFlags = (MaterialFlags)(flags & (uint)MaterialFlags.Mask);
-            MaterialStates states = (MaterialStates)(flags >> 8 & (uint)MaterialStates.Mask);
-            BlendMode sourceAlpha = (BlendMode)((flags >> 16) & 0x07);
-            BlendMode destAlpha = (BlendMode)((flags >> 19) & 0x07);
-            FilterMode texFilter = (FilterMode)(flags >> 22);
+            uint attribs = source.ToUInt32(address + 8);
+            MaterialAttributes mAttribs = (MaterialAttributes)(attribs & (uint)MaterialAttributes.Mask);
+            MaterialStates states = (MaterialStates)(attribs >> 8 & (uint)MaterialStates.Mask);
+            BlendMode sourceAlpha = (BlendMode)((attribs >> 16) & 0x07);
+            BlendMode destAlpha = (BlendMode)((attribs >> 19) & 0x07);
+            FilterMode texFilter = (FilterMode)(attribs >> 22);
             address += 12;
 
             uint gcData = source.ToUInt32(address);
@@ -359,7 +359,7 @@ namespace SATools.SAModel.ModelData.Buffer
                 SourceBlendMode = sourceAlpha,
                 DestinationBlendmode = destAlpha,
                 TextureFiltering = texFilter,
-                MaterialFlags = mFlags,
+                MaterialAttributes = mAttribs,
                 UseAlpha = states.HasFlag(MaterialStates.UseAlpha),
                 Culling = states.HasFlag(MaterialStates.Culling),
                 ClampU = states.HasFlag(MaterialStates.ClampU),

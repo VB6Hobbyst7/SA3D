@@ -183,30 +183,30 @@ namespace SATools.SAModel.ObjData
         }
 
         /// <summary>
-        /// Various flags summarizing the data inside of the object
+        /// Various attributes summarizing the data inside of the object
         /// </summary>
-        public ObjectFlags Flags
+        public ObjectAttributes Attributes
         {
             get
             {
-                ObjectFlags r = 0;
+                ObjectAttributes r = 0;
 
                 if(Position == Vector3.Zero)
-                    r |= ObjectFlags.NoPosition;
+                    r |= ObjectAttributes.NoPosition;
                 if(Rotation == Vector3.Zero)
-                    r |= ObjectFlags.NoRotation;
+                    r |= ObjectAttributes.NoRotation;
                 if(Scale == Vector3.One)
-                    r |= ObjectFlags.NoScale;
+                    r |= ObjectAttributes.NoScale;
                 if(Attach == null)
-                    r |= ObjectFlags.NoDisplay;
+                    r |= ObjectAttributes.NoDisplay;
                 if(ChildCount == 0)
-                    r |= ObjectFlags.NoChildren;
+                    r |= ObjectAttributes.NoChildren;
                 if(RotateZYX)
-                    r |= ObjectFlags.RotateZYX;
+                    r |= ObjectAttributes.RotateZYX;
                 if(!Animate)
-                    r |= ObjectFlags.NoAnimate;
+                    r |= ObjectAttributes.NoAnimate;
                 if(!Morph)
-                    r |= ObjectFlags.NoMorph;
+                    r |= ObjectAttributes.NoMorph;
 
                 return r;
             }
@@ -264,11 +264,11 @@ namespace SATools.SAModel.ObjData
         {
             string name = labels.ContainsKey(address) ? labels[address] : "object_" + address.ToString("X8");
 
-            // reading object flags
-            ObjectFlags flags = (ObjectFlags)source.ToInt32(address);
-            bool rotateZYX = flags.HasFlag(ObjectFlags.RotateZYX);
-            bool animate = !flags.HasFlag(ObjectFlags.NoAnimate);
-            bool morph = !flags.HasFlag(ObjectFlags.NoMorph);
+            // reading object attributes
+            ObjectAttributes attribs = (ObjectAttributes)source.ToInt32(address);
+            bool rotateZYX = attribs.HasFlag(ObjectAttributes.RotateZYX);
+            bool animate = !attribs.HasFlag(ObjectAttributes.NoAnimate);
+            bool morph = !attribs.HasFlag(ObjectAttributes.NoMorph);
 
             // reading the attach
             Attach atc = null;
@@ -329,7 +329,7 @@ namespace SATools.SAModel.ObjData
         {
             uint address = writer.Position + imageBase;
 
-            writer.WriteUInt32((uint)Flags);
+            writer.WriteUInt32((uint)Attributes);
             writer.WriteUInt32(Attach == null ? 0 : labels.ContainsKey(Attach.Name) ? labels[Attach.Name] : throw new NullReferenceException($"Attach \"{Attach.Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
 
             Position.Write(writer, IOType.Float);
@@ -404,7 +404,7 @@ namespace SATools.SAModel.ObjData
             writer.WriteLine("START");
 
             writer.Write("EvalFlags \t( ");
-            writer.Write(((NJD_EVAL)Flags).ToString().Replace(", ", " | "));
+            writer.Write(((NJD_EVAL)Attributes).ToString().Replace(", ", " | "));
             writer.WriteLine("),");
 
             writer.Write("Model \t\t");

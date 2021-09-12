@@ -124,7 +124,7 @@ namespace SATools.SAModel.ObjData.Animation
         {
             string name = labels?.ContainsKey(address) == true ? labels[address] : "animation_" + address.ToString("X8");
             uint Frames = source.ToUInt32(address + 4);
-            AnimFlags animtype = (AnimFlags)source.ToUInt16(address + 8);
+            AnimationAttributes animtype = (AnimationAttributes)source.ToUInt16(address + 8);
 
             ushort tmp = source.ToUInt16(address + 10);
             InterpolationMode mode = (InterpolationMode)((tmp >> 6) & 0x3);
@@ -220,7 +220,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="labels">C struct label</param>
         public uint Write(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
-            AnimFlags type = 0;
+            AnimationAttributes type = 0;
             foreach(Keyframes kf in Keyframes.Values)
                 type |= kf.Type;
 

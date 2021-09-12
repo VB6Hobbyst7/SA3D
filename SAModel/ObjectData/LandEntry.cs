@@ -92,7 +92,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Polygon information (visual and/or collision information)
         /// </summary>
-        public SurfaceFlags SurfaceFlags { get; set; }
+        public SurfaceAttributes SurfaceAttributes { get; set; }
 
         public bool RotateZYX
         {
@@ -114,10 +114,6 @@ namespace SATools.SAModel.ObjData
         /// Creates a new landentry object from and attach and world space information
         /// </summary>
         /// <param name="attach">Mesh info to use</param>
-        /// <param name="position">World space position</param>
-        /// <param name="rotation">World space rotation</param>
-        /// <param name="scale">World space scale</param>
-        /// <param name="flags">Surface flags</param>
         public LandEntry(Attach attach)
         {
             if(attach == null)
@@ -130,10 +126,11 @@ namespace SATools.SAModel.ObjData
             ModelBounds = attach.MeshBounds;
         }
 
-        private LandEntry(NJObject model, SurfaceFlags flags, uint blockbit, uint unknown, Bounds modelBounds)
+
+        private LandEntry(NJObject model, SurfaceAttributes attribs, uint blockbit, uint unknown, Bounds modelBounds)
         {
             _model = model;
-            SurfaceFlags = flags;
+            SurfaceAttributes = attribs;
             BlockBit = blockbit;
             Unknown = unknown;
             ModelBounds = modelBounds;
@@ -164,18 +161,18 @@ namespace SATools.SAModel.ObjData
             uint blockBit = source.ToUInt32(address + 4); // lets just assume that sa2 also uses blockbits, not like its used anyway
             uint unknown = 0;
 
-            SurfaceFlags flags;
+            SurfaceAttributes attribs;
             if(ltblFormat >= LandtableFormat.SA2)
             {
                 unknown = source.ToUInt32(address + 8);
-                flags = ((SA2SurfaceFlags)source.ToUInt32(address + 12)).ToUniversal();
+                attribs = ((SA2SurfaceAttributes)source.ToUInt32(address + 12)).ToUniversal();
             }
             else
             {
-                flags = ((SA1SurfaceFlags)source.ToUInt32(address + 8)).ToUniversal();
+                attribs = ((SA1SurfaceAttributes)source.ToUInt32(address + 8)).ToUniversal();
             }
 
-            return new(model, flags, blockBit, unknown, bounds);
+            return new(model, attribs, blockBit, unknown, bounds);
         }
 
         /// <summary>
@@ -213,16 +210,16 @@ namespace SATools.SAModel.ObjData
             if(format == LandtableFormat.Buffer)
             {
                 writer.WriteUInt32(Unknown);
-                writer.WriteUInt32((uint)SurfaceFlags);
+                writer.WriteUInt32((uint)SurfaceAttributes);
             }
             else if(format >= LandtableFormat.SA2)
             {
                 writer.WriteUInt32(Unknown);
-                writer.WriteUInt32((uint)SurfaceFlags.ToSA2());
+                writer.WriteUInt32((uint)SurfaceAttributes.ToSA2());
             }
             else
             {
-                writer.WriteUInt32((uint)SurfaceFlags.ToSA1());
+                writer.WriteUInt32((uint)SurfaceAttributes.ToSA1());
             }
         }
 
@@ -232,6 +229,6 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public LandEntry ShallowCopy() =>
             // this works because the model doesn't (shouldn't) have a parent or children anyway
-            new(_model.Duplicate(), SurfaceFlags, BlockBit, Unknown, ModelBounds);
+            new(_model.Duplicate(), SurfaceAttributes, BlockBit, Unknown, ModelBounds);
     }
 }

@@ -123,34 +123,34 @@ namespace SATools.SAModel.ModelData.GC
             if(source == null || source.Length == 0)
                 source = TranslucentMeshes;
 
-            indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributeFlags);
+            indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
 
             if(positionMap != null)
             {
                 Replace(positions, new(distinctPositions, false));
                 if(distinctPositions.Length <= 256)
-                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Position16BitIndex;
+                    indexParam.IndexAttributes &= ~IndexAttributes.Position16BitIndex;
             }
 
             if(normalMap != null)
             {
                 Replace(normals, new(distinctNormals, true));
                 if(distinctNormals.Length <= 256)
-                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Normal16BitIndex;
+                    indexParam.IndexAttributes &= ~IndexAttributes.Normal16BitIndex;
             }
 
             if(uvMap != null)
             {
                 Replace(uvs, new(distinctUvs));
                 if(distinctUvs.Length <= 256)
-                    indexParam.IndexAttributes &= ~IndexAttributeFlags.UV16BitIndex;
+                    indexParam.IndexAttributes &= ~IndexAttributes.UV16BitIndex;
             }
 
             if(colorMap != null)
             {
                 Replace(colors, new(distinctcolors));
                 if(distinctcolors.Length <= 256)
-                    indexParam.IndexAttributes &= ~IndexAttributeFlags.Color16BitIndex;
+                    indexParam.IndexAttributes &= ~IndexAttributes.Color16BitIndex;
             }
         }
 
@@ -259,22 +259,22 @@ namespace SATools.SAModel.ModelData.GC
                 vertexSet = VertexSet.Read(source, vertexAddress, imageBase);
             }
 
-            IndexAttributeFlags indexFlags = IndexAttributeFlags.HasPosition;
+            IndexAttributes indexAttribs = IndexAttributes.HasPosition;
 
             List<Mesh> opaqueMeshes = new();
             for(int i = 0; i < opaqueCount; i++)
             {
-                Mesh mesh = Mesh.Read(source, opaqueAddress, imageBase, ref indexFlags);
+                Mesh mesh = Mesh.Read(source, opaqueAddress, imageBase, ref indexAttribs);
                 opaqueMeshes.Add(mesh);
                 opaqueAddress += 16;
             }
 
-            indexFlags = IndexAttributeFlags.HasPosition;
+            indexAttribs = IndexAttributes.HasPosition;
 
             List<Mesh> translucentMeshes = new();
             for(int i = 0; i < translucentCount; i++)
             {
-                Mesh mesh = Mesh.Read(source, translucentAddress, imageBase, ref indexFlags);
+                Mesh mesh = Mesh.Read(source, translucentAddress, imageBase, ref indexAttribs);
                 translucentMeshes.Add(mesh);
                 translucentAddress += 16;
             }
@@ -313,20 +313,20 @@ namespace SATools.SAModel.ModelData.GC
             writer.Write(nullVtx);
 
             // writing geometry data
-            IndexAttributeFlags indexFlags = IndexAttributeFlags.HasPosition;
+            IndexAttributes indexAttribs = IndexAttributes.HasPosition;
             foreach(Mesh m in OpaqueMeshes)
             {
-                IndexAttributeFlags? t = m.IndexFlags;
+                IndexAttributes? t = m.IndexAttributes;
                 if(t.HasValue)
-                    indexFlags = t.Value;
-                m.WriteData(writer, indexFlags);
+                    indexAttribs = t.Value;
+                m.WriteData(writer, indexAttribs);
             }
             foreach(Mesh m in TranslucentMeshes)
             {
-                IndexAttributeFlags? t = m.IndexFlags;
+                IndexAttributes? t = m.IndexAttributes;
                 if(t.HasValue)
-                    indexFlags = t.Value;
-                m.WriteData(writer, indexFlags);
+                    indexAttribs = t.Value;
+                m.WriteData(writer, indexAttribs);
             }
 
             // writing geometry properties

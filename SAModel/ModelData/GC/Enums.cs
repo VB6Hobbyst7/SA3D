@@ -238,7 +238,7 @@ namespace SATools.SAModel.ModelData.GC
     /// Holds information about the vertex data thats stored in the geometry
     /// </summary>
     [Flags]
-    public enum IndexAttributeFlags : ushort
+    public enum IndexAttributes : ushort
     {
         /// <summary>
         /// Unused
