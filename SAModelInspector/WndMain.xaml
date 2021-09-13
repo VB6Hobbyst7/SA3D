@@ -1,0 +1,22 @@
+﻿<Window x:Class="SAModelInspector.WndMain"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SAModelInspector"
+        xmlns:sawpf="clr-namespace:SAModel.WPF.Inspector.XAML;assembly=SAModel.WPF"
+        mc:Ignorable="d"
+        Title="SA Model Inspector" Height="600" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Menu Background="Transparent" Margin="5,2,5,2">
+            <MenuItem Header="Open File" Click="OpenFile"/>
+        </Menu>
+        
+        <sawpf:UcInspector Grid.Row="1" x:Name="Inspector" x:FieldModifier="internal"/>
+    </Grid>
+</Window>

@@ -24,12 +24,15 @@ namespace SATools.SAModel.ObjData
         /// Name of the Landentry
         /// </summary>
         public string Name
-            => _model.Name;
+        {
+            get => _model.Name;
+            set => _model.Name = value;
+        }
 
         /// <summary>
         /// World space bounds
         /// </summary>
-        public Bounds ModelBounds { get; private set; }
+        public Bounds ModelBounds { get; set; }
 
         /// <summary>
         /// The mesh used by the geometry
@@ -230,5 +233,8 @@ namespace SATools.SAModel.ObjData
         public LandEntry ShallowCopy() =>
             // this works because the model doesn't (shouldn't) have a parent or children anyway
             new(_model.Duplicate(), SurfaceAttributes, BlockBit, Unknown, ModelBounds);
+
+        public override string ToString() 
+            => $"LandEntry {Name} : {Attach} ";
     }
 }

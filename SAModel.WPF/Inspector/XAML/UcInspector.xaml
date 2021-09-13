@@ -1,0 +1,34 @@
+<UserControl x:Class="SAModel.WPF.Inspector.XAML.UcInspector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
+             xmlns:vm="clr-namespace:SAModel.WPF.Inspector.Viewmodel"
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="600"
+             d:DataContext="{x:Static local:DesignDataFactory.Inspector}">
+    
+    <UserControl.DataContext>
+        <vm:VmInspector/>
+    </UserControl.DataContext>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListBox ItemsSource="{Binding History}" SelectedItem="{Binding ActiveHistoryElement}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:VmHistoryElement}">
+                    <Grid MinHeight="20">
+                        <TextBlock Text="{Binding HistoryName}" TextAlignment="Left" VerticalAlignment="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <local:UcInspectorTable Grid.Column="1" DataContext="{Binding ActiveIVM}"/>
+    </Grid>
+</UserControl>

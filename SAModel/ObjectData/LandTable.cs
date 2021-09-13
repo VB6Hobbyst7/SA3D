@@ -647,5 +647,8 @@ namespace SATools.SAModel.ObjData
             labels.AddLabel(Name, address);
             return address;
         }
+
+        public override string ToString()
+            => $"{Format} LandTable";
     }
 }
