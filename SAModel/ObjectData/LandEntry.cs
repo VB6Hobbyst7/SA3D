@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Reloaded.Memory.Streams.Writers;
 using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
@@ -32,7 +31,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// World space bounds
         /// </summary>
-        public Bounds ModelBounds { get; set; }
+        public Bounds ModelBounds { get; private set; }
 
         /// <summary>
         /// The mesh used by the geometry
@@ -57,8 +56,8 @@ namespace SATools.SAModel.ObjData
             get => _model.Position;
             set
             {
-                ModelBounds = new Bounds(Attach.MeshBounds.Position + value, ModelBounds.Radius);
                 _model.Position = value;
+                UpdateBounds();
             }
         }
 
@@ -68,7 +67,11 @@ namespace SATools.SAModel.ObjData
         public Vector3 Rotation
         {
             get => _model.Rotation;
-            set => _model.Rotation = value;
+            set
+            {
+                _model.Rotation = value;
+                UpdateBounds();
+            }
         }
 
         /// <summary>
@@ -79,17 +82,18 @@ namespace SATools.SAModel.ObjData
             get => _model.Scale;
             set
             {
-                ModelBounds = new Bounds(ModelBounds.Position, Attach.MeshBounds.Radius * value.GreatestValue());
                 _model.Scale = value;
+                UpdateBounds();
             }
         }
 
         public Quaternion QuaternionRotation
         {
+            get => _model.QuaternionRotation;
             set => _model.QuaternionRotation = value;
         }
 
-        public Matrix4x4 LocalMatrix
+        public Matrix4x4 WorldMatrix
             => _model.LocalMatrix;
 
         /// <summary>
@@ -129,7 +133,6 @@ namespace SATools.SAModel.ObjData
             ModelBounds = attach.MeshBounds;
         }
 
-
         private LandEntry(NJObject model, SurfaceAttributes attribs, uint blockbit, uint unknown, Bounds modelBounds)
         {
             _model = model;
@@ -138,6 +141,25 @@ namespace SATools.SAModel.ObjData
             Unknown = unknown;
             ModelBounds = modelBounds;
         }
+
+        /// <summary>
+        /// Copies the Attach-bounds and applies the landentries transform matrix to them
+        /// </summary>
+        public void UpdateBounds()
+        {
+            Vector3 position = Vector3.Transform(Attach.MeshBounds.Position, WorldMatrix);
+            float radius = Attach.MeshBounds.Radius * Scale.GreatestValue();
+
+            ModelBounds = new(position, radius);
+        }
+
+        /// <summary>
+        /// Replaces the bounds with a manually determined value <br/>
+        /// !!! NOTE !!! The bounds will get automatically recalculated once any of its transforms change!
+        /// </summary>
+        /// <param name="bounds"></param>
+        public void UpdateBounds(Bounds bounds) 
+            => ModelBounds = bounds;
 
         /// <summary>
         /// Reads a landentry from a byte array

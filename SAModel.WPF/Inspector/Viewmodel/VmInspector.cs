@@ -49,24 +49,23 @@ namespace SAModel.WPF.Inspector.Viewmodel
             ActiveHistoryElement = History[0];
         }
 
-        public void LoadSubObject(object obj, string name)
+        public void LoadSubObject(IInspectorInfo info)
         {
-            Type type = obj.GetType();
+            object Value = info.Value;
 
             object data;
-            // Check if the object implements IList
-            if(type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
+            if(info.IsCollection)
             {
-                if(!_listViewModels.TryGetValue(obj, out data))
+                if(!_listViewModels.TryGetValue(Value, out data))
                 {
-                    Type[] typeArgs = type.GetGenericArguments();
+                    Type[] typeArgs = info.ValueType.GetGenericArguments();
                     Type listType = typeof(ListInspectorViewModel<>).MakeGenericType(typeArgs);
-                    data = Activator.CreateInstance(listType, obj, false);
-                    _listViewModels.Add(obj, data);
+                    data = Activator.CreateInstance(listType, info);
+                    _listViewModels.Add(Value, data);
                 }
             }
             else
-                data = InspectorViewModel.GetViewModel(obj);
+                data = InspectorViewModel.GetViewModel(Value);
 
             int index = History.IndexOf(ActiveHistoryElement);
             if(index < History.Count - 1)
@@ -75,7 +74,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
                     History.RemoveAt(i);
             }
 
-            VmHistoryElement newElement = new(name, data);
+            VmHistoryElement newElement = new(info.HistoryName, data);
             History.Add(newElement);
             ActiveHistoryElement = newElement;
         }

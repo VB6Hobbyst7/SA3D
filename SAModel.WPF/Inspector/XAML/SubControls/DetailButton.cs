@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SAModel.WPF.Inspector.XAML.SubControls
 {
     internal class DetailButton : Button
     {
@@ -30,19 +30,8 @@ namespace SAModel.WPF.Inspector.XAML
 
             UcInspector inspector = (UcInspector)parent;
 
-            string name;
-            if(DataContext is InspectorElement ie)
-            {
-                name = ie.Property.Name;
-            }
-            else
-            {
-                //if it is not an inspector element, then its a listInspectorElement
-                int index = (int)DataContext.GetType().GetProperty("ValueIndex").GetValue(DataContext);
-                name = $"{inspector.CurrentHistoryName}[{index}]";
-            }
-
-            inspector.LoadSubObject(DetailObject, name);
+            IInspectorInfo element = (IInspectorInfo)DataContext;
+            inspector.LoadSubObject(element);
         }
     }
 }

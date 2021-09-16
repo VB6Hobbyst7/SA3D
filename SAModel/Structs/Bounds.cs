@@ -42,6 +42,9 @@ namespace SATools.SAModel.Structs
             }
         }
 
+        /// <summary>
+        /// Matrix to transform a spherical mesh of diameter 1 to represent the bounds
+        /// </summary>
         public Matrix4x4 Matrix { get; private set; }
 
         /// <summary>

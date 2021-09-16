@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SAModel.WPF.Inspector.Viewmodel
 {
     internal class InvalidInspectorTypeException : Exception
     {
+        /// <summary>
+        /// The invalid type
+        /// </summary>
+        public Type Type { get; }
 
+        public InvalidInspectorTypeException(Type type) : base($"No Inspector viewmodel for type \"{type}\" found")
+        {
+            Type = type;
+        }
     }
 }

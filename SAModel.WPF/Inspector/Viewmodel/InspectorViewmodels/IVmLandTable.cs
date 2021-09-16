@@ -9,7 +9,11 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
 {
     internal class IVmLandTable : InspectorViewModel
     {
-        private LandTable LandTable => (LandTable)_source;
+        protected override Type ViewmodelType
+            => typeof(LandTable);
+
+        private LandTable LandTable
+            => (LandTable)_source;
 
         [Tooltip("C label of the LandTable")]
         public string Name
@@ -19,7 +23,6 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
         }
 
         [Tooltip("Data format of the landtable")]
-        [Readonly]
         public LandtableFormat Format
             => LandTable.Format;
 
@@ -47,18 +50,15 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
         }
 
         [Tooltip("Geometry collection")]
-        [Readonly]
         public List<LandEntry> Geometry
             => LandTable.Geometry;
 
         [DisplayName("Visual Geometry")]
         [Tooltip("Geometry with rendering info")]
-        [Readonly]
         public ReadOnlyCollection<LandEntry> VisualGeometry { get; }
 
         [DisplayName("Collision Geometry")]
         [Tooltip("Geometry with collision info")]
-        [Readonly]
         public ReadOnlyCollection<LandEntry> CollisionGeometry { get; }
 
         [DisplayName("Geometry Animation Name")]
@@ -71,7 +71,6 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
 
         [DisplayName("Geometry Animations")]
         [Tooltip("Geometry Animation collection")]
-        [Readonly]
         public List<LandEntryMotion> GeometryAnimations
             => LandTable.GeometryAnimations;
 
@@ -92,7 +91,9 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
             set => LandTable.TexListPtr = value;
         }
 
-        public IVmLandTable(LandTable landTable) : base(landTable) 
+        public IVmLandTable() : base() { }
+
+        public IVmLandTable(LandTable landTable) : base(landTable)
         {
             VisualGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible)).ToList().AsReadOnly();
             CollisionGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.IsCollision()).ToList().AsReadOnly();

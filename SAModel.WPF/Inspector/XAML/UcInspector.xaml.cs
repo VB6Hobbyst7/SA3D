@@ -1,5 +1,6 @@
 using SAModel.WPF.Inspector.Viewmodel;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace SAModel.WPF.Inspector.XAML
@@ -10,11 +11,6 @@ namespace SAModel.WPF.Inspector.XAML
     public partial class UcInspector : UserControl
     {
         /// <summary>
-        /// Stores already loaded user controls, so that those don't need to be reloaded
-        /// </summary>
-        private readonly Dictionary<object, Control> _tableCache;
-
-        /// <summary>
         /// Access to the viewmodel of the inspector
         /// </summary>
         internal VmInspector Inspector
@@ -23,11 +19,8 @@ namespace SAModel.WPF.Inspector.XAML
         public string CurrentHistoryName
             => Inspector.ActiveHistoryElement.HistoryName;
 
-        public UcInspector()
-        {
-            _tableCache = new();
-            InitializeComponent();
-        }
+        public UcInspector() 
+            => InitializeComponent();
 
         /// <summary>
         /// Load an SAModel struct into the inspector
@@ -35,13 +28,26 @@ namespace SAModel.WPF.Inspector.XAML
         /// <param name="obj"></param>
         public void LoadNewObject(object obj)
         {
-            _tableCache.Clear();
-            Inspector.LoadNewObject(obj);
+            try
+            {
+                Inspector.LoadNewObject(obj);
+            }
+            catch(InvalidInspectorTypeException e)
+            {
+                _ = MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        internal void LoadSubObject(object obj, string name)
+        internal void LoadSubObject(IInspectorInfo info)
         {
-            Inspector.LoadSubObject(obj, name);
+            try
+            {
+                Inspector.LoadSubObject(info);
+            }
+            catch(InvalidInspectorTypeException e)
+            {
+                _ = MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

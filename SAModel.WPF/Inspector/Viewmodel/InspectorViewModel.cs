@@ -2,65 +2,37 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 
 namespace SAModel.WPF.Inspector.Viewmodel
 {
-    public enum HexadecimalMode
-    {
-        /// <summary>
-        /// Don't display the number as a hexadecimal
-        /// </summary>
-        NoHex,
-
-        /// <summary>
-        /// Display it as both
-        /// </summary>
-        HybridHex,
-
-        /// <summary>
-        /// Only display as hexadecimal
-        /// </summary>
-        OnlyHex
-    }
 
     /// <summary>
     /// A single inspector element
     /// </summary>
-    public struct InspectorElement
+    public struct InspectorElement : IInspectorInfo
     {
         public object Source { get; }
+
+        public PropertyInfo Property { get; }
+
+        #region Interface properties
+        public bool SelectBackground
+            => !ValueType.IsEnum;
+
+        public string BindingPath
+            => $"Source.{Property.Name}";
 
         public object Value
             => Property.GetValue(Source);
 
-        /// <summary>
-        /// Property name
-        /// </summary>
-        public PropertyInfo Property { get; }
+        public Type ValueType
+            => Value.GetType();
 
-        public string BindingPath 
-            => Index > -1 ? "Value" : "Source." + Property.Name;
-
-        public int Index { get; set; }
-
-        /// <summary>
-        /// The type of the property
-        /// </summary>
-        public Type PropertyType
-            => Index > -1 ? Value.GetType() : Property.PropertyType;
-
-        /// <summary>
-        /// Whether the property points at an Array
-        /// </summary>
         public bool IsCollection
-            => PropertyType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+            => ValueType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
 
-        /// <summary>
-        /// Display name
-        /// </summary>
         public string DisplayName { get; }
 
         public string DetailName
@@ -73,47 +45,36 @@ namespace SAModel.WPF.Inspector.Viewmodel
                 if(IsCollection)
                 {
                     IList collection = (IList)Value;
-                    Type[] elementType = PropertyType.GetGenericArguments();
+                    Type[] elementType = ValueType.GetGenericArguments();
                     return $"{elementType[0].Name}[{collection.Count}]";
                 }
 
                 string conv = Value.ToString();
-                string type = PropertyType.ToString();
+                string type = ValueType.ToString();
 
-                return conv.Equals(type) ? PropertyType.Name : conv;
+                return conv.Equals(type) ? ValueType.Name : conv;
             }
         }
 
-        /// <summary>
-        /// Property Tooltip
-        /// </summary>
         public string Tooltip { get; }
 
-        /// <summary>
-        /// Whether the property is readonly
-        /// </summary>
-        public bool IsReadonly { get; }
-
-        /// <summary>
-        /// Whether, upon selection, the background should change
-        /// </summary>
-        public bool SelectBackground
-            => !PropertyType.IsEnum;
-
-        /// <summary>
-        /// Wheth
-        /// </summary>
         public HexadecimalMode Hexadecimal { get; }
 
-        public InspectorElement(object source, PropertyInfo property, string name, string tooltip, bool isReadonly, HexadecimalMode hexadecimal, int index = -1)
+        public string HistoryName
+            => Property.Name;
+
+        public bool IsReadOnly { get; }
+
+        #endregion
+
+        public InspectorElement(object source, PropertyInfo property, string name, string tooltip, bool propertyReadonly, HexadecimalMode hexadecimal)
         {
             Source = source;
             Property = property;
             DisplayName = name;
             Tooltip = tooltip;
-            IsReadonly = isReadonly;
+            IsReadOnly = propertyReadonly;
             Hexadecimal = hexadecimal;
-            Index = index;
         }
     }
 
@@ -123,6 +84,8 @@ namespace SAModel.WPF.Inspector.Viewmodel
     /// </summary>
     internal abstract class InspectorViewModel : BaseViewModel
     {
+        #region protected Inspector Viewmodel Attributes
+
         [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
         protected class IgnoreAttribute : Attribute { }
 
@@ -145,9 +108,6 @@ namespace SAModel.WPF.Inspector.Viewmodel
         }
 
         [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-        protected class ReadonlyAttribute : Attribute { }
-
-        [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
         protected class HexadecimalAttribute : Attribute
         {
             public bool Hybrid { get; }
@@ -159,15 +119,21 @@ namespace SAModel.WPF.Inspector.Viewmodel
                 => Hybrid = hybrid;
         }
 
-        private static readonly Type[] _inspectorTypes;
+        #endregion
+
+        private static readonly Dictionary<Type, Type> _viewmodelTypes;
 
         [Ignore]
         public List<InspectorElement> InspectorElements { get; }
+
+        protected abstract Type ViewmodelType { get; }
 
         /// <summary>
         /// Data source
         /// </summary>
         protected readonly object _source;
+
+        protected InspectorViewModel() { }
 
         protected InspectorViewModel(object source)
         {
@@ -176,20 +142,36 @@ namespace SAModel.WPF.Inspector.Viewmodel
         }
 
         static InspectorViewModel()
-            => _inspectorTypes = typeof(InspectorViewModel).Assembly.GetTypes().Where(x => !x.IsAbstract && x.IsSubclassOf(typeof(InspectorViewModel))).ToArray();
-
-        public static InspectorViewModel GetViewModel(object source)
         {
-            foreach(Type t in _inspectorTypes)
+            _viewmodelTypes = new Dictionary<Type, Type>();
+            foreach(Type t in typeof(InspectorViewModel).Assembly.GetTypes().Where(x => !x.IsAbstract && x.IsSubclassOf(typeof(InspectorViewModel))))
             {
-                if(t.Name == "IVm" + source.GetType().Name)
-                    return (InspectorViewModel)Activator.CreateInstance(t, source);
+                InspectorViewModel ivm = (InspectorViewModel)Activator.CreateInstance(t);
+                _viewmodelTypes.Add(ivm.ViewmodelType, t);
             }
-
-            return null;
         }
 
-        protected virtual List<InspectorElement> GetInspectorElements()
+        public static bool CheckViewmodelExists(object source) 
+            => _viewmodelTypes.ContainsKey(source.GetType());
+
+        /// <summary>
+        /// Creates a corresponding viewmodel for an object
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static InspectorViewModel GetViewModel(object source)
+        {
+            if(!_viewmodelTypes.TryGetValue(source.GetType(), out Type ivmType))
+                throw new InvalidInspectorTypeException(source.GetType());
+
+            return (InspectorViewModel)Activator.CreateInstance(ivmType, source);
+        }
+
+        /// <summary>
+        /// Generates a list of inspector info
+        /// </summary>
+        /// <returns></returns>
+        private List<InspectorElement> GetInspectorElements()
         {
             List<InspectorElement> result = new();
 
@@ -203,11 +185,10 @@ namespace SAModel.WPF.Inspector.Viewmodel
 
                 string displayName = p.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? p.Name;
                 string tooltip = p.GetCustomAttribute<TooltipAttribute>()?.Tooltip;
-                bool isReadonly = p.GetCustomAttribute<ReadonlyAttribute>() != null;
                 bool? hybridHex = p.GetCustomAttribute<HexadecimalAttribute>()?.Hybrid;
                 HexadecimalMode hexMode = hybridHex.HasValue ? (hybridHex == true ? HexadecimalMode.HybridHex : HexadecimalMode.OnlyHex) : HexadecimalMode.NoHex;
 
-                result.Add(new(this, p, displayName, tooltip, isReadonly, hexMode));
+                result.Add(new(this, p, displayName, tooltip, !p.CanWrite, hexMode));
             }
 
             return result;

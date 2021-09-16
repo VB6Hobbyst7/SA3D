@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SACommon;
 using SATools.SAModel.ModelData.Buffer;
@@ -88,6 +89,7 @@ namespace SATools.SAModel.ModelData
         {
             MeshData = meshdata;
             Name = "attach_" + GenerateIdentifier();
+            RecalculateBounds();
         }
 
         /// <summary>
@@ -99,7 +101,8 @@ namespace SATools.SAModel.ModelData
         /// <summary>
         /// Format of the attach
         /// </summary>
-        public virtual AttachFormat Format => AttachFormat.Buffer;
+        public virtual AttachFormat Format
+            => AttachFormat.Buffer;
 
         /// <summary>
         /// Reads an attach from a file
@@ -236,7 +239,10 @@ namespace SATools.SAModel.ModelData
         }
 
         public virtual void RecalculateBounds()
-            => throw new InvalidOperationException("");
+        {
+            Vector3[] points = MeshData.SelectMany(x => x.Vertices.Select(y => y.Position)).ToArray();
+            MeshBounds = Bounds.FromPoints(points);
+        }
 
         object ICloneable.Clone()
             => Clone();

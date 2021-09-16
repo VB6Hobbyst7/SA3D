@@ -167,7 +167,7 @@ namespace SATools.SAModel.Graphics
                 List<RenderMatrices> matrices = new();
                 foreach(LandEntry le in t.Value)
                 {
-                    Matrix4 world = le.LocalMatrix;
+                    Matrix4 world = le.WorldMatrix;
                     RenderMatrices rm = new(world, world * camera.ViewMatrix * camera.ProjectionMatrix);
                     matrices.Add(rm);
                 }

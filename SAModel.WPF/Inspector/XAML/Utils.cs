@@ -19,41 +19,28 @@ namespace SAModel.WPF.Inspector.XAML
             if(item == null)
                 return (DataTemplate)_templates["/"];
 
-            HexadecimalMode hexMode = default;
-            Type valueType;
+            IInspectorInfo info = (IInspectorInfo)item;
 
-            if(item is InspectorElement ie)
-            {
-                valueType = ie.PropertyType;
-                hexMode = ie.Hexadecimal;
-            }
-            else
-            {
-                valueType = item.GetType().GetGenericArguments()[0];
-            }
-
-
-            Type type = valueType;
-            if( !_templates.Contains(type.Name)
-                && ((type.IsClass && type != typeof(string)) 
+            Type type = info.ValueType;
+            if(!_templates.Contains(type.Name)
+                && ((type.IsClass && type != typeof(string))
                     || (type.IsValueType && !type.IsEnum && !type.IsPrimitive)))
             {
                 return (DataTemplate)_templates["OpenButton"];
             }
 
             string typeName = type.Name;
-            if(hexMode != HexadecimalMode.NoHex)
+            if(info.Hexadecimal != HexadecimalMode.NoHex)
             {
                 FrameworkElement fe = (FrameworkElement)container;
                 if(fe.Name == "Hex")
                     typeName = "Hex:" + typeName;
                 else if(fe.Name != "NoHex")
-                    typeName = hexMode.ToString();
+                    typeName = info.Hexadecimal.ToString();
             }
 
             return (DataTemplate)_templates[typeName];
         }
-
     }
 
     internal class InspectorTypeTemplateSelector : DataTemplateSelector
@@ -98,21 +85,11 @@ namespace SAModel.WPF.Inspector.XAML
             }
 
             Binding binding = new();
-            object dataContext = ((FrameworkElement)d).DataContext;
+            IInspectorInfo element = (IInspectorInfo)((FrameworkElement)d).DataContext;
 
-            if(dataContext is InspectorElement element)
-            {
-                binding.Path = new(element.BindingPath);
-                if(element.IsReadonly)
-                    binding.Mode = BindingMode.OneWay;
-                else
-                    binding.Mode = BindingMode.TwoWay;
-            }
-            else
-            {
-                binding.Path = new("Value");
-            }
-
+            binding.Path = new(element.BindingPath);
+            binding.Mode = element.IsReadOnly ? BindingMode.OneWay : BindingMode.TwoWay;
+            binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 
             BindingOperations.SetBinding(d, dp, binding);
         }

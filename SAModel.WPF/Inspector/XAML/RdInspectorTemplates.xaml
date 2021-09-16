@@ -1,107 +1,128 @@
 ﻿<ResourceDictionary 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
     xmlns:objEnums="clr-namespace:SATools.SAModel.ObjData;assembly=SAModel"
     xmlns:num="http://gu.se/NumericInput"
-    xmlns:vm="clr-namespace:SAModel.WPF.Inspector.Viewmodel">
-    
-    <DataTemplate x:Key="/" DataType="{x:Type vm:InspectorElement}"/>
+    xmlns:sub="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
+    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML">
 
-    <DataTemplate x:Key="OpenButton" DataType="{x:Type vm:InspectorElement}">
-        <local:DetailButton Content="{Binding DetailName}" local:InspectorBinding.PropName="DetailObject">
-            <local:DetailButton.Style>
-                <Style TargetType="{x:Type local:DetailButton}">
+    <DataTemplate x:Key="/" />
+
+    <DataTemplate x:Key="OpenButton" >
+        <sub:DetailButton Content="{Binding DetailName}" local:InspectorBinding.PropName="DetailObject">
+            <sub:DetailButton.Style>
+                <Style TargetType="{x:Type sub:DetailButton}">
                     <Style.Triggers>
                         <Trigger Property="DetailObject" Value="{x:Null}">
                             <Setter Property="IsEnabled" Value="False"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
-            </local:DetailButton.Style>
-        </local:DetailButton>
+            </sub:DetailButton.Style>
+        </sub:DetailButton>
     </DataTemplate>
-    
-    <DataTemplate x:Key="String" DataType="{x:Type vm:InspectorElement}">
+
+    <DataTemplate x:Key="String" >
         <TextBox BorderThickness="0" Padding="2" local:InspectorBinding.PropName="Text"
-                 IsReadOnly="{Binding IsReadonly}" ToolTip="{Binding Tooltip}"
+                 IsReadOnly="{Binding IsReadOnly}" ToolTip="{Binding Tooltip}"
                  Background="Transparent"/>
     </DataTemplate>
 
+
+
     <!--#region Number templates-->
-    
-    <Style x:Key="NumberStyle" 
+
+    <Style x:Key="BaseNumberStyle" 
            TargetType="{x:Type num:BaseBox}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="2"/>
-        <Setter Property="IsReadOnly" Value="{Binding IsReadonly}"/>
         <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
         <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <DataTemplate x:Key="Vector2">
+        <sub:UcVector2 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Vector3">
+        <sub:UcVector3 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Vector4">
+        <sub:UcVector4 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Quaternion">
+        <sub:UcQuaternion local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Matrix4x4">
+        <sub:UcMatrixDisplay local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+    
+    <Style x:Key="NumberStyle" 
+           TargetType="{x:Type num:BaseBox}"
+           BasedOn="{StaticResource BaseNumberStyle}">
+        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
         <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
     </Style>
-    
-    <DataTemplate x:Key="Int64" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:LongBox ToolTip="Signed 64 bit integer ( Long )"
+
+    <DataTemplate x:Key="Int64">
+        <sub:LongBox ToolTip="Signed 64 bit integer ( Long )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
     <DataTemplate x:Key="UInt64" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
+                  >
+        <sub:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Int32" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Int32">
         <num:IntBox ToolTip="Signed 32 bit integer ( Int )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="UInt32" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
+    <DataTemplate x:Key="UInt32">
+        <sub:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Int16" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Int16">
         <num:ShortBox ToolTip="Signed 16 bit integer ( Short )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="UInt16" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
+    <DataTemplate x:Key="UInt16">
+        <sub:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Double" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Double">
         <num:DoubleBox ToolTip="64 bit floating point number ( Double )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Single" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Single">
         <num:FloatBox ToolTip="32 bit floating point number ( Single )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
     <!--#endregion-->
-    
+
     <!--#region Hexadecimal templates-->
 
     <Style x:Key="HexNumberStyle" 
            TargetType="{x:Type num:BaseBox}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="0,2,2,2"/>
-        <Setter Property="IsReadOnly" Value="{Binding IsReadonly}"/>
+        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
         <Setter Property="ToolTip" Value="{Binding Tooltip}"/>
         <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
         <Setter Property="TextAlignment" Value="Left"/>
         <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
-        <Setter Property="IsEnabled" Value="False"/> <!--Well, we gotta wait for a fix... till then, this is disabled-->
+        <Setter Property="IsEnabled" Value="False"/>
+        <!--Well, we gotta wait for a fix... till then, this is disabled-->
 
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">
@@ -109,52 +130,45 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    
-    <DataTemplate x:Key="Hex:Int64" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
+
+    <DataTemplate x:Key="Hex:Int64">
+        <sub:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="16" StringFormat="X16"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Hex:UInt64" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
+    <DataTemplate x:Key="Hex:UInt64">
+        <sub:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="16" StringFormat="X16"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Hex:Int32" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Hex:Int32">
         <num:IntBox ToolTip="Hexadecimal signed 32 bit integer ( Int )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="8" StringFormat="X8"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Hex:UInt32" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
+    <DataTemplate x:Key="Hex:UInt32">
+        <sub:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="8" StringFormat="X8"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Hex:Int16" 
-                  DataType="{x:Type vm:InspectorElement}">
+    <DataTemplate x:Key="Hex:Int16">
         <num:ShortBox ToolTip="Hexadecimal signed 16 bit integer ( Short )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="4" StringFormat="X4"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="Hex:UInt16" 
-                  DataType="{x:Type vm:InspectorElement}">
-        <local:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
+    <DataTemplate x:Key="Hex:UInt16">
+        <sub:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="4" StringFormat="X4"/>
     </DataTemplate>
 
-    
-    <DataTemplate x:Key="OnlyHex"
-                  DataType="{x:Type vm:InspectorElement}">
+
+    <DataTemplate x:Key="OnlyHex">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
@@ -164,10 +178,9 @@
             <TextBlock Text="0x" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Hexadecimal prependix"/>
             <ContentPresenter Grid.Column="1" Name="Hex" Content="{Binding }" ContentTemplateSelector="{x:Static local:InspectorElementTemplateSelector.Selector}"/>
         </Grid>
-    </DataTemplate>   
-    
-    <DataTemplate x:Key="HybridHex" 
-                  DataType="{x:Type vm:InspectorElement}">
+    </DataTemplate>
+
+    <DataTemplate x:Key="HybridHex">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -186,27 +199,46 @@
 
     <!--The enums and flags are manually edited in so we can create tooltips and custom names-->
     <!--It'd be a bit weird to add in display attributes to a data library-->
-    
+
     <!--#region Enums-->
 
+    <Style x:Key="EnumComboBoxStyle" TargetType="{x:Type sub:EnumComboBox}">
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                <Setter Property="IsReadOnly" Value="True"/>
+
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="IsEnabled" Value="False"/>
+                            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <DataTemplate x:Key="LandtableFormat">
-        <local:EnumComboBox ToolTip="Landtable Data Format" local:InspectorBinding.PropName="Value">
+        <sub:EnumComboBox ToolTip="Landtable Data Format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="SA1"    Tag="{x:Static objEnums:LandtableFormat.SA1}"       ToolTip="Sonic Adventure 1 LandTable (BASIC)"/>
             <ComboBoxItem Content="SADX"   Tag="{x:Static objEnums:LandtableFormat.SADX}"      ToolTip="Sonic Adventure DX LandTable (BASIC)"/>
             <ComboBoxItem Content="SA2"    Tag="{x:Static objEnums:LandtableFormat.SA2}"       ToolTip="Sonic Adventure 2 LandTable (CHUNK / BASIC)"/>
             <ComboBoxItem Content="SA2B"   Tag="{x:Static objEnums:LandtableFormat.SA2B}"      ToolTip="Sonic Adventure 2: Battle LandTable (GC / BASIC)"/>
             <ComboBoxItem Content="Buffer" Tag="{x:Static objEnums:LandtableFormat.Buffer}"    ToolTip="SAModel library intermediate LandTable (Buffer)"/>
-        </local:EnumComboBox>
+        </sub:EnumComboBox>
     </DataTemplate>
-    
+
     <!--#endregion-->
 
     <!--#region Flags-->
 
-    <Style x:Key="FlagListItem" TargetType="{x:Type local:FlagListItem}">
+    <Style x:Key="FlagListItem" TargetType="{x:Type sub:FlagListItem}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="MinHeight" Value="20"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
 
         <Style.Triggers>
             <Trigger Property="ItemsControl.AlternationIndex" Value="1">
@@ -216,7 +248,7 @@
     </Style>
 
     <Style x:Key="FlagList"
-           TargetType="{x:Type local:FlagListBox}">
+           TargetType="{x:Type sub:FlagListBox}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="SelectionMode" Value="Multiple"/>
@@ -224,11 +256,12 @@
         <Setter Property="AlternationCount" Value="2"/>
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="{x:Type local:FlagListItem}" BasedOn="{StaticResource FlagListItem}">
+                <Style TargetType="{x:Type sub:FlagListItem}" BasedOn="{StaticResource FlagListItem}">
                     <Setter Property="Template">
                         <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type local:FlagListItem}">
+                            <ControlTemplate TargetType="{x:Type sub:FlagListItem}">
                                 <Grid ToolTip="{TemplateBinding ToolTip}" Background="{TemplateBinding Background}">
+                                    
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -245,14 +278,14 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
     <Style x:Key="HexFlagItem"
-        TargetType="{x:Type local:HexFlagListItem}"
+        TargetType="{x:Type sub:HexFlagListItem}"
         BasedOn="{StaticResource FlagListItem}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:HexFlagListItem}">
+                <ControlTemplate TargetType="{x:Type sub:HexFlagListItem}">
                     <Grid ToolTip="{TemplateBinding ToolTip}" Background="{TemplateBinding Background}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
@@ -272,11 +305,11 @@
     </Style>
 
     <Style x:Key="HexFlagList2"
-           TargetType="{x:Type local:FlagListBox}"
+           TargetType="{x:Type sub:FlagListBox}"
            BasedOn="{StaticResource FlagList}">
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="{x:Type local:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
+                <Style TargetType="{x:Type sub:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
                     <Setter Property="HexLength" Value="2"/>
                 </Style>
             </Setter.Value>
@@ -284,29 +317,29 @@
     </Style>
 
     <Style x:Key="HexFlagList4"
-           TargetType="{x:Type local:FlagListBox}"
+           TargetType="{x:Type sub:FlagListBox}"
            BasedOn="{StaticResource FlagList}">
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="{x:Type local:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
+                <Style TargetType="{x:Type sub:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
                     <Setter Property="HexLength" Value="4"/>
                 </Style>
             </Setter.Value>
         </Setter>
     </Style>
-   
+
     <Style x:Key="HexFlagList8"
-           TargetType="{x:Type local:FlagListBox}"
+           TargetType="{x:Type sub:FlagListBox}"
            BasedOn="{StaticResource FlagList}">
         <Setter Property="ItemContainerStyle" Value="{StaticResource HexFlagItem}"/>
     </Style>
 
     <Style x:Key="HexFlagList16"
-           TargetType="{x:Type local:FlagListBox}"
+           TargetType="{x:Type sub:FlagListBox}"
            BasedOn="{StaticResource FlagList}">
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
-                <Style TargetType="{x:Type local:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
+                <Style TargetType="{x:Type sub:HexFlagListItem}" BasedOn="{StaticResource HexFlagItem}">
                     <Setter Property="HexLength" Value="16"/>
                 </Style>
             </Setter.Value>
@@ -315,27 +348,27 @@
 
 
     <DataTemplate x:Key="ObjectAttributes">
-        <local:FlagListBox Style="{StaticResource HexFlagList2}">
-            <local:HexFlagListItem Content="No Position"  Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
-            <local:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="No/Ignore rotation Data"/>
-            <local:HexFlagListItem Content="No Scale"     Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
-            <local:HexFlagListItem Content="No Display"   Flag="{x:Static objEnums:ObjectAttributes.NoDisplay}"     ToolTip="No/Ignore display Task"/>
-            <local:HexFlagListItem Content="No Children"  Flag="{x:Static objEnums:ObjectAttributes.NoChildren}"    ToolTip="No/Ignore children"/>
-            <local:HexFlagListItem Content="Rotate ZYX"   Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
-            <local:HexFlagListItem Content="No Animate"   Flag="{x:Static objEnums:ObjectAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
-            <local:HexFlagListItem Content="No Morph"     Flag="{x:Static objEnums:ObjectAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
-        </local:FlagListBox>
+        <sub:FlagListBox Style="{StaticResource HexFlagList2}">
+            <sub:HexFlagListItem Content="No Position"  Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
+            <sub:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="No/Ignore rotation Data"/>
+            <sub:HexFlagListItem Content="No Scale"     Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
+            <sub:HexFlagListItem Content="No Display"   Flag="{x:Static objEnums:ObjectAttributes.NoDisplay}"     ToolTip="No/Ignore display Task"/>
+            <sub:HexFlagListItem Content="No Children"  Flag="{x:Static objEnums:ObjectAttributes.NoChildren}"    ToolTip="No/Ignore children"/>
+            <sub:HexFlagListItem Content="Rotate ZYX"   Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
+            <sub:HexFlagListItem Content="No Animate"   Flag="{x:Static objEnums:ObjectAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
+            <sub:HexFlagListItem Content="No Morph"     Flag="{x:Static objEnums:ObjectAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
+        </sub:FlagListBox>
     </DataTemplate>
 
     <DataTemplate x:Key="LandtableAttributes">
-        <local:FlagListBox Style="{StaticResource HexFlagList8}">
-            <local:HexFlagListItem Content="Enable Motions"         Flag="{x:Static objEnums:LandtableAttributes.EnableMotions}"/>
-            <local:HexFlagListItem Content="Load Texture List"      Flag="{x:Static objEnums:LandtableAttributes.LoadTexlist}"/>
-            <local:HexFlagListItem Content="Custom Draw Distance"   Flag="{x:Static objEnums:LandtableAttributes.CustomDrawDistance}"/>
-            <local:HexFlagListItem Content="Load Texture File"      Flag="{x:Static objEnums:LandtableAttributes.LoadTextureFile}"/>
-        </local:FlagListBox>
+        <sub:FlagListBox Style="{StaticResource HexFlagList8}">
+            <sub:HexFlagListItem Content="Enable Motions"         Flag="{x:Static objEnums:LandtableAttributes.EnableMotions}" ToolTip="Enable/Contains geometry animations"/>
+            <sub:HexFlagListItem Content="Load Texture List"      Flag="{x:Static objEnums:LandtableAttributes.LoadTexlist}"/>
+            <sub:HexFlagListItem Content="Custom Draw Distance"   Flag="{x:Static objEnums:LandtableAttributes.CustomDrawDistance}" ToolTip="Utilize the custom draw distance"/>
+            <sub:HexFlagListItem Content="Load Texture File"      Flag="{x:Static objEnums:LandtableAttributes.LoadTextureFile}" ToolTip="Load the specified texture file"/>
+        </sub:FlagListBox>
     </DataTemplate>
 
     <!--#endregion-->
-    
+
 </ResourceDictionary>

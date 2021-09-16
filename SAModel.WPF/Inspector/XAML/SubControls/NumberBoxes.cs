@@ -1,12 +1,8 @@
 ﻿using Gu.Wpf.NumericInput;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Unsigned short box

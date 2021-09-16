@@ -12,6 +12,8 @@
              x:Name="Root" x:FieldModifier="private">
 
     <UserControl.Resources>
+        <SolidColorBrush x:Key="AlternationColor">#2888</SolidColorBrush>
+        
         <DataTemplate x:Key="GridTemplate" DataType="{x:Type vm:InspectorViewModel}">
             <ScrollViewer 
                 VerticalScrollBarVisibility="Auto" 
@@ -23,10 +25,11 @@
                 <DataGrid 
                     ItemsSource="{Binding InspectorElements}" 
                     AutoGenerateColumns="False" 
-                    VerticalGridLinesBrush="DarkGray"
-                    GridLinesVisibility="None"
+                    SelectionMode="Single"
+                    HorizontalGridLinesBrush="#AAA"
+                    GridLinesVisibility="Horizontal"
                     CanUserResizeRows="False"
-                    CanUserSortColumns="True"
+                    CanUserSortColumns="False"
                     MinRowHeight="24"
                     BorderThickness="0"
                     VerticalScrollBarVisibility="Disabled"
@@ -51,16 +54,29 @@
                         <Style TargetType="{x:Type DataGridRow}">
                             <Style.Triggers>
                                 <Trigger Property="AlternationIndex" Value="1">
-                                    <Setter Property="Background" Value="#EEE"/>
+                                    <Setter Property="Background" Value="#E8E8E8"/>
                                 </Trigger>
 
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
                                         <Condition Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                        <Condition Binding="{Binding Path=AlternationIndex, RelativeSource={RelativeSource Self}}" Value="0"/>
                                         <Condition Binding="{Binding SelectBackground}" Value="True"/>
                                     </MultiDataTrigger.Conditions>
                                     <MultiDataTrigger.Setters>
-                                        <Setter Property="Background" Value="#c1dbe6"/>
+                                        <Setter Property="Background" Value="#E2EFFA"/>
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+
+
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                        <Condition Binding="{Binding Path=AlternationIndex, RelativeSource={RelativeSource Self}}" Value="1"/>
+                                        <Condition Binding="{Binding SelectBackground}" Value="True"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="Background" Value="#D3E0EB"/>
                                     </MultiDataTrigger.Setters>
                                 </MultiDataTrigger>
 
@@ -69,7 +85,7 @@
                     </DataGrid.RowStyle>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding DisplayName}" Width="auto">
+                        <DataGridTextColumn Binding="{Binding DisplayName, Mode=OneWay}" IsReadOnly="True" Width="auto">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -108,7 +124,7 @@
             </ScrollViewer>
         </DataTemplate>
         <DataTemplate x:Key="ListTemplate">
-            <ListView ItemsSource="{Binding ItemWrappers}">
+            <ListView ItemsSource="{Binding InspectorElements}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
                         <Setter Property="BorderThickness" Value="0"/>
@@ -120,7 +136,7 @@
                     <DataTemplate>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="40"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 

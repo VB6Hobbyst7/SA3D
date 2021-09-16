@@ -1,5 +1,7 @@
 ﻿using SAWPF.BaseViewModel;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SAModel.WPF.Inspector.Viewmodel
 {
@@ -8,10 +10,16 @@ namespace SAModel.WPF.Inspector.Viewmodel
     {
         // note: this class only works under the assumption that the user is unable to modify the item count
         
-        public class ListInspectorElement : BaseViewModel
+        public class ListInspectorElement : BaseViewModel, IInspectorInfo
         {
+            /// <summary>
+            /// Collection wrapper that the element belongs to
+            /// </summary>
             private ListInspectorViewModel<T> Collection { get; }
 
+            /// <summary>
+            /// index 
+            /// </summary>
             public int ValueIndex { get; }
 
             public T Value
@@ -19,6 +27,17 @@ namespace SAModel.WPF.Inspector.Viewmodel
                 get => Collection.SourceList[ValueIndex];
                 set => Collection.SourceList[ValueIndex] = value;
             }
+
+            #region Interface properties
+
+            public string BindingPath
+                => "Value";
+
+            public Type ValueType
+                => Value.GetType();
+            
+            object IInspectorInfo.Value
+                => Value;
 
             public string DetailName
             {
@@ -34,6 +53,29 @@ namespace SAModel.WPF.Inspector.Viewmodel
                 }
             }
 
+            public bool IsCollection
+                => ValueType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+
+            public string DisplayName
+                => ValueIndex.ToString();
+
+            public string HistoryName
+                => $"{Collection.PropertyName}[{ValueIndex}]";
+
+            public string Tooltip
+                => $"Element number {ValueIndex}";
+
+            public HexadecimalMode Hexadecimal
+                => Collection.Hexadecimal;
+
+            public bool IsReadOnly
+                => Collection.ReadonlyCollection;
+
+            public bool SelectBackground
+                => !ValueType.IsEnum;
+
+            #endregion
+
             public ListInspectorElement(ListInspectorViewModel<T> collection, int valueIndex)
             {
                 Collection = collection;
@@ -41,23 +83,32 @@ namespace SAModel.WPF.Inspector.Viewmodel
             }
         }
 
-        public int Count => SourceList.Count;
+        public string PropertyName { get; }
 
-        public bool IsReadonly { get; }
+        public bool ReadonlyCollection
+            => SourceList.IsReadOnly;
 
+        public HexadecimalMode Hexadecimal { get; }
+
+        /// <summary>
+        /// Source list
+        /// </summary>
         public IList<T> SourceList { get; }
 
-        public ListInspectorElement[] ItemWrappers { get; }
+        /// <summary>
+        /// Item wrappers to allow access and replacement to source list items
+        /// </summary>
+        public List<ListInspectorElement> InspectorElements { get; }
 
-
-        public ListInspectorViewModel(IList<T> source, bool isReadonly = false)
+        public ListInspectorViewModel(IInspectorInfo info)
         {
-            SourceList = source;
-            IsReadonly = isReadonly;
+            SourceList = (IList<T>)info.Value;
+            PropertyName = info.DisplayName;
+            Hexadecimal = info.Hexadecimal;
 
-            ItemWrappers = new ListInspectorElement[source.Count];
-            for(int i = 0; i < source.Count; i++)
-                ItemWrappers[i] = new(this, i);
+            InspectorElements = new();
+            for(int i = 0; i < SourceList.Count; i++)
+                InspectorElements.Add(new(this, i));
         }
     }
 }

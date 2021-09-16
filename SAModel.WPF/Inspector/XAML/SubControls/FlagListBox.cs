@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SAModel.WPF.Inspector.XAML.SubControls
 {
     internal class FlagListBox : ListBox
     {

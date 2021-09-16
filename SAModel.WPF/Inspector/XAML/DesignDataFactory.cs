@@ -6,8 +6,12 @@ namespace SAModel.WPF.Inspector.XAML
 {
     internal static class DesignDataFactory
     {
-        private class DebugSubIVM : InspectorViewModel
+        private class IVmDebugSub : InspectorViewModel
         {
+            private class DebugSub { }
+
+            protected override Type ViewmodelType
+                => typeof(DebugSub);
 
             [DisplayName("Text")]
             [Tooltip("The text of a sub class")]
@@ -16,15 +20,20 @@ namespace SAModel.WPF.Inspector.XAML
             [DisplayName("Number")]
             public int Number { get; set; } = new Random().Next();
 
-            public DebugSubIVM() : base(null) { }
+            public IVmDebugSub() : base() { }
 
         }
 
         /// <summary>
         /// An Inspector viewmodel used for testing
         /// </summary>
-        private class DebugIVM : InspectorViewModel
+        private class IVmDebug : InspectorViewModel
         {
+            private class Debug { }
+
+            protected override Type ViewmodelType
+                => typeof(Debug);
+
             [Ignore]
             public int HiddenValue { get; set; }
 
@@ -37,8 +46,7 @@ namespace SAModel.WPF.Inspector.XAML
 
             [DisplayName("Readonly Text")]
             [Tooltip("This text cannot be edited")]
-            [Readonly]
-            public string ReadonlyTextValue { get; private set; }
+            public string ReadonlyTextValue { get; }
                 = "This value cannot be modified";
 
             #endregion
@@ -104,15 +112,15 @@ namespace SAModel.WPF.Inspector.XAML
 
             [DisplayName("Debug sub class")]
             [Tooltip("Class object")]
-            public DebugSubIVM ClassTest { get; set; } = new();
+            public IVmDebugSub ClassTest { get; set; } = new();
 
             [DisplayName("Debug sub class (null)")]
             [Tooltip("Null object")]
-            public DebugSubIVM NullClassTest { get; set; }
+            public IVmDebugSub NullClassTest { get; set; }
 
             #endregion
 
-            public DebugIVM() : base(null) { }
+            public IVmDebug() : base() { }
         }
 
         public static VmInspector Inspector;
@@ -122,7 +130,7 @@ namespace SAModel.WPF.Inspector.XAML
         static DesignDataFactory()
         {
             Inspector = new();
-            DebugInspectorViewmodel = new DebugIVM();
+            DebugInspectorViewmodel = new IVmDebug();
         }
     }
 }

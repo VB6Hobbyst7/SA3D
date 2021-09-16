@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Inspector\XAML\UserControls\**" />
+    <EmbeddedResource Remove="Inspector\XAML\UserControls\**" />
+    <None Remove="Inspector\XAML\UserControls\**" />
+    <Page Remove="Inspector\XAML\UserControls\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SAModel\SAModel.csproj" />
     <ProjectReference Include="..\SAWPF\SAWPF.csproj" />
   </ItemGroup>
