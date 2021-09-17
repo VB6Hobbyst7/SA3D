@@ -12,7 +12,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
     /// </summary>
     internal class VmInspector : BaseViewModel
     {
-        private Dictionary<object, object> _listViewModels;
+        private readonly Dictionary<object, object> _viewModels;
 
         /// <summary>
         /// History of displayed objects
@@ -37,7 +37,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
         public VmInspector()
         {
             History = new();
-            _listViewModels = new();
+            _viewModels = new();
         }
 
         public void LoadNewObject(object obj)
@@ -53,19 +53,31 @@ namespace SAModel.WPF.Inspector.Viewmodel
         {
             object Value = info.Value;
 
-            object data;
-            if(info.IsCollection)
+            if(!_viewModels.TryGetValue(Value, out object data))
             {
-                if(!_listViewModels.TryGetValue(Value, out data))
+                if(info.IsCollection)
                 {
-                    Type[] typeArgs = info.ValueType.GetGenericArguments();
+                    Type[] typeArgs = info.ValueType.IsArray ?
+                        (new Type[] { info.ValueType.GetElementType() })
+                        : info.ValueType.GetGenericArguments();
+
                     Type listType = typeof(ListInspectorViewModel<>).MakeGenericType(typeArgs);
                     data = Activator.CreateInstance(listType, info);
-                    _listViewModels.Add(Value, data);
+                }
+                else
+                    data = InspectorViewModel.GetViewModel(Value);
+                _viewModels.Add(Value, data);
+            }
+
+            // check if a history element already wraps the viewmodel
+            foreach(VmHistoryElement h in History)
+            {
+                if(h.Data == data)
+                {
+                    ActiveHistoryElement = h;
+                    return;
                 }
             }
-            else
-                data = InspectorViewModel.GetViewModel(Value);
 
             int index = History.IndexOf(ActiveHistoryElement);
             if(index < History.Count - 1)

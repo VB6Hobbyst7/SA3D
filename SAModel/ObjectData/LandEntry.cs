@@ -87,6 +87,9 @@ namespace SATools.SAModel.ObjData
             }
         }
 
+        /// <summary>
+        /// World space quaternion rotations
+        /// </summary>
         public Quaternion QuaternionRotation
         {
             get => _model.QuaternionRotation;
@@ -108,7 +111,7 @@ namespace SATools.SAModel.ObjData
         }
 
         /// <summary>
-        /// No idea what this does, might be unused
+        /// Block mapping bits
         /// </summary>
         public uint BlockBit { get; set; }
 
@@ -183,17 +186,25 @@ namespace SATools.SAModel.ObjData
                 throw new InvalidOperationException("Landentry model address is null!");
             NJObject model = NJObject.Read(source, modelAddr - imageBase, imageBase, format, ltblFormat == LandtableFormat.SADX, labels, attaches);
 
-            uint blockBit = source.ToUInt32(address + 4); // lets just assume that sa2 also uses blockbits, not like its used anyway
             uint unknown = 0;
+            uint blockBit;
 
             SurfaceAttributes attribs;
-            if(ltblFormat >= LandtableFormat.SA2)
+            if(ltblFormat == LandtableFormat.Buffer)
             {
-                unknown = source.ToUInt32(address + 8);
+                unknown = source.ToUInt32(address + 4);
+                blockBit = source.ToUInt32(address + 8);
+                attribs = (SurfaceAttributes)source.ToUInt32(address + 12);
+            }
+            else if(ltblFormat >= LandtableFormat.SA2)
+            {
+                unknown = source.ToUInt32(address + 4);
+                blockBit = source.ToUInt32(address + 8);
                 attribs = ((SA2SurfaceAttributes)source.ToUInt32(address + 12)).ToUniversal();
             }
             else
             {
+                blockBit = source.ToUInt32(address + 4);
                 attribs = ((SA1SurfaceAttributes)source.ToUInt32(address + 8)).ToUniversal();
             }
 
@@ -230,20 +241,21 @@ namespace SATools.SAModel.ObjData
 
             writer.Write(labels[_model.Name]);
 
-            writer.WriteUInt32(BlockBit);
-
             if(format == LandtableFormat.Buffer)
             {
                 writer.WriteUInt32(Unknown);
+                writer.WriteUInt32(BlockBit);
                 writer.WriteUInt32((uint)SurfaceAttributes);
             }
             else if(format >= LandtableFormat.SA2)
             {
                 writer.WriteUInt32(Unknown);
+                writer.WriteUInt32(BlockBit);
                 writer.WriteUInt32((uint)SurfaceAttributes.ToSA2());
             }
             else
             {
+                writer.WriteUInt32(BlockBit);
                 writer.WriteUInt32((uint)SurfaceAttributes.ToSA1());
             }
         }
@@ -257,6 +269,6 @@ namespace SATools.SAModel.ObjData
             new(_model.Duplicate(), SurfaceAttributes, BlockBit, Unknown, ModelBounds);
 
         public override string ToString() 
-            => $"LandEntry {Name} : {Attach} ";
+            => $"{Name} : {Attach} ";
     }
 }

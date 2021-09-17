@@ -34,7 +34,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
                 => "Value";
 
             public Type ValueType
-                => Value.GetType();
+                => Value?.GetType() ?? Collection.ContentType;
             
             object IInspectorInfo.Value
                 => Value;
@@ -94,6 +94,9 @@ namespace SAModel.WPF.Inspector.Viewmodel
         /// Source list
         /// </summary>
         public IList<T> SourceList { get; }
+
+        public Type ContentType
+            => typeof(T);
 
         /// <summary>
         /// Item wrappers to allow access and replacement to source list items

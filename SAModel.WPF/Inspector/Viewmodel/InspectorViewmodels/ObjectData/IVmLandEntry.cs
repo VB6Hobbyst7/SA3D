@@ -4,7 +4,7 @@ using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
 
-namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
+namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 {
     internal class IVmLandEntry : InspectorViewModel
     {
@@ -92,8 +92,42 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
             set => LandEntry.UpdateBounds(value);
         }
 
+        [DisplayName("Surface Attributes")]
+        [Tooltip("Geometry rendering and collision information")]
+        public SurfaceAttributes SurfaceAttributes
+        {
+            get => LandEntry.SurfaceAttributes;
+            set => LandEntry.SurfaceAttributes = value;
+        }
+
+        [DisplayName("Rotate ZYX")]
+        [Tooltip("Inverted Rotational order")]
+        public bool RotateZYX
+        {
+            get => LandEntry.RotateZYX;
+            set => LandEntry.RotateZYX = value;
+        }
+
+        [DisplayName("Block Bit")]
+        [Tooltip("Block mapping bits")]
+        [Hexadecimal]
+        public uint BlockBit
+        {
+            get => LandEntry.BlockBit;
+            set => LandEntry.BlockBit = value;
+        }
+
+        [DisplayName("Unknown")]
+        [Tooltip("Unknown field for SA2 geometry")]
+        [Hexadecimal(true)]
+        public uint Unknown
+        {
+            get => LandEntry.Unknown;
+            set => LandEntry.Unknown = value;
+        }
+
         public IVmLandEntry() : base() { }
 
-        public IVmLandEntry(object source) : base(source) { }
+        public IVmLandEntry(LandEntry source) : base(source) { }
     }
 }

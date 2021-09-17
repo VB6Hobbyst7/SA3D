@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
+namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 {
     internal class IVmLandTable : InspectorViewModel
     {

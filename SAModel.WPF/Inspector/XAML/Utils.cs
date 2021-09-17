@@ -35,6 +35,9 @@ namespace SAModel.WPF.Inspector.XAML
             Hex = (DataTemplate)_resources["OnlyHex"];
             HybridHex = (DataTemplate)_resources["HybridHex"];
 
+            Hex.Resources.Add("TemplateSelector", this);
+            HybridHex.Resources.Add("TemplateSelector", this);
+
             _templates = new();
             _hexTemplates = new();
 
@@ -67,7 +70,7 @@ namespace SAModel.WPF.Inspector.XAML
             }
 
             string containerName = ((FrameworkElement)container).Name;
-            if(info.Hexadecimal != HexadecimalMode.NoHex 
+            if(info.Hexadecimal != HexadecimalMode.NoHex
                 && containerName != "NoHex")
             {
                 if(containerName == "Hex")
@@ -90,7 +93,7 @@ namespace SAModel.WPF.Inspector.XAML
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            string templateName = item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>) 
+            string templateName = item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>)
                 ? "ListTemplate" : "GridTemplate";
 
             return ((FrameworkElement)container).FindResource(templateName) as DataTemplate;

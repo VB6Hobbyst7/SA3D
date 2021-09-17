@@ -2,6 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:objEnums="clr-namespace:SATools.SAModel.ObjData;assembly=SAModel"
+    xmlns:attachEnums="clr-namespace:SATools.SAModel.ModelData;assembly=SAModel"
     xmlns:num="http://gu.se/NumericInput"
     xmlns:sub="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
     xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
@@ -10,6 +11,8 @@
     xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
+    
+    <!--#region Base templates -->
     
     <DataTemplate x:Key="/" />
 
@@ -35,7 +38,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="0x" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Hexadecimal prependix"/>
-            <ContentPresenter Grid.Column="1" Name="Hex" Content="{Binding }" ContentTemplateSelector="{x:Static local:InspectorElementTemplateSelector.Selector}"/>
+            <ContentPresenter Grid.Column="1" Name="Hex" Content="{Binding }" ContentTemplateSelector="{DynamicResource TemplateSelector}"/>
         </Grid>
     </DataTemplate>
 
@@ -48,18 +51,34 @@
             </Grid.ColumnDefinitions>
 
 
-            <ContentPresenter Name="NoHex" Content="{Binding }" ContentTemplateSelector="{x:Static local:InspectorElementTemplateSelector.Selector}"/>
+            <ContentPresenter Name="NoHex" Content="{Binding }" ContentTemplateSelector="{DynamicResource TemplateSelector}"/>
             <Border BorderThickness="0" Grid.Column="1" Background="#2444"/>
             <ContentPresenter Grid.Column="2" Content="{Binding }" ContentTemplate="{StaticResource OnlyHex}"/>
         </Grid>
     </DataTemplate>
 
+    <DataTemplate x:Key="Boolean" DataType="{x:Type sys:Boolean}">
+        <CheckBox Margin="2" local:InspectorBinding.PropName="IsChecked" ToolTip="{Binding Tooltip}" VerticalAlignment="Center">
+            <CheckBox.Style>
+                <Style TargetType="{x:Type CheckBox}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </CheckBox.Style>
+        </CheckBox>
+    </DataTemplate>
+    
     <DataTemplate x:Key="String" DataType="{x:Type sys:String}">
         <TextBox BorderThickness="0" Padding="2" local:InspectorBinding.PropName="Text"
                  IsReadOnly="{Binding IsReadOnly}" ToolTip="{Binding Tooltip}"
                  Background="Transparent"/>
     </DataTemplate>
 
+    <!--#endregion-->
+    
     <!--#region Number templates-->
 
     <Style x:Key="BaseNumberStyle" 
@@ -209,7 +228,6 @@
     <!--#region Enums-->
 
     <Style x:Key="EnumComboBoxStyle" TargetType="{x:Type sub:EnumComboBox}">
-
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
                 <Setter Property="IsReadOnly" Value="True"/>
@@ -236,6 +254,15 @@
         </sub:EnumComboBox>
     </DataTemplate>
 
+    <DataTemplate x:Key="AttachFormat" DataType="{x:Type attachEnums:AttachFormat}">
+        <sub:EnumComboBox ToolTip="Attach format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="BASIC"   Tag="{x:Static attachEnums:AttachFormat.BASIC}"     ToolTip="BASIC mesh format"/>
+            <ComboBoxItem Content="CHUNK"   Tag="{x:Static attachEnums:AttachFormat.CHUNK}"     ToolTip="CHUNK mesh format"/>
+            <ComboBoxItem Content="GC"      Tag="{x:Static attachEnums:AttachFormat.GC}"        ToolTip="Gamecube mesh format"/>
+            <ComboBoxItem Content="Buffer"  Tag="{x:Static attachEnums:AttachFormat.Buffer}"    ToolTip="SAModel library intermediate format"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
     <!--#endregion-->
 
     <!--#region Flags-->
@@ -247,11 +274,17 @@
         <Setter Property="MinHeight" Value="20"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
 
         <Style.Triggers>
             <Trigger Property="ItemsControl.AlternationIndex" Value="1">
                 <Setter Property="Background" Value="#4888"/>
             </Trigger>
+            <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                <DataTrigger.Setters>
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger.Setters>
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 
@@ -359,7 +392,7 @@
     <DataTemplate x:Key="ObjectAttributes" DataType="{x:Type objEnums:ObjectAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList2}">
             <sub:HexFlagListItem Content="No Position"  Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
-            <sub:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="No/Ignore rotation Data"/>
+            <sub:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.NoRotation}"    ToolTip="No/Ignore rotation Data"/>
             <sub:HexFlagListItem Content="No Scale"     Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
             <sub:HexFlagListItem Content="No Display"   Flag="{x:Static objEnums:ObjectAttributes.NoDisplay}"     ToolTip="No/Ignore display Task"/>
             <sub:HexFlagListItem Content="No Children"  Flag="{x:Static objEnums:ObjectAttributes.NoChildren}"    ToolTip="No/Ignore children"/>
@@ -375,6 +408,31 @@
             <sub:HexFlagListItem Content="Load Texture List"      Flag="{x:Static objEnums:LandtableAttributes.LoadTexlist}"/>
             <sub:HexFlagListItem Content="Custom Draw Distance"   Flag="{x:Static objEnums:LandtableAttributes.CustomDrawDistance}" ToolTip="Utilize the custom draw distance"/>
             <sub:HexFlagListItem Content="Load Texture File"      Flag="{x:Static objEnums:LandtableAttributes.LoadTextureFile}" ToolTip="Load the specified texture file"/>
+        </sub:FlagListBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="SurfaceAttributes" DataType="{x:Type objEnums:SurfaceAttributes}">
+        <sub:FlagListBox Style="{StaticResource FlagList}">
+            <sub:FlagListItem Content="Visible" 				Flag="{x:Static objEnums:SurfaceAttributes.Visible}"/>
+            <sub:FlagListItem Content="Solid" 					Flag="{x:Static objEnums:SurfaceAttributes.Solid}"/>
+            <sub:FlagListItem Content="Water" 					Flag="{x:Static objEnums:SurfaceAttributes.Water}"/>
+            <sub:FlagListItem Content="Water 2" 				Flag="{x:Static objEnums:SurfaceAttributes.Water2}"/>
+            <sub:FlagListItem Content="No Friction" 			Flag="{x:Static objEnums:SurfaceAttributes.NoFriction}"/>
+            <sub:FlagListItem Content="No Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.NoAcceleration}"/>
+            <sub:FlagListItem Content="Less Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.LessAcceleration}"/>
+            <sub:FlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:FlagListItem Content="Cannot Land" 			Flag="{x:Static objEnums:SurfaceAttributes.CannotLand}"/>
+            <sub:FlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SurfaceAttributes.NotClimbable}"/>
+            <sub:FlagListItem Content="Ignore Slope" 			Flag="{x:Static objEnums:SurfaceAttributes.IgnoreSlope}"/>
+            <sub:FlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SurfaceAttributes.Diggable}"/>
+            <sub:FlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SurfaceAttributes.Hurt}"/>
+            <sub:FlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SurfaceAttributes.Footprints}"/>
+            <sub:FlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SurfaceAttributes.NoShadows}"/>
+            <sub:FlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SurfaceAttributes.NoFog}"/>
+            <sub:FlagListItem Content="Unknown 24" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown24}"/>
+            <sub:FlagListItem Content="Unknown 27" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown27}"/>
+            <sub:FlagListItem Content="Unknown 29" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown29}"/>
+            <sub:FlagListItem Content="Unknown 30" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown30}"/>
         </sub:FlagListBox>
     </DataTemplate>
 

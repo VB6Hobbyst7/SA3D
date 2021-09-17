@@ -28,10 +28,10 @@ namespace SAModel.WPF.Inspector.Viewmodel
             => Property.GetValue(Source);
 
         public Type ValueType
-            => Value.GetType();
+            => Value?.GetType() ?? Property.PropertyType;
 
         public bool IsCollection
-            => ValueType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
+            => ValueType.IsArray || ValueType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>));
 
         public string DisplayName { get; }
 
@@ -39,14 +39,21 @@ namespace SAModel.WPF.Inspector.Viewmodel
         {
             get
             {
-                if(Source == null)
+                if(Source == null || Value == null)
                     return "Null";
 
                 if(IsCollection)
                 {
                     IList collection = (IList)Value;
-                    Type[] elementType = ValueType.GetGenericArguments();
-                    return $"{elementType[0].Name}[{collection.Count}]";
+                    if(ValueType.IsArray)
+                    {
+                        return $"{ValueType.Name[0..^2]}[{collection.Count}]";
+                    }
+                    else
+                    {
+                        Type[] elementType = ValueType.GetGenericArguments();
+                        return $"{elementType[0].Name}[{collection.Count}]";
+                    }
                 }
 
                 string conv = Value.ToString();

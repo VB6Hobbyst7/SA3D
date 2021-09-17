@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Reloaded.Memory.Streams.Writers;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 using SATools.SACommon;
+using System.Collections.ObjectModel;
 
 namespace SATools.SAModel.ObjData
 {
@@ -150,12 +150,15 @@ namespace SATools.SAModel.ObjData
             }
         }
 
-        /// <summary>
-        /// The objects children in the hierarchy
-        /// </summary>
         private List<NJObject> _children;
 
-        public int ChildCount => _children.Count;
+        /// <summary>
+        /// Children objects in the hierarchy
+        /// </summary>
+        public ReadOnlyCollection<NJObject> Children { get; }
+
+        public int ChildCount 
+            => _children.Count;
 
         /// <summary>
         /// Whether the euler order is inverted
@@ -223,7 +226,8 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="index">Child index</param>
         /// <returns></returns>
-        public NJObject this[int index] => _children[index];
+        public NJObject this[int index] 
+            => _children[index];
 
         /// <summary>
         /// Creates an emty object
@@ -232,6 +236,7 @@ namespace SATools.SAModel.ObjData
         {
             Name = "object_" + GenerateIdentifier();
             _children = new List<NJObject>();
+            Children = new(_children);
         }
 
         /// <summary>
@@ -261,10 +266,8 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels">C struct labels</param>
         /// <param name="attaches">Already read attaches</param>
         /// <returns></returns>
-        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
-        {
-            return Read(source, address, imageBase, format, DX, null, labels, attaches);
-        }
+        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches) 
+            => Read(source, address, imageBase, format, DX, null, labels, attaches);
 
         private static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, NJObject parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
@@ -282,11 +285,11 @@ namespace SATools.SAModel.ObjData
             if(tmpaddr != 0)
             {
                 tmpaddr -= imageBase;
-                if(attaches.ContainsKey(tmpaddr) == true)
+                if(attaches.ContainsKey(tmpaddr))
                     atc = attaches[tmpaddr];
                 else
                 {
-                    atc = ModelData.Attach.Read(format, source, tmpaddr, imageBase, DX, labels);
+                    atc = Attach.Read(format, source, tmpaddr, imageBase, DX, labels);
                     attaches.Add(tmpaddr, atc);
                 }
 
@@ -479,6 +482,20 @@ namespace SATools.SAModel.ObjData
         }
 
         #region hierarchy stuff
+
+        /// <summary>
+        /// Calculates the world matrix for this object (recursive)
+        /// </summary>
+        /// <returns></returns>
+        public Matrix4x4 GetWorldMatrix()
+        {
+            Matrix4x4 local = LocalMatrix;
+
+            if(Parent != null)
+                local *= Parent.GetWorldMatrix();
+
+            return local;
+        }
 
         /// <summary>
         /// Returns an array of the entire NjsObject hierarchy starting at this object
