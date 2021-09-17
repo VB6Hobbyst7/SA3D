@@ -1,13 +1,17 @@
-﻿<UserControl x:Class="SAModel.WPF.Inspector.XAML.SubControls.UcVector4"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:num="http://gu.se/NumericInput"
-             mc:Ignorable="d" 
-             d:DesignHeight="24" d:DesignWidth="400"
-             x:Name="Root" x:FieldModifier="private">
-    <Grid>
+﻿<local:BaseStructUserControl 
+    x:Class="SAModel.WPF.Inspector.XAML.SubControls.UcVector4"
+    x:ClassModifier="internal" x:TypeArguments="numerics:Vector4"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
+    xmlns:num="http://gu.se/NumericInput"
+    xmlns:numerics="clr-namespace:System.Numerics;assembly=System.Numerics"
+    mc:Ignorable="d" 
+    d:DesignHeight="24" d:DesignWidth="400">
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=local:UcVector4}}">
         <Grid.Resources>
             <Style TargetType="{x:Type TextBlock}">
                 <Setter Property="TextAlignment" Value="Center"/>
@@ -38,25 +42,25 @@
         <num:FloatBox 
             Grid.Column="1" Height="24" VerticalContentAlignment="Center"
             ToolTip="X Component; 32 bit floating point number ( Single )"
-            Style="{Binding ElementName=Root, Path=BaseBoxStyle}" 
-            Value="{Binding ElementName=Root, Path=FloatX}"/>
+            Style="{Binding BaseBoxStyle}" 
+            Value="{Binding FloatX}"/>
 
         <num:FloatBox 
             Grid.Column="3" Height="24" VerticalContentAlignment="Center"
             ToolTip="Y Component; 32 bit floating point number ( Single )"
-            Style="{Binding ElementName=Root, Path=BaseBoxStyle}" 
-            Value="{Binding ElementName=Root, Path=FloatY}"/>
+            Style="{Binding BaseBoxStyle}" 
+            Value="{Binding FloatY}"/>
 
         <num:FloatBox 
             Grid.Column="5" Height="24" VerticalContentAlignment="Center"
             ToolTip="Z Component; 32 bit floating point number ( Single )"
-            Style="{Binding ElementName=Root, Path=BaseBoxStyle}" 
-            Value="{Binding ElementName=Root, Path=FloatZ}"/>
+            Style="{Binding BaseBoxStyle}" 
+            Value="{Binding FloatZ}"/>
 
         <num:FloatBox 
             Grid.Column="7" Height="24" VerticalContentAlignment="Center"
             ToolTip="W Component; 32 bit floating point number ( Single )"
-            Style="{Binding ElementName=Root, Path=BaseBoxStyle}" 
-            Value="{Binding ElementName=Root, Path=FloatW}"/>
+            Style="{Binding BaseBoxStyle}" 
+            Value="{Binding FloatW}"/>
     </Grid>
-</UserControl>
+</local:BaseStructUserControl>

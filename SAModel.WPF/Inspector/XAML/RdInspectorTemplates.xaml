@@ -4,11 +4,14 @@
     xmlns:objEnums="clr-namespace:SATools.SAModel.ObjData;assembly=SAModel"
     xmlns:num="http://gu.se/NumericInput"
     xmlns:sub="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
-    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML">
+    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
+    <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
+    
     <DataTemplate x:Key="/" />
 
-    <DataTemplate x:Key="OpenButton" >
+    <DataTemplate x:Key="OpenButton">
         <sub:DetailButton Content="{Binding DetailName}" local:InspectorBinding.PropName="DetailObject">
             <sub:DetailButton.Style>
                 <Style TargetType="{x:Type sub:DetailButton}">
@@ -22,7 +25,7 @@
         </sub:DetailButton>
     </DataTemplate>
 
-    <DataTemplate x:Key="String" >
+    <DataTemplate x:Key="String">
         <TextBox BorderThickness="0" Padding="2" local:InspectorBinding.PropName="Text"
                  IsReadOnly="{Binding IsReadOnly}" ToolTip="{Binding Tooltip}"
                  Background="Transparent"/>
@@ -59,7 +62,11 @@
     <DataTemplate x:Key="Matrix4x4">
         <sub:UcMatrixDisplay local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
     </DataTemplate>
-    
+
+    <DataTemplate x:Key="Bounds">
+        <sub:UcBounds local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
     <Style x:Key="NumberStyle" 
            TargetType="{x:Type num:BaseBox}"
            BasedOn="{StaticResource BaseNumberStyle}">

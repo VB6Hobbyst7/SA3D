@@ -1,57 +1,17 @@
-﻿using System;
-using System.ComponentModel;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Interaction logic for UcVector4.xaml
     /// </summary>
-    public partial class UcVector4 : UserControl, INotifyPropertyChanged
+    internal partial class UcVector4 : BaseStructUserControl<Vector4>
     {
-        public static readonly DependencyProperty BaseBoxStyleProperty
-            = DependencyProperty.Register(
-                nameof(BaseBoxStyle),
-                typeof(Style),
-                typeof(UcVector4)
-                );
-
-        public Style BaseBoxStyle
-        {
-            get => (Style)GetValue(BaseBoxStyleProperty);
-            set => SetValue(BaseBoxStyleProperty, value);
-        }
-
-        public static readonly DependencyProperty ValueProperty
-            = DependencyProperty.Register(
-                nameof(Value),
-                typeof(Vector4),
-                typeof(UcVector4),
-                new(new((d, e) =>
-                {
-                    UcVector4 vc = (UcVector4)d;
-
-                    vc.OnPropertyChanged(nameof(FloatX));
-                    vc.OnPropertyChanged(nameof(FloatY));
-                    vc.OnPropertyChanged(nameof(FloatZ));
-                    vc.OnPropertyChanged(nameof(FloatW));
-                })));
-
-        public Vector4 Value
-        {
-            get => (Vector4)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
-        }
-
         private float this[int i]
         {
             get
             {
-                if(i is < 0 or > 3)
-                    throw new IndexOutOfRangeException();
-
                 Vector4 vector = Value;
 
                 return i switch
@@ -64,9 +24,6 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
             }
             set
             {
-                if(i is < 0 or > 3)
-                    throw new IndexOutOfRangeException();
-
                 Vector4 vector = Value;
 
                 switch(i)
@@ -114,14 +71,17 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
             set => this[3] = value;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public UcVector4()
         {
             InitializeComponent();
         }
 
-        protected void OnPropertyChanged(string propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected override void ValuePropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(FloatX));
+            OnPropertyChanged(nameof(FloatY));
+            OnPropertyChanged(nameof(FloatZ));
+            OnPropertyChanged(nameof(FloatW));
+        }
     }
 }

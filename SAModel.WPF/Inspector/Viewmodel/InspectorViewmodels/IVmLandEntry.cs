@@ -1,5 +1,6 @@
 ﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
+using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
 
@@ -35,6 +36,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
             {
                 LandEntry.Position = value;
                 OnPropertyChanged(nameof(WorldMatrix));
+                OnPropertyChanged(nameof(ModelBounds));
             }
         }
 
@@ -47,6 +49,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
                 LandEntry.Rotation = value;
                 OnPropertyChanged(nameof(QuaternionRotation));
                 OnPropertyChanged(nameof(WorldMatrix));
+                OnPropertyChanged(nameof(ModelBounds));
             }
         }
 
@@ -60,6 +63,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
                 LandEntry.QuaternionRotation = value;
                 OnPropertyChanged(nameof(Rotation));
                 OnPropertyChanged(nameof(WorldMatrix));
+                OnPropertyChanged(nameof(ModelBounds));
             }
         }
 
@@ -71,6 +75,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
             {
                 LandEntry.Scale = value;
                 OnPropertyChanged(nameof(WorldMatrix));
+                OnPropertyChanged(nameof(ModelBounds));
             }
         }
 
@@ -78,6 +83,14 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels
         [Tooltip("World transform matrix created from the transform properties")]
         public Matrix4x4 WorldMatrix
             => LandEntry.WorldMatrix;
+
+        [DisplayName("Bounding Sphere")]
+        [Tooltip("World transform bounding sphere for culling and collision detection")]
+        public Bounds ModelBounds
+        {
+            get => LandEntry.ModelBounds;
+            set => LandEntry.UpdateBounds(value);
+        }
 
         public IVmLandEntry() : base() { }
 

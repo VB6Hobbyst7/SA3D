@@ -1,92 +1,49 @@
-﻿using System;
-using System.ComponentModel;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Interaction logic for UcQuaternion.xaml
     /// </summary>
-    public partial class UcQuaternion : UserControl, INotifyPropertyChanged
+    internal partial class UcQuaternion : BaseStructUserControl<Quaternion>
     {
-        public static readonly DependencyProperty BaseBoxStyleProperty
-            = DependencyProperty.Register(
-                nameof(BaseBoxStyle),
-                typeof(Style),
-                typeof(UcQuaternion)
-                );
-
-        public Style BaseBoxStyle
-        {
-            get => (Style)GetValue(BaseBoxStyleProperty);
-            set => SetValue(BaseBoxStyleProperty, value);
-        }
-
-        public static readonly DependencyProperty ValueProperty
-            = DependencyProperty.Register(
-                nameof(Value),
-                typeof(Quaternion),
-                typeof(UcQuaternion),
-                new(new((d, e) =>
-                {
-                    UcQuaternion vc = (UcQuaternion)d;
-
-                    vc.OnPropertyChanged(nameof(FloatX));
-                    vc.OnPropertyChanged(nameof(FloatY));
-                    vc.OnPropertyChanged(nameof(FloatZ));
-                    vc.OnPropertyChanged(nameof(FloatW));
-                })));
-
-        public Quaternion Value
-        {
-            get => (Quaternion)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
-        }
-
         private float this[int i]
         {
             get
             {
-                if(i is < 0 or > 3)
-                    throw new IndexOutOfRangeException();
-
-                Quaternion vector = Value;
+                Quaternion quat = Value;
 
                 return i switch
                 {
-                    1 => vector.Y,
-                    2 => vector.Z,
-                    3 => vector.W,
-                    _ => vector.X,
+                    1 => quat.Y,
+                    2 => quat.Z,
+                    3 => quat.W,
+                    _ => quat.X,
                 };
             }
             set
             {
-                if(i is < 0 or > 3)
-                    throw new IndexOutOfRangeException();
-
-                Quaternion vector = Value;
+                Quaternion quat = Value;
 
                 switch(i)
                 {
                     default:
                     case 0:
-                        vector.X = value;
+                        quat.X = value;
                         break;
                     case 1:
-                        vector.Y = value;
+                        quat.Y = value;
                         break;
                     case 2:
-                        vector.Z = value;
+                        quat.Z = value;
                         break;
                     case 3:
-                        vector.W = value;
+                        quat.W = value;
                         break;
                 }
 
-                Value = vector;
+                Value = quat;
             }
         }
 
@@ -114,12 +71,17 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
             set => this[3] = value;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public UcQuaternion()
+        {
+            InitializeComponent();
+        }
 
-        public UcQuaternion() 
-            => InitializeComponent();
-
-        protected void OnPropertyChanged(string propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected override void ValuePropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(FloatX));
+            OnPropertyChanged(nameof(FloatY));
+            OnPropertyChanged(nameof(FloatZ));
+            OnPropertyChanged(nameof(FloatW));
+        }
     }
 }
