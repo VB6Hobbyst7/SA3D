@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Collections.Generic;
 
 namespace SAModel.WPF.Inspector.XAML
 {
@@ -11,35 +12,75 @@ namespace SAModel.WPF.Inspector.XAML
     {
         public static InspectorElementTemplateSelector Selector { get; } = new();
 
-        private readonly ResourceDictionary _templates
-            = new ResourceDictionary { Source = new("/SAModel.WPF;component/Inspector/XAML/RdInspectorTemplates.xaml", UriKind.RelativeOrAbsolute) };
+        private readonly ResourceDictionary _resources;
+
+        private readonly DataTemplate Empty;
+
+        private readonly DataTemplate DetailButton;
+
+        private readonly DataTemplate Hex;
+
+        private readonly DataTemplate HybridHex;
+
+        private readonly Dictionary<Type, DataTemplate> _templates;
+
+        private readonly Dictionary<Type, DataTemplate> _hexTemplates;
+
+        public InspectorElementTemplateSelector()
+        {
+            _resources = new() { Source = new("/SAModel.WPF;component/Inspector/XAML/RdInspectorTemplates.xaml", UriKind.RelativeOrAbsolute) };
+
+            Empty = (DataTemplate)_resources["/"];
+            DetailButton = (DataTemplate)_resources["OpenButton"];
+            Hex = (DataTemplate)_resources["OnlyHex"];
+            HybridHex = (DataTemplate)_resources["HybridHex"];
+
+            _templates = new();
+            _hexTemplates = new();
+
+            foreach(string k in _resources.Keys)
+            {
+                if(_resources[k] is not DataTemplate t || t.DataType == null)
+                    continue;
+
+                Type type = (Type)t.DataType;
+                if(k.StartsWith("Hex:"))
+                    _hexTemplates.Add(type, t);
+                else
+                    _templates.Add(type, t);
+            }
+        }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if(item == null)
-                return (DataTemplate)_templates["/"];
+                return Empty;
 
             IInspectorInfo info = (IInspectorInfo)item;
 
             Type type = info.ValueType;
-            if(!_templates.Contains(type.Name)
+            if(!_resources.Contains(type.Name)
                 && ((type.IsClass && type != typeof(string))
                     || (type.IsValueType && !type.IsEnum && !type.IsPrimitive)))
             {
-                return (DataTemplate)_templates["OpenButton"];
+                return DetailButton;
             }
 
-            string typeName = type.Name;
-            if(info.Hexadecimal != HexadecimalMode.NoHex)
+            string containerName = ((FrameworkElement)container).Name;
+            if(info.Hexadecimal != HexadecimalMode.NoHex 
+                && containerName != "NoHex")
             {
-                FrameworkElement fe = (FrameworkElement)container;
-                if(fe.Name == "Hex")
-                    typeName = "Hex:" + typeName;
-                else if(fe.Name != "NoHex")
-                    typeName = info.Hexadecimal.ToString();
+                if(containerName == "Hex")
+                    return _hexTemplates[type];
+
+                if(info.Hexadecimal == HexadecimalMode.HybridHex)
+                    return HybridHex;
+
+                if(info.Hexadecimal == HexadecimalMode.OnlyHex)
+                    return Hex;
             }
 
-            return (DataTemplate)_templates[typeName];
+            return _templates[type];
         }
     }
 

@@ -5,7 +5,9 @@
     xmlns:num="http://gu.se/NumericInput"
     xmlns:sub="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
     xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:numerics="clr-namespace:System.Numerics;assembly=System.Numerics"
+    xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
     
@@ -24,156 +26,6 @@
             </sub:DetailButton.Style>
         </sub:DetailButton>
     </DataTemplate>
-
-    <DataTemplate x:Key="String">
-        <TextBox BorderThickness="0" Padding="2" local:InspectorBinding.PropName="Text"
-                 IsReadOnly="{Binding IsReadOnly}" ToolTip="{Binding Tooltip}"
-                 Background="Transparent"/>
-    </DataTemplate>
-
-
-
-    <!--#region Number templates-->
-
-    <Style x:Key="BaseNumberStyle" 
-           TargetType="{x:Type num:BaseBox}">
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="2"/>
-        <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
-        <Setter Property="Background" Value="Transparent"/>
-    </Style>
-
-    <DataTemplate x:Key="Vector2">
-        <sub:UcVector2 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Vector3">
-        <sub:UcVector3 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Vector4">
-        <sub:UcVector4 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Quaternion">
-        <sub:UcQuaternion local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Matrix4x4">
-        <sub:UcMatrixDisplay local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Bounds">
-        <sub:UcBounds local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
-
-    <Style x:Key="NumberStyle" 
-           TargetType="{x:Type num:BaseBox}"
-           BasedOn="{StaticResource BaseNumberStyle}">
-        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
-        <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
-    </Style>
-
-    <DataTemplate x:Key="Int64">
-        <sub:LongBox ToolTip="Signed 64 bit integer ( Long )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="UInt64" 
-                  >
-        <sub:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Int32">
-        <num:IntBox ToolTip="Signed 32 bit integer ( Int )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="UInt32">
-        <sub:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Int16">
-        <num:ShortBox ToolTip="Signed 16 bit integer ( Short )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="UInt16">
-        <sub:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Double">
-        <num:DoubleBox ToolTip="64 bit floating point number ( Double )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Single">
-        <num:FloatBox ToolTip="32 bit floating point number ( Single )"
-            Style="{StaticResource NumberStyle}"/>
-    </DataTemplate>
-
-    <!--#endregion-->
-
-    <!--#region Hexadecimal templates-->
-
-    <Style x:Key="HexNumberStyle" 
-           TargetType="{x:Type num:BaseBox}">
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="0,2,2,2"/>
-        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
-        <Setter Property="ToolTip" Value="{Binding Tooltip}"/>
-        <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
-        <Setter Property="TextAlignment" Value="Left"/>
-        <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
-        <Setter Property="IsEnabled" Value="False"/>
-        <!--Well, we gotta wait for a fix... till then, this is disabled-->
-
-        <Style.Triggers>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="Transparent"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
-    <DataTemplate x:Key="Hex:Int64">
-        <sub:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="16" StringFormat="X16"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Hex:UInt64">
-        <sub:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="16" StringFormat="X16"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Hex:Int32">
-        <num:IntBox ToolTip="Hexadecimal signed 32 bit integer ( Int )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="8" StringFormat="X8"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Hex:UInt32">
-        <sub:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="8" StringFormat="X8"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Hex:Int16">
-        <num:ShortBox ToolTip="Hexadecimal signed 16 bit integer ( Short )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="4" StringFormat="X4"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="Hex:UInt16">
-        <sub:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
-            Style="{StaticResource HexNumberStyle}" 
-            MaxLength="4" StringFormat="X4"/>
-    </DataTemplate>
-
 
     <DataTemplate x:Key="OnlyHex">
         <Grid>
@@ -202,6 +54,153 @@
         </Grid>
     </DataTemplate>
 
+    <DataTemplate x:Key="String" DataType="{x:Type sys:String}">
+        <TextBox BorderThickness="0" Padding="2" local:InspectorBinding.PropName="Text"
+                 IsReadOnly="{Binding IsReadOnly}" ToolTip="{Binding Tooltip}"
+                 Background="Transparent"/>
+    </DataTemplate>
+
+    <!--#region Number templates-->
+
+    <Style x:Key="BaseNumberStyle" 
+           TargetType="{x:Type num:BaseBox}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <DataTemplate x:Key="Vector2" DataType="{x:Type numerics:Vector2}">
+        <sub:UcVector2 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Vector3" DataType="{x:Type numerics:Vector3}">
+        <sub:UcVector3 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Vector4" DataType="{x:Type numerics:Vector4}">
+        <sub:UcVector4 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Quaternion" DataType="{x:Type numerics:Quaternion}">
+        <sub:UcQuaternion local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Matrix4x4" DataType="{x:Type numerics:Matrix4x4}">
+        <sub:UcMatrixDisplay local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Bounds" DataType="{x:Type structs:Bounds}">
+        <sub:UcBounds local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <Style x:Key="NumberStyle" 
+           TargetType="{x:Type num:BaseBox}"
+           BasedOn="{StaticResource BaseNumberStyle}">
+        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
+        <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
+    </Style>
+
+    <DataTemplate x:Key="Int64" DataType="{x:Type sys:Int64}">
+        <sub:LongBox ToolTip="Signed 64 bit integer ( Long )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="UInt64" DataType="{x:Type sys:UInt64}">
+        <sub:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Int32" DataType="{x:Type sys:Int32}">
+        <num:IntBox ToolTip="Signed 32 bit integer ( Int )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="UInt32" DataType="{x:Type sys:UInt32}">
+        <sub:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Int16" DataType="{x:Type sys:Int16}">
+        <num:ShortBox ToolTip="Signed 16 bit integer ( Short )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="UInt16" DataType="{x:Type sys:UInt16}">
+        <sub:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Double" DataType="{x:Type sys:Double}">
+        <num:DoubleBox ToolTip="64 bit floating point number ( Double )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Single" DataType="{x:Type sys:Single}">
+        <num:FloatBox ToolTip="32 bit floating point number ( Single )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+
+    <!--#endregion-->
+
+    <!--#region Hexadecimal templates-->
+
+    <Style x:Key="HexNumberStyle" 
+           TargetType="{x:Type num:BaseBox}">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0,2,2,2"/>
+        <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}"/>
+        <Setter Property="ToolTip" Value="{Binding Tooltip}"/>
+        <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
+        <Setter Property="TextAlignment" Value="Left"/>
+        <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
+        <Setter Property="IsEnabled" Value="False"/>
+        <!--Well, we gotta wait for a fix... till then, this is disabled-->
+
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="Transparent"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <DataTemplate x:Key="Hex:Int64" DataType="{x:Type sys:Int64}">
+        <sub:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="16" StringFormat="X16"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Hex:UInt64" DataType="{x:Type sys:UInt64}">
+        <sub:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="16" StringFormat="X16"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Hex:Int32" DataType="{x:Type sys:Int32}">
+        <num:IntBox ToolTip="Hexadecimal signed 32 bit integer ( Int )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="8" StringFormat="X8"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Hex:UInt32" DataType="{x:Type sys:UInt32}">
+        <sub:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="8" StringFormat="X8"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Hex:Int16" DataType="{x:Type sys:Int16}">
+        <num:ShortBox ToolTip="Hexadecimal signed 16 bit integer ( Short )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="4" StringFormat="X4"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Hex:UInt16" DataType="{x:Type sys:UInt16}">
+        <sub:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
+            Style="{StaticResource HexNumberStyle}" 
+            MaxLength="4" StringFormat="X4"/>
+    </DataTemplate>
+
+
     <!--#endregion-->
 
     <!--The enums and flags are manually edited in so we can create tooltips and custom names-->
@@ -227,7 +226,7 @@
         </Style.Triggers>
     </Style>
 
-    <DataTemplate x:Key="LandtableFormat">
+    <DataTemplate x:Key="LandtableFormat" DataType="{x:Type objEnums:LandtableFormat}">
         <sub:EnumComboBox ToolTip="Landtable Data Format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="SA1"    Tag="{x:Static objEnums:LandtableFormat.SA1}"       ToolTip="Sonic Adventure 1 LandTable (BASIC)"/>
             <ComboBoxItem Content="SADX"   Tag="{x:Static objEnums:LandtableFormat.SADX}"      ToolTip="Sonic Adventure DX LandTable (BASIC)"/>
@@ -241,6 +240,8 @@
 
     <!--#region Flags-->
 
+    <!--#region Styles-->
+    
     <Style x:Key="FlagListItem" TargetType="{x:Type sub:FlagListItem}">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="MinHeight" Value="20"/>
@@ -353,8 +354,9 @@
         </Setter>
     </Style>
 
+    <!--#endregion-->
 
-    <DataTemplate x:Key="ObjectAttributes">
+    <DataTemplate x:Key="ObjectAttributes" DataType="{x:Type objEnums:ObjectAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList2}">
             <sub:HexFlagListItem Content="No Position"  Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
             <sub:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="No/Ignore rotation Data"/>
@@ -367,7 +369,7 @@
         </sub:FlagListBox>
     </DataTemplate>
 
-    <DataTemplate x:Key="LandtableAttributes">
+    <DataTemplate x:Key="LandtableAttributes" DataType="{x:Type objEnums:LandtableAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList8}">
             <sub:HexFlagListItem Content="Enable Motions"         Flag="{x:Static objEnums:LandtableAttributes.EnableMotions}" ToolTip="Enable/Contains geometry animations"/>
             <sub:HexFlagListItem Content="Load Texture List"      Flag="{x:Static objEnums:LandtableAttributes.LoadTexlist}"/>
