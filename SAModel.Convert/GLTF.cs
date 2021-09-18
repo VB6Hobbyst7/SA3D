@@ -460,7 +460,6 @@ namespace SATools.SAModel.Convert
                 {
                     kframes = new();
                     result.Keyframes.Add(channel.TargetNode.LogicalIndex, kframes);
-                    kframes.WasQuaternion = true;
                 }
 
                 switch(channel.TargetNodePath)
@@ -473,7 +472,7 @@ namespace SATools.SAModel.Convert
                     case PropertyPath.rotation:
                         var rotationSampler = channel.GetRotationSampler().CreateCurveSampler();
                         for(uint f = 0; f < frames; f++)
-                            kframes.Rotation.Add(f, Vector3Extensions.FromQuaternion(rotationSampler.GetPoint(keyframeStep * f)));
+                            kframes.Quaternion.Add(f, rotationSampler.GetPoint(keyframeStep * f));
                         break;
                     case PropertyPath.scale:
                         var scaleSampler = channel.GetScaleSampler().CreateCurveSampler();

@@ -22,7 +22,7 @@ namespace SATools.SAModel.ObjData
 
         private Vector3 _rotation;
 
-        private Quaternion _quaternionRotation;
+        private Quaternion _quaternionRotation = Quaternion.Identity;
 
         private Vector3 _scale = Vector3.One;
 
@@ -96,7 +96,7 @@ namespace SATools.SAModel.ObjData
             set
             {
                 _rotation = value;
-                _quaternionRotation = Vector3Extensions.FromEuler(value);
+                _quaternionRotation = QuaternionExtensions.FromEuler(value, RotateZYX);
                 UpdateMatrix();
             }
         }
@@ -107,7 +107,7 @@ namespace SATools.SAModel.ObjData
             set
             {
                 _quaternionRotation = value;
-                _rotation = Vector3Extensions.FromQuaternion(value);
+                _rotation = QuaternionExtensions.ToEuler(value, RotateZYX);
                 UpdateMatrix();
             }
         }
@@ -253,7 +253,8 @@ namespace SATools.SAModel.ObjData
 
         private void UpdateMatrix()
         {
-            LocalMatrix = Vector3Extensions.CreateTransformMatrix(_position, _quaternionRotation, _scale, RotateZYX);
+            //LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
+            LocalMatrix = Vector3Extensions.CreateTransformMatrix(_position, _rotation, _scale, RotateZYX);
         }
 
         /// <summary>

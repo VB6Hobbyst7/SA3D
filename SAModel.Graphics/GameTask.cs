@@ -126,6 +126,8 @@ namespace SATools.SAModel.Graphics
                         mdl.Position = frame.position.Value;
                     if(frame.rotation.HasValue)
                         mdl.Rotation = frame.rotation.Value;
+                    if(frame.quaternion.HasValue)
+                        mdl.QuaternionRotation = frame.quaternion.Value;
                     if(frame.scale.HasValue)
                         mdl.Scale = frame.scale.Value;
                 }

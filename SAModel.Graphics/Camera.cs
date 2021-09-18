@@ -248,7 +248,11 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         private void UpdateDirections()
         {
-            Matrix4x4 rot = Matrix4x4.Transpose(Vector3Extensions.CreateRotationMatrix(_rotation, true));
+            Matrix4x4 matX = Matrix4x4.CreateRotationX(DegToRad(_rotation.X));
+            Matrix4x4 matY = Matrix4x4.CreateRotationY(DegToRad(_rotation.Y));
+            Matrix4x4 matZ = Matrix4x4.CreateRotationZ(DegToRad(_rotation.Z));
+
+            Matrix4x4 rot = Matrix4x4.Transpose(matZ * matY * matX);
 
             _forward = Vector3.Normalize(Vector3.TransformNormal(-Vector3.UnitZ, rot));
             _up = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, rot));
@@ -263,7 +267,12 @@ namespace SATools.SAModel.Graphics
         private void UpdateViewMatrix()
         {
             Matrix4x4 posMtx = Matrix4x4.CreateTranslation(-_position);
-            Matrix4x4 rotMtx = Vector3Extensions.CreateRotationMatrix(_rotation, true);
+
+            Matrix4x4 matX = Matrix4x4.CreateRotationX(DegToRad(_rotation.X));
+            Matrix4x4 matY = Matrix4x4.CreateRotationY(DegToRad(_rotation.Y));
+            Matrix4x4 matZ = Matrix4x4.CreateRotationZ(DegToRad(_rotation.Z));
+
+            Matrix4x4 rotMtx = matZ * matY * matX;
 
             ViewMatrix = posMtx * rotMtx;
 

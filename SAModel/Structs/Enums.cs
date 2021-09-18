@@ -18,10 +18,6 @@
         /// Integer rotation value
         /// </summary>
         BAMS32,
-        /// <summary>
-        /// Float quaternion
-        /// </summary>
-        Quaternion,
 
         /// <summary>
         /// ARGB Color; Each channel takes a byte

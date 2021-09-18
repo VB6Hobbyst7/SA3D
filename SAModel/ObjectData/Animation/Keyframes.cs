@@ -82,24 +82,33 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         public SortedDictionary<uint, Vector2> Point { get; private set; }
 
+        /// <summary>
+        /// Quaternion keyframes
+        /// </summary>
+        public SortedDictionary<uint, Quaternion> Quaternion { get; private set; }
+
         private IEnumerable<uint>[] Frames
         {
             get
             {
-                IEnumerable<uint>[] result = new IEnumerable<uint>[13];
-                result[0] = Position.Keys;
-                result[1] = Rotation.Keys;
-                result[2] = Scale.Keys;
-                result[3] = Vector.Keys;
-                result[4] = Vertex.Keys;
-                result[5] = Normal.Keys;
-                result[6] = Target.Keys;
-                result[7] = Roll.Keys;
-                result[8] = Angle.Keys;
-                result[9] = LightColor.Keys;
-                result[10] = Intensity.Keys;
-                result[11] = Spot.Keys;
-                result[12] = Point.Keys;
+                IEnumerable<uint>[] result = new IEnumerable<uint>[]
+                {
+                    Position.Keys,
+                    Rotation.Keys,
+                    Scale.Keys,
+                    Vector.Keys,
+                    Vertex.Keys,
+                    Normal.Keys,
+                    Target.Keys,
+                    Roll.Keys,
+                    Angle.Keys,
+                    LightColor.Keys,
+                    Intensity.Keys,
+                    Spot.Keys,
+                    Point.Keys,
+                    Quaternion.Keys,
+                };
+
                 return result;
             }
         }
@@ -107,32 +116,14 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Whether any keyframes exist in this keyframe set
         /// </summary>
-        public bool HasKeyframes => Frames.Any(x => x.Count() > 0);
-
-        /// <summary>
-        /// Whether the keyframes read were a quaternion. Used for properly calculating rotation keyframes
-        /// </summary>
-        public bool WasQuaternion { get; set; }
+        public bool HasKeyframes
+            => Frames.Any(x => x.Any());
 
         /// <summary>
         /// Returns the last keyframe number across all sets / maximum keyframe size
         /// </summary>
         public uint KeyframeCount
-        {
-            get
-            {
-                uint count = 0;
-                foreach(var v in Frames)
-                {
-                    if(v.Count() == 0)
-                        continue;
-                    uint val = v.Last();
-                    if(val > count)
-                        count = val;
-                }
-                return count + 1;
-            }
-        }
+            => Frames.Max(x => x.LastOrDefault()) + 1;
 
         /// <summary>
         /// Channels that are used
@@ -169,6 +160,8 @@ namespace SATools.SAModel.ObjData.Animation
                     attribs |= AnimationAttributes.Spot;
                 if(Point.Count > 0)
                     attribs |= AnimationAttributes.Point;
+                if(Quaternion.Count > 0)
+                    attribs |= AnimationAttributes.Quaternion;
 
                 return attribs;
             }
@@ -182,19 +175,20 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         public Keyframes()
         {
-            Position = new SortedDictionary<uint, Vector3>();
-            Rotation = new SortedDictionary<uint, Vector3>();
-            Scale = new SortedDictionary<uint, Vector3>();
-            Vector = new SortedDictionary<uint, Vector3>();
-            Vertex = new SortedDictionary<uint, Vector3[]>();
-            Normal = new SortedDictionary<uint, Vector3[]>();
-            Target = new SortedDictionary<uint, Vector3>();
-            Roll = new SortedDictionary<uint, float>();
-            Angle = new SortedDictionary<uint, float>();
-            LightColor = new SortedDictionary<uint, Color>();
-            Intensity = new SortedDictionary<uint, float>();
-            Spot = new SortedDictionary<uint, Spotlight>();
-            Point = new SortedDictionary<uint, Vector2>();
+            Position = new();
+            Rotation = new();
+            Scale = new();
+            Vector = new();
+            Vertex = new();
+            Normal = new();
+            Target = new();
+            Roll = new();
+            Angle = new();
+            LightColor = new();
+            Intensity = new();
+            Spot = new();
+            Point = new();
+            Quaternion = new();
         }
 
 
@@ -287,23 +281,6 @@ namespace SATools.SAModel.ObjData.Animation
                 return Vector3.Lerp(before, next, interpolation);
         }
 
-        private static Vector3 RotationAtFrame(SortedDictionary<uint, Vector3> keyframes, float frame, bool wasQuaternion)
-        {
-            float interpolation = GetNearestFrames(keyframes, frame, out Vector3 before, out Vector3 next);
-            if(interpolation == 0)
-                return before;
-
-            if(!wasQuaternion)
-                return Vector3.Lerp(before, next, interpolation);
-
-            Vector3 result = default;
-            result.X = LerpShorterAngle(before.X, next.X, interpolation);
-            result.Y = LerpShorterAngle(before.Y, next.Y, interpolation);
-            result.Z = LerpShorterAngle(before.Z, next.Z, interpolation);
-            return result;
-
-        }
-
         private static float LerpShorterAngle(float a, float b, float t)
         {
             float dif = Math.Abs(a - b);
@@ -368,6 +345,15 @@ namespace SATools.SAModel.ObjData.Animation
                 return Spotlight.Lerp(before, next, interpolation);
         }
 
+        private static Quaternion ValueAtFrame(SortedDictionary<uint, Quaternion> keyframes, float frame)
+        {
+            float interpolation = GetNearestFrames(keyframes, frame, out Quaternion before, out Quaternion next);
+            if(interpolation == 0)
+                return before;
+            else
+                return System.Numerics.Quaternion.Lerp(before, next, interpolation);
+        }
+
         /// <summary>
         /// Returns a all values at a specific frame
         /// </summary>
@@ -384,7 +370,7 @@ namespace SATools.SAModel.ObjData.Animation
                 result.position = ValueAtFrame(Position, frame);
 
             if(Rotation.Count > 0)
-                result.rotation = RotationAtFrame(Rotation, frame, WasQuaternion);
+                result.rotation = ValueAtFrame(Rotation, frame);
 
             if(Scale.Count > 0)
                 result.scale = ValueAtFrame(Scale, frame);
@@ -419,10 +405,13 @@ namespace SATools.SAModel.ObjData.Animation
             if(Point.Count > 0)
                 result.point = ValueAtFrame(Point, frame);
 
+            if(Quaternion.Count > 0)
+                result.quaternion = ValueAtFrame(Quaternion, frame);
+
             return result;
         }
 
-
+       
         private static void ReadVector3Set(byte[] source, uint address, uint count, SortedDictionary<uint, Vector3> dictionary, IOType type)
         {
             if(type == IOType.BAMS16)
@@ -465,7 +454,7 @@ namespace SATools.SAModel.ObjData.Animation
                 return;
 
             var values = ptrs.ToArray();
-            uint size = (origAddr - values[values.Length - 1].Key) / 12;
+            uint size = (origAddr - values[^1].Key) / 12;
             for(int i = values.Length - 1; i >= 0; i--)
             {
                 uint ptr = values[i].Key;
@@ -518,6 +507,15 @@ namespace SATools.SAModel.ObjData.Animation
             }
         }
 
+        private static void ReadQuaternionSet(byte[] source, uint address, uint count, SortedDictionary<uint, Quaternion> dictionary)
+        {
+            for(int i = 0; i < count; i++)
+            {
+                uint frame = source.ToUInt32(address);
+                address += 4;
+                dictionary.Add(frame, QuaternionExtensions.Read(source, ref address));
+            }
+        }
 
         /// <summary>
         /// Reads a set of keyframes from a byte array
@@ -600,8 +598,7 @@ namespace SATools.SAModel.ObjData.Animation
                             ReadVector2Set(source, taddr, frameCount, result.Point, IOType.Float);
                             break;
                         case AnimationAttributes.Quaternion:
-                            ReadVector3Set(source, taddr, frameCount, result.Rotation, IOType.Quaternion);
-                            result.WasQuaternion = true;
+                            ReadQuaternionSet(source, taddr, frameCount, result.Quaternion);
                             break;
                     }
                 }
@@ -827,6 +824,12 @@ namespace SATools.SAModel.ObjData.Animation
         /// Point light stuff at the frame
         /// </summary>
         public Vector2? point;
+
+        /// <summary>
+        /// Quaternion rotation at the frame
+        /// </summary>
+        public Quaternion? quaternion;
+
     }
 
     /// <summary>

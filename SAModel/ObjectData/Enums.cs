@@ -81,7 +81,7 @@ namespace SATools.SAModel.ObjData
         Visible = 0x01,
         Solid = 0x02,
         Water = 0x04,
-        Water2 = 0x08,
+        WaterNoAlpha = 0x08,
         NoFriction = 0x10,
         NoAcceleration = 0x20,
         LessAcceleration = 0x40,
@@ -94,11 +94,27 @@ namespace SATools.SAModel.ObjData
         Footprints = 0x1000,
         NoShadows = 0x2000,
         NoFog = 0x4000,
-
         Unknown24 = 0x8000,
-        Unknown27 = 0x010000,
-        Unknown29 = 0x020000,
-        Unknown30 = 0x040000,
+
+        /// <summary>
+        /// SA2; Moving collision
+        /// </summary>
+        DynamicCollision = 0x010000,
+
+        /// <summary>
+        /// SA2; Bounds center is offset from 0,0,0 and gets influenced by rotation and scale
+        /// </summary>
+        OffsetBoundsCenter = 0x020000,
+
+        /// <summary>
+        /// SA2; Radius is < 20, with Tiny its < 3
+        /// </summary>
+        BoundsRadiusSmall = 0x040000,
+
+        /// <summary>
+        /// SA2; Radius is < 10, with Small its < 3
+        /// </summary>
+        BoundsRadiusTiny = 0x080000,
     }
 
     /// <summary>
@@ -161,14 +177,34 @@ namespace SATools.SAModel.ObjData
         NotClimbable = 0x80,
         IgnoreSlope = 0x100,
         Hurt = 0x400,
+        Footprints = 0x800,
         CannotLand = 0x1000,
-        Water2 = 0x2000,
+        WaterNoAlpha = 0x2000,
         NoShadows = 0x8000,
+        IncreasedAcceleration = 0x100000,
         NoFog = 0x400000,
         Unknown24 = 0x1000000,
-        Unknown27 = 0x8000000,
-        Unknown29 = 0x20000000,
-        Unknown30 = 0x40000000,
+
+        /// <summary>
+        /// Moving collision
+        /// </summary>
+        DynamicCollision = 0x8000000,
+
+        /// <summary>
+        /// Bounds center is offset from 0,0,0 and gets influenced by rotation and scale
+        /// </summary>
+        OffsetBoundsCenter = 0x10000000,
+
+        /// <summary>
+        /// Radius is &lt; 20, with Tiny its &lt; 3
+        /// </summary>
+        BoundsRadiusSmall = 0x20000000,
+
+        /// <summary>
+        /// Radius is &lt; 10, with Small its &lt; 3
+        /// </summary>
+        BoundsRadiusTiny = 0x40000000,
+
         Visible = 0x80000000
     }
 
@@ -236,22 +272,28 @@ namespace SATools.SAModel.ObjData
                 result |= SurfaceAttributes.IgnoreSlope;
             if(flags.HasFlag(SA2SurfaceAttributes.Hurt))
                 result |= SurfaceAttributes.Hurt;
+            if(flags.HasFlag(SA2SurfaceAttributes.Footprints))
+                result |= SurfaceAttributes.Footprints;
             if(flags.HasFlag(SA2SurfaceAttributes.CannotLand))
                 result |= SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SA2SurfaceAttributes.Water2))
-                result |= SurfaceAttributes.Water2;
+            if(flags.HasFlag(SA2SurfaceAttributes.WaterNoAlpha))
+                result |= SurfaceAttributes.WaterNoAlpha;
             if(flags.HasFlag(SA2SurfaceAttributes.NoShadows))
                 result |= SurfaceAttributes.NoShadows;
+            if(flags.HasFlag(SA2SurfaceAttributes.IncreasedAcceleration))
+                result |= SurfaceAttributes.IncreasedAcceleration;
             if(flags.HasFlag(SA2SurfaceAttributes.NoFog))
                 result |= SurfaceAttributes.NoFog;
             if(flags.HasFlag(SA2SurfaceAttributes.Unknown24))
                 result |= SurfaceAttributes.Unknown24;
-            if(flags.HasFlag(SA2SurfaceAttributes.Unknown27))
-                result |= SurfaceAttributes.Unknown27;
-            if(flags.HasFlag(SA2SurfaceAttributes.Unknown29))
-                result |= SurfaceAttributes.Unknown29;
-            if(flags.HasFlag(SA2SurfaceAttributes.Unknown30))
-                result |= SurfaceAttributes.Unknown30;
+            if(flags.HasFlag(SA2SurfaceAttributes.DynamicCollision))
+                result |= SurfaceAttributes.DynamicCollision;
+            if(flags.HasFlag(SA2SurfaceAttributes.OffsetBoundsCenter))
+                result |= SurfaceAttributes.OffsetBoundsCenter;
+            if(flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusSmall))
+                result |= SurfaceAttributes.BoundsRadiusSmall;
+            if(flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusTiny))
+                result |= SurfaceAttributes.BoundsRadiusTiny;
             if(flags.HasFlag(SA2SurfaceAttributes.Visible))
                 result |= SurfaceAttributes.Visible;
 
@@ -320,22 +362,28 @@ namespace SATools.SAModel.ObjData
                 result |= SA2SurfaceAttributes.IgnoreSlope;
             if(flags.HasFlag(SurfaceAttributes.Hurt))
                 result |= SA2SurfaceAttributes.Hurt;
+            if(flags.HasFlag(SurfaceAttributes.Footprints))
+                result |= SA2SurfaceAttributes.Footprints;
             if(flags.HasFlag(SurfaceAttributes.CannotLand))
                 result |= SA2SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SurfaceAttributes.Water2))
-                result |= SA2SurfaceAttributes.Water2;
+            if(flags.HasFlag(SurfaceAttributes.WaterNoAlpha))
+                result |= SA2SurfaceAttributes.WaterNoAlpha;
             if(flags.HasFlag(SurfaceAttributes.NoShadows))
                 result |= SA2SurfaceAttributes.NoShadows;
+            if(flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
+                result |= SA2SurfaceAttributes.IncreasedAcceleration;
             if(flags.HasFlag(SurfaceAttributes.NoFog))
                 result |= SA2SurfaceAttributes.NoFog;
             if(flags.HasFlag(SurfaceAttributes.Unknown24))
                 result |= SA2SurfaceAttributes.Unknown24;
-            if(flags.HasFlag(SurfaceAttributes.Unknown27))
-                result |= SA2SurfaceAttributes.Unknown27;
-            if(flags.HasFlag(SurfaceAttributes.Unknown29))
-                result |= SA2SurfaceAttributes.Unknown29;
-            if(flags.HasFlag(SurfaceAttributes.Unknown30))
-                result |= SA2SurfaceAttributes.Unknown30;
+            if(flags.HasFlag(SurfaceAttributes.DynamicCollision))
+                result |= SA2SurfaceAttributes.DynamicCollision;
+            if(flags.HasFlag(SurfaceAttributes.OffsetBoundsCenter))
+                result |= SA2SurfaceAttributes.OffsetBoundsCenter;
+            if(flags.HasFlag(SurfaceAttributes.BoundsRadiusSmall))
+                result |= SA2SurfaceAttributes.BoundsRadiusSmall;
+            if(flags.HasFlag(SurfaceAttributes.BoundsRadiusTiny))
+                result |= SA2SurfaceAttributes.BoundsRadiusTiny;
             if(flags.HasFlag(SurfaceAttributes.Visible))
                 result |= SA2SurfaceAttributes.Visible;
 
@@ -351,7 +399,7 @@ namespace SATools.SAModel.ObjData
         {
             return flags.HasFlag(SurfaceAttributes.Solid)
                 || flags.HasFlag(SurfaceAttributes.Water)
-                || flags.HasFlag(SurfaceAttributes.Water2);
+                || flags.HasFlag(SurfaceAttributes.WaterNoAlpha);
         }
 
         public static int ChannelCount(this AnimationAttributes flags)

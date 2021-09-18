@@ -60,101 +60,11 @@ namespace SATools.SAModel.Structs
                     };
                     address += 12;
                     break;
-                case IOType.Quaternion:
-                    result = FromQuaternion(
-                        source.ToSingle(address),
-                        source.ToSingle(address + 4),
-                        source.ToSingle(address + 8),
-                        source.ToSingle(address + 12)
-                        );
-
-                    address += 16;
-                    break;
                 default:
                     throw new ArgumentException($"Type {type} not available for struct Vector3");
             }
             return result;
         }
-
-        public static Vector3 FromQuaternion(Vector4 q)
-            => FromQuaternion(q.W, q.X, q.Y, q.Z);
-
-        public static Vector3 FromQuaternion(Quaternion q)
-            => FromQuaternion(q.W, q.X, q.Y, q.Z);
-
-        public static Vector3 FromQuaternion(float w, float x, float y, float z)
-        {
-            // normalize the values
-            Vector4 vN = Vector4.Normalize(new(x, y, z, w));
-            x = vN.X;
-            y = vN.Y;
-            z = vN.Z;
-            w = vN.W;
-
-
-            // this will have a magnitude of 0.5 or greater if and only if this is a singularity case
-            float test = (y * w) - (x * z);
-
-            Vector3 v = new();
-
-            if(test > 0.4995f) // singularity at north pole
-            {
-                v.X = 2f * (float)Math.Atan2(x, y);
-                v.Y = Pi / 2;
-            }
-            else if(test < -0.4995f) // singularity at south pole
-            {
-                v.X = -2f * (float)Math.Atan2(x, y);
-                v.Y = -Pi / 2;
-            }
-            else
-            {
-                v.X = (float)Math.Atan2((2f * w * x) + (2f * z * y), 1 - (2f * ((y * y) + (x * x))));
-                v.Y = (float)Math.Asin(2f * ((w * y) - (x * z)));
-                v.Z = (float)Math.Atan2((2f * w * z) + (2f * y * x), 1 - (2f * ((z * z) + (y * y))));
-            }
-            v *= Rad2Deg;
-
-            static void bamsNormalize(ref float t)
-            {
-                t %= 360;
-                if(t < -180)
-                    t += 360;
-                else if(t > 180)
-                    t -= 360;
-            }
-
-            bamsNormalize(ref v.X);
-            bamsNormalize(ref v.Y);
-            bamsNormalize(ref v.Z);
-            return v;
-        }
-
-        public static Quaternion FromEuler(float x, float y, float z)
-        {
-            float halfYaw = y * 0.5f;
-            float halfPitch = x * 0.5f;
-            float halfRoll = z * 0.5f;
-
-            float sinHYaw = MathF.Sin(halfYaw);
-            float cosHYaw = MathF.Cos(halfYaw);
-
-            float sinHPitch = MathF.Sin(halfPitch);
-            float cosHPitch = MathF.Cos(halfPitch);
-
-            float sinHRoll = MathF.Sin(halfRoll);
-            float cosHRoll = MathF.Cos(halfRoll);
-
-            float qX = (sinHRoll * cosHPitch * cosHYaw) - (cosHRoll * sinHPitch * sinHYaw);
-            float qY = (cosHRoll * sinHPitch * cosHYaw) + (sinHRoll * cosHPitch * sinHYaw);
-            float qZ = (cosHRoll * cosHPitch * sinHYaw) - (sinHRoll * sinHPitch * cosHYaw);
-            float qW = (cosHRoll * cosHPitch * cosHYaw) + (sinHRoll * sinHPitch * sinHYaw);
-
-            return new(qX, qY, qZ, qW);
-        }
-
-        public static Quaternion FromEuler(Vector3 rotation)
-            => FromEuler(rotation.X, rotation.Y, rotation.Z);
 
         /// <summary>
         /// Writes a Vector3 to a stream
@@ -324,18 +234,62 @@ namespace SATools.SAModel.Structs
 
         public static Matrix4x4 CreateRotationMatrix(Vector3 rotation, bool ZYX)
         {
-            var matX = Matrix4x4.CreateRotationX(DegToRad(rotation.X));
-            var matY = Matrix4x4.CreateRotationY(DegToRad(rotation.Y));
-            var matZ = Matrix4x4.CreateRotationZ(DegToRad(rotation.Z));
+            float radX = DegToRad(rotation.X);
+            float radY = DegToRad(rotation.Y);
+            float radZ = DegToRad(rotation.Z);
 
-            return ZYX ? matZ * matY * matX : matX * matY * matZ;
+            float sinX = MathF.Sin(radX);
+            float cosX = MathF.Cos(radX);
+
+            float sinY = MathF.Sin(radY);
+            float cosY = MathF.Cos(radY);
+
+            float sinZ = MathF.Sin(radZ);
+            float cosZ = MathF.Cos(radZ);
+
+            if(ZYX)
+            {
+                // Well, in sa2 it rotates in ZXY order, so thats what we do here. dont ask me...
+                return new()
+                {
+                    M11 = sinY * sinX * sinZ + cosY * cosZ,
+                    M12 = cosX * sinZ,
+                    M13 = cosY * sinX * sinZ - sinY * cosZ,
+
+                    M21 = sinY * sinX * cosZ - cosY * sinZ,
+                    M22 = cosX * cosZ,
+                    M23 = cosY * sinX * cosZ + sinY * sinZ,
+
+                    M31 = sinY * cosX,
+                    M32 = -sinX,
+                    M33 = cosY * cosX,
+
+                    M44 = 1
+                };
+            }
+            else
+            {
+                return new()
+                {
+                    M11 = cosZ * cosY,
+                    M12 = sinZ * cosY,
+                    M13 = -sinY,
+
+                    M21 = cosZ * sinY * sinX - sinZ * cosX,
+                    M22 = sinZ * sinY * sinX + cosZ * cosX,
+                    M23 = cosY * sinX,
+
+                    M31 = cosZ * sinY * cosX + sinZ * sinX,
+                    M32 = sinZ * sinY * cosX - cosZ * sinX,
+                    M33 = cosY * cosX,
+
+                    M44 = 1
+                };
+            }
         }
 
         public static Matrix4x4 CreateTransformMatrix(Vector3 position, Vector3 rotation, Vector3 scale, bool rotateZYX)
             => Matrix4x4.CreateScale(scale) * CreateRotationMatrix(rotation, rotateZYX) * Matrix4x4.CreateTranslation(position);
-
-        public static Matrix4x4 CreateTransformMatrix(Vector3 position, Quaternion rotation, Vector3 scale, bool rotateZYX)
-            => Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(position);
 
         public static Matrix4x4 GetNormalMatrix(this Matrix4x4 matrix)
         {
