@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SAModel.WPF.Inspector.Viewmodel
+namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
 
     internal class ListInspectorViewModel<T> : BaseViewModel
     {
         // note: this class only works under the assumption that the user is unable to modify the item count
-        
+
         public class ListInspectorElement : BaseViewModel, IInspectorInfo
         {
             /// <summary>
@@ -35,7 +35,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
 
             public Type ValueType
                 => Value?.GetType() ?? Collection.ContentType;
-            
+
             object IInspectorInfo.Value
                 => Value;
 
@@ -86,7 +86,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
         public string PropertyName { get; }
 
         public bool ReadonlyCollection
-            => SourceList.IsReadOnly;
+            => !SourceList.GetType().IsArray && SourceList.IsReadOnly;
 
         public HexadecimalMode Hexadecimal { get; }
 

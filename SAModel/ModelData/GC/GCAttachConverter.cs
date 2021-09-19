@@ -482,7 +482,7 @@ namespace SATools.SAModel.ModelData.GC
 
                 material.UseAlpha = true;
                 material.Culling = true;
-                foreach(Mesh m in atc.TranslucentMeshes)
+                foreach(Mesh m in atc.TransparentMeshes)
                     meshes.Add(ProcessMesh(m));
 
                 // inject the vertex information into the first mesh

@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace SAModel.WPF.Inspector.Viewmodel
+namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
 
     /// <summary>
     /// A single inspector element
     /// </summary>
-    public struct InspectorElement : IInspectorInfo
+    internal struct InspectorElement : IInspectorInfo
     {
         public object Source { get; }
 
@@ -41,6 +41,9 @@ namespace SAModel.WPF.Inspector.Viewmodel
             {
                 if(Source == null || Value == null)
                     return "Null";
+
+                if(ValueType == typeof(RelayCommand))
+                    return "Execute";
 
                 if(IsCollection)
                 {
@@ -158,7 +161,7 @@ namespace SAModel.WPF.Inspector.Viewmodel
             }
         }
 
-        public static bool CheckViewmodelExists(object source) 
+        public static bool CheckViewmodelExists(object source)
             => _viewmodelTypes.ContainsKey(source.GetType());
 
         /// <summary>

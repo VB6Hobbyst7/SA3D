@@ -1,13 +1,9 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ModelData.GC;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
@@ -31,9 +27,9 @@ namespace SATools.SAModel.ModelData.GC
         public Mesh[] OpaqueMeshes { get; }
 
         /// <summary>
-        /// Meshes with translucent rendering properties
+        /// Meshes with transparent rendering properties
         /// </summary>
-        public Mesh[] TranslucentMeshes { get; }
+        public Mesh[] TransparentMeshes { get; }
 
         public override bool HasWeight => false;
 
@@ -45,16 +41,22 @@ namespace SATools.SAModel.ModelData.GC
         /// <param name="name">Name of the attach</param>
         /// <param name="vertexData">Vertex data</param>
         /// <param name="opaqueMeshes">Opaque meshes</param>
-        /// <param name="translucentMeshes">Translucent meshes</param>
-        public GCAttach(VertexSet[] vertexData, Mesh[] opaqueMeshes, Mesh[] translucentMeshes)
+        /// <param name="transprentMeshes">Transparent meshes</param>
+        public GCAttach(VertexSet[] vertexData, Mesh[] opaqueMeshes, Mesh[] transprentMeshes)
         {
             VertexData = vertexData;
             OpaqueMeshes = opaqueMeshes;
-            TranslucentMeshes = translucentMeshes;
+            TransparentMeshes = transprentMeshes;
 
             MeshBounds = Bounds.FromPoints(VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position).Vector3Data);
 
             Name = "attach_" + GenerateIdentifier();
+        }
+
+        public override void RecalculateBounds()
+        {
+            VertexSet positions = VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position);
+            MeshBounds = Bounds.FromPoints(positions.Vector3Data);
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace SATools.SAModel.ModelData.GC
 
             // adjust the indices of the polygon corners
             List<Mesh> meshes = new(OpaqueMeshes);
-            meshes.AddRange(TranslucentMeshes);
+            meshes.AddRange(TransparentMeshes);
 
             foreach(Mesh m in meshes)
             {
@@ -121,7 +123,7 @@ namespace SATools.SAModel.ModelData.GC
             IndexAttributeParameter indexParam;
             Mesh[] source = OpaqueMeshes;
             if(source == null || source.Length == 0)
-                source = TranslucentMeshes;
+                source = TransparentMeshes;
 
             indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
 
@@ -217,7 +219,7 @@ namespace SATools.SAModel.ModelData.GC
             foreach(Mesh m in OpaqueMeshes)
                 ProcessMesh(m);
 
-            foreach(Mesh m in TranslucentMeshes)
+            foreach(Mesh m in TransparentMeshes)
                 ProcessMesh(m);
         }
 
@@ -242,10 +244,10 @@ namespace SATools.SAModel.ModelData.GC
             uint vertexAddress = source.ToUInt32(address) - imageBase;
             //uint gap = source.ToUInt32(address + 4);
             uint opaqueAddress = source.ToUInt32(address + 8) - imageBase;
-            uint translucentAddress = source.ToUInt32(address + 12) - imageBase;
+            uint transparentAddress = source.ToUInt32(address + 12) - imageBase;
 
             int opaqueCount = source.ToInt16(address + 16);
-            int translucentCount = source.ToInt16(address + 18);
+            int transparentCount = source.ToInt16(address + 18);
             address += 20;
             Bounds bounds = Bounds.Read(source, ref address);
 
@@ -271,15 +273,15 @@ namespace SATools.SAModel.ModelData.GC
 
             indexAttribs = IndexAttributes.HasPosition;
 
-            List<Mesh> translucentMeshes = new();
-            for(int i = 0; i < translucentCount; i++)
+            List<Mesh> transparentMeshes = new();
+            for(int i = 0; i < transparentCount; i++)
             {
-                Mesh mesh = Mesh.Read(source, translucentAddress, imageBase, ref indexAttribs);
-                translucentMeshes.Add(mesh);
-                translucentAddress += 16;
+                Mesh mesh = Mesh.Read(source, transparentAddress, imageBase, ref indexAttribs);
+                transparentMeshes.Add(mesh);
+                transparentAddress += 16;
             }
 
-            return new GCAttach(vertexData.ToArray(), opaqueMeshes.ToArray(), translucentMeshes.ToArray())
+            return new GCAttach(vertexData.ToArray(), opaqueMeshes.ToArray(), transparentMeshes.ToArray())
             {
                 Name = name,
                 MeshBounds = bounds
@@ -321,7 +323,7 @@ namespace SATools.SAModel.ModelData.GC
                     indexAttribs = t.Value;
                 m.WriteData(writer, indexAttribs);
             }
-            foreach(Mesh m in TranslucentMeshes)
+            foreach(Mesh m in TransparentMeshes)
             {
                 IndexAttributes? t = m.IndexAttributes;
                 if(t.HasValue)
@@ -335,8 +337,8 @@ namespace SATools.SAModel.ModelData.GC
             {
                 m.WriteProperties(writer, imageBase);
             }
-            uint translucentAddress = writer.Position + imageBase;
-            foreach(Mesh m in TranslucentMeshes)
+            uint transparentAddress = writer.Position + imageBase;
+            foreach(Mesh m in TransparentMeshes)
             {
                 m.WriteProperties(writer, imageBase);
             }
@@ -347,19 +349,19 @@ namespace SATools.SAModel.ModelData.GC
             writer.WriteUInt32(vtxAddr);
             writer.WriteUInt32(0);
             writer.WriteUInt32(opaqueAddress);
-            writer.WriteUInt32(translucentAddress);
+            writer.WriteUInt32(transparentAddress);
             writer.WriteUInt16((ushort)OpaqueMeshes.Length);
-            writer.WriteUInt16((ushort)TranslucentMeshes.Length);
+            writer.WriteUInt16((ushort)TransparentMeshes.Length);
             MeshBounds.Write(writer);
             return address;
         }
 
-        public override Attach Clone() => new GCAttach(VertexData.ContentClone(), OpaqueMeshes.ContentClone(), TranslucentMeshes.ContentClone())
+        public override Attach Clone() => new GCAttach(VertexData.ContentClone(), OpaqueMeshes.ContentClone(), TransparentMeshes.ContentClone())
         {
             Name = Name,
             MeshBounds = MeshBounds
         };
 
-        public override string ToString() => $"{Name} - GC: {VertexData.Length} - {OpaqueMeshes.Length} - {TranslucentMeshes.Length}";
+        public override string ToString() => $"{Name} - GC: {VertexData.Length} - {OpaqueMeshes.Length} - {TransparentMeshes.Length}";
     }
 }

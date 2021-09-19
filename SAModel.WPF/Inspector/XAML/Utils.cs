@@ -1,12 +1,13 @@
-﻿using SAModel.WPF.Inspector.Viewmodel;
+﻿using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Collections.Generic;
+using System.Windows.Input;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SATools.SAModel.WPF.Inspector.XAML
 {
     internal class InspectorElementTemplateSelector : DataTemplateSelector
     {
@@ -62,7 +63,7 @@ namespace SAModel.WPF.Inspector.XAML
             IInspectorInfo info = (IInspectorInfo)item;
 
             Type type = info.ValueType;
-            if(!_resources.Contains(type.Name)
+            if(!_templates.ContainsKey(type)
                 && ((type.IsClass && type != typeof(string))
                     || (type.IsValueType && !type.IsEnum && !type.IsPrimitive)))
             {
@@ -100,7 +101,7 @@ namespace SAModel.WPF.Inspector.XAML
         }
     }
 
-    internal class InspectorBinding : DependencyObject
+    internal static class InspectorBinding
     {
         public static readonly DependencyProperty PropNameProperty
             = DependencyProperty.RegisterAttached(
@@ -136,6 +137,54 @@ namespace SAModel.WPF.Inspector.XAML
             binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 
             BindingOperations.SetBinding(d, dp, binding);
+        }
+    }
+
+    internal static class InputBindingsManager
+    {
+
+        public static readonly DependencyProperty UpdatePropertySourceWhenEnterPressedProperty 
+            = DependencyProperty.RegisterAttached(
+                "UpdatePropertySourceWhenEnterPressed", 
+                typeof(DependencyProperty), 
+                typeof(InputBindingsManager), 
+                new(null, OnUpdatePropertySourceWhenEnterPressedPropertyChanged));
+
+        static InputBindingsManager() { }
+
+        public static void SetUpdatePropertySourceWhenEnterPressed(DependencyObject dp, DependencyProperty value) 
+            => dp.SetValue(UpdatePropertySourceWhenEnterPressedProperty, value);
+
+        public static DependencyProperty GetUpdatePropertySourceWhenEnterPressed(DependencyObject dp) 
+            => (DependencyProperty)dp.GetValue(UpdatePropertySourceWhenEnterPressedProperty);
+
+        private static void OnUpdatePropertySourceWhenEnterPressedPropertyChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+        {
+            if(dp is not UIElement element)
+                return;
+
+            if(e.OldValue != null)
+                element.PreviewKeyDown -= HandlePreviewKeyDown;
+
+            if(e.NewValue != null)
+                element.PreviewKeyDown += new KeyEventHandler(HandlePreviewKeyDown);
+        }
+
+        static void HandlePreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Enter)
+                DoUpdateSource(e.Source);
+        }
+
+        static void DoUpdateSource(object source)
+        {
+            DependencyProperty property =
+                GetUpdatePropertySourceWhenEnterPressed(source as DependencyObject);
+
+            if(property == null || source is not UIElement element)
+                return;
+
+            BindingOperations.GetBindingExpression(element, property)?.UpdateSource();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Windows;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Interaction logic for UcVector3.xaml
@@ -61,10 +61,7 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
             set => this[2] = value;
         }
 
-        public UcVector3()
-        {
-            InitializeComponent();
-        }
+        public UcVector3() => InitializeComponent();
 
         protected override void ValuePropertyChanged(DependencyPropertyChangedEventArgs e)
         {

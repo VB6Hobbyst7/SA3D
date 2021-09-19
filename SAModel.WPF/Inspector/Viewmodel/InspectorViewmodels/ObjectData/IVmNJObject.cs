@@ -4,7 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Numerics;
 
-namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
+namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 {
     internal class IVmNJObject : InspectorViewModel
     {
@@ -29,7 +29,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         }
 
         [Tooltip("Children objects")]
-        public ReadOnlyCollection<NJObject> Children 
+        public ReadOnlyCollection<NJObject> Children
             => NJObject.Children;
 
         [Tooltip("Mesh information")]
@@ -43,7 +43,7 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         [Tooltip("Whether the model is weighted")]
         public bool HasWeight
             => NJObject.HasWeight;
-        
+
 
         [Tooltip("World space position")]
         public Vector3 Position

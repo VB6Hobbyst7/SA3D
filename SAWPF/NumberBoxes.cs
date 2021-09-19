@@ -2,12 +2,29 @@
 using System;
 using System.Globalization;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAWPF
 {
+    /// <summary>
+    /// Byte short box
+    /// </summary>
+    public class ByteBox : NumericBox<byte>
+    {
+        public override bool TryParse(string text, NumberStyles numberStyles, IFormatProvider culture, out byte result)
+            => byte.TryParse(text, numberStyles, culture, out result);
+        protected override byte Add(byte x, byte y)
+            => (byte)(x + y);
+        protected override byte Subtract(byte x, byte y)
+            => (byte)(x - y);
+        protected override byte TypeMax()
+            => byte.MaxValue;
+        protected override byte TypeMin()
+            => byte.MinValue;
+    }
+
     /// <summary>
     /// Unsigned short box
     /// </summary>
-    internal class UShortBox : NumericBox<ushort>
+    public class UShortBox : NumericBox<ushort>
     {
         public override bool TryParse(string text, NumberStyles numberStyles, IFormatProvider culture, out ushort result)
             => ushort.TryParse(text, numberStyles, culture, out result);
@@ -24,13 +41,13 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
     /// <summary>
     /// Unsigned integer box
     /// </summary>
-    internal class UIntBox : NumericBox<uint>
+    public class UIntBox : NumericBox<uint>
     {
         public override bool TryParse(string text, NumberStyles numberStyles, IFormatProvider culture, out uint result)
             => uint.TryParse(text, numberStyles, culture, out result);
-        protected override uint Add(uint x, uint y) 
+        protected override uint Add(uint x, uint y)
             => x + y;
-        protected override uint Subtract(uint x, uint y) 
+        protected override uint Subtract(uint x, uint y)
             => x - y;
         protected override uint TypeMax()
             => uint.MaxValue;
@@ -41,7 +58,7 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
     /// <summary>
     /// Signed long box
     /// </summary>
-    internal class LongBox : NumericBox<long>
+    public class LongBox : NumericBox<long>
     {
         public override bool TryParse(string text, NumberStyles numberStyles, IFormatProvider culture, out long result)
             => long.TryParse(text, numberStyles, culture, out result);
@@ -58,7 +75,7 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
     /// <summary>
     /// Unsigned long box
     /// </summary>
-    internal class ULongBox : NumericBox<ulong>
+    public class ULongBox : NumericBox<ulong>
     {
         public override bool TryParse(string text, NumberStyles numberStyles, IFormatProvider culture, out ulong result)
             => ulong.TryParse(text, numberStyles, culture, out result);

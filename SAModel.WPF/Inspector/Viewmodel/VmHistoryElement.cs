@@ -1,4 +1,4 @@
-﻿namespace SAModel.WPF.Inspector.Viewmodel
+﻿namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
     /// <summary>
     /// A single history element

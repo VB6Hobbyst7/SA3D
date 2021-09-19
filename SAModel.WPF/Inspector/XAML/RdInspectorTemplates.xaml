@@ -3,12 +3,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:objEnums="clr-namespace:SATools.SAModel.ObjData;assembly=SAModel"
     xmlns:attachEnums="clr-namespace:SATools.SAModel.ModelData;assembly=SAModel"
+    xmlns:gcenums="clr-namespace:SATools.SAModel.ModelData.GC;assembly=SAModel"
     xmlns:num="http://gu.se/NumericInput"
-    xmlns:sub="clr-namespace:SAModel.WPF.Inspector.XAML.SubControls"
-    xmlns:local="clr-namespace:SAModel.WPF.Inspector.XAML"
+    xmlns:sub="clr-namespace:SATools.SAModel.WPF.Inspector.XAML.SubControls"
+    xmlns:local="clr-namespace:SATools.SAModel.WPF.Inspector.XAML"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:numerics="clr-namespace:System.Numerics;assembly=System.Numerics"
-    xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel">
+    xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel"
+    xmlns:base="clr-namespace:SAWPF.BaseViewModel;assembly=SAWPF"
+    xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
     
@@ -28,6 +31,10 @@
                 </Style>
             </sub:DetailButton.Style>
         </sub:DetailButton>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ActionButton" DataType="{x:Type base:RelayCommand}">
+        <Button Content="{Binding DetailName}" local:InspectorBinding.PropName="Command"/>
     </DataTemplate>
 
     <DataTemplate x:Key="OnlyHex">
@@ -77,6 +84,10 @@
                  Background="Transparent"/>
     </DataTemplate>
 
+    <DataTemplate x:Key="Color" DataType="{x:Type structs:Color}">
+        <sub:UcColor local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+    
     <!--#endregion-->
     
     <!--#region Number templates-->
@@ -121,12 +132,12 @@
     </Style>
 
     <DataTemplate x:Key="Int64" DataType="{x:Type sys:Int64}">
-        <sub:LongBox ToolTip="Signed 64 bit integer ( Long )"
+        <sawpf:LongBox ToolTip="Signed 64 bit integer ( Long )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
     <DataTemplate x:Key="UInt64" DataType="{x:Type sys:UInt64}">
-        <sub:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
+        <sawpf:ULongBox ToolTip="Unsigned 64 bit integer ( ULong )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
@@ -136,7 +147,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="UInt32" DataType="{x:Type sys:UInt32}">
-        <sub:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
+        <sawpf:UIntBox ToolTip="Unsigned 32 bit integer ( UInt )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
@@ -146,7 +157,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="UInt16" DataType="{x:Type sys:UInt16}">
-        <sub:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
+        <sawpf:UShortBox ToolTip="Unsigned 16 bit integer ( UShort )"
             Style="{StaticResource NumberStyle}"/>
     </DataTemplate>
 
@@ -184,13 +195,13 @@
     </Style>
 
     <DataTemplate x:Key="Hex:Int64" DataType="{x:Type sys:Int64}">
-        <sub:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
+        <sawpf:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="16" StringFormat="X16"/>
     </DataTemplate>
 
     <DataTemplate x:Key="Hex:UInt64" DataType="{x:Type sys:UInt64}">
-        <sub:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
+        <sawpf:ULongBox ToolTip="Hexadecimal unsigned 64 bit integer ( ULong )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="16" StringFormat="X16"/>
     </DataTemplate>
@@ -202,7 +213,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="Hex:UInt32" DataType="{x:Type sys:UInt32}">
-        <sub:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
+        <sawpf:UIntBox ToolTip="Hexadecimal unsigned 32 bit integer ( UInt )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="8" StringFormat="X8"/>
     </DataTemplate>
@@ -214,7 +225,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="Hex:UInt16" DataType="{x:Type sys:UInt16}">
-        <sub:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
+        <sawpf:UShortBox ToolTip="Hexadecimal unsigned 16 bit integer ( ZShort )"
             Style="{StaticResource HexNumberStyle}" 
             MaxLength="4" StringFormat="X4"/>
     </DataTemplate>
@@ -260,6 +271,54 @@
             <ComboBoxItem Content="CHUNK"   Tag="{x:Static attachEnums:AttachFormat.CHUNK}"     ToolTip="CHUNK mesh format"/>
             <ComboBoxItem Content="GC"      Tag="{x:Static attachEnums:AttachFormat.GC}"        ToolTip="Gamecube mesh format"/>
             <ComboBoxItem Content="Buffer"  Tag="{x:Static attachEnums:AttachFormat.Buffer}"    ToolTip="SAModel library intermediate format"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="VertexAttribute" DataType="{x:Type gcenums:VertexAttribute}">
+        <sub:EnumComboBox ToolTip="Vertex type format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Position Matrix ID" Tag="{x:Static gcenums:VertexAttribute.PositionMatrixId}" ToolTip="Position Matrices along with their ID (?)"/>
+            <ComboBoxItem Content="Position"    Tag="{x:Static gcenums:VertexAttribute.Position}"   ToolTip="Position data"/>
+            <ComboBoxItem Content="Normal"      Tag="{x:Static gcenums:VertexAttribute.Normal}"     ToolTip="Normal data"/>
+            <ComboBoxItem Content="Color 0"     Tag="{x:Static gcenums:VertexAttribute.Color0}"     ToolTip="1st color data"/>
+            <ComboBoxItem Content="Color 1"     Tag="{x:Static gcenums:VertexAttribute.Color1}"     ToolTip="2nd color data"/>
+            <ComboBoxItem Content="Texcoord 0"  Tag="{x:Static gcenums:VertexAttribute.Tex0}"       ToolTip="1st texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 1"  Tag="{x:Static gcenums:VertexAttribute.Tex1}"       ToolTip="2nd texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 2"  Tag="{x:Static gcenums:VertexAttribute.Tex2}"       ToolTip="3rd texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 3"  Tag="{x:Static gcenums:VertexAttribute.Tex3}"       ToolTip="4th texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 4"  Tag="{x:Static gcenums:VertexAttribute.Tex4}"       ToolTip="5th texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 5"  Tag="{x:Static gcenums:VertexAttribute.Tex5}"       ToolTip="6th texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 6"  Tag="{x:Static gcenums:VertexAttribute.Tex6}"       ToolTip="7th texture coordinate data"/>
+            <ComboBoxItem Content="Texcoord 7"  Tag="{x:Static gcenums:VertexAttribute.Tex7}"       ToolTip="8th texture coordinate data"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DataType" DataType="{x:Type gcenums:DataType}">
+        <sub:EnumComboBox ToolTip="Data storage type" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Unsigned8"   Tag="{x:Static gcenums:DataType.Unsigned8}"     ToolTip="Equal to byte"/>
+            <ComboBoxItem Content="Signed8"     Tag="{x:Static gcenums:DataType.Signed8}"       ToolTip="Equal to sbyte"/>
+            <ComboBoxItem Content="Unsigned16"  Tag="{x:Static gcenums:DataType.Unsigned16}"    ToolTip="Equal to ushort"/>
+            <ComboBoxItem Content="Signed16"    Tag="{x:Static gcenums:DataType.Signed16}"      ToolTip="Equal to short"/>
+            <ComboBoxItem Content="Float32"     Tag="{x:Static gcenums:DataType.Float32}"       ToolTip="Equal to float"/>
+            <ComboBoxItem Content="RGB565"      Tag="{x:Static gcenums:DataType.RGB565}"        ToolTip="RGB565 struct (Length: 2)"/>
+            <ComboBoxItem Content="RGB8"        Tag="{x:Static gcenums:DataType.RGB8}"          ToolTip="RGB8 struct (length: 4)"/>
+            <ComboBoxItem Content="RGBX8"       Tag="{x:Static gcenums:DataType.RGBX8}"         ToolTip="RGBX8 struct (length: 4)"/>
+            <ComboBoxItem Content="RGBA4"       Tag="{x:Static gcenums:DataType.RGBA4}"         ToolTip="RGBA4 struct (length: 2)"/>
+            <ComboBoxItem Content="RGBA6"       Tag="{x:Static gcenums:DataType.RGBA6}"         ToolTip="RGBA6 struct (length: 3)"/>
+            <ComboBoxItem Content="RGBA8"       Tag="{x:Static gcenums:DataType.RGBA8}"         ToolTip="RGBA8 struct (length: 4)"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="StructType" DataType="{x:Type gcenums:StructType}">
+        <sub:EnumComboBox ToolTip="Component structure type" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Position XY"   Tag="{x:Static gcenums:StructType.PositionXY}"     ToolTip="2D Position"/>
+            <ComboBoxItem Content="Position XYZ"   Tag="{x:Static gcenums:StructType.PositionXYZ}"     ToolTip="3D Position"/>
+            <ComboBoxItem Content="Normal XYZ"   Tag="{x:Static gcenums:StructType.NormalXYZ}"     ToolTip="3D Normal"/>
+            <ComboBoxItem Content="Normal NBT"   Tag="{x:Static gcenums:StructType.NormalNBT}"     ToolTip="3D Normal (NBT)"/>
+            <ComboBoxItem Content="Normal NBT3"   Tag="{x:Static gcenums:StructType.NormalNBT3}"     ToolTip="3D Normal (NBT3)"/>
+            <ComboBoxItem Content="Color RGB"   Tag="{x:Static gcenums:StructType.ColorRGB}"     ToolTip="RGB Color"/>
+            <ComboBoxItem Content="Color RGBA"   Tag="{x:Static gcenums:StructType.ColorRGBA}"     ToolTip="RGBA Color"/>
+            <ComboBoxItem Content="TexCoord S"   Tag="{x:Static gcenums:StructType.TexCoordS}"     ToolTip="1D Texture Coordinate"/>
+            <ComboBoxItem Content="TexCoord ST"   Tag="{x:Static gcenums:StructType.TexCoordST}"     ToolTip="2D Texture Coordinate"/>
         </sub:EnumComboBox>
     </DataTemplate>
 
@@ -416,7 +475,7 @@
             <sub:FlagListItem Content="Visible" 				Flag="{x:Static objEnums:SurfaceAttributes.Visible}"/>
             <sub:FlagListItem Content="Solid" 					Flag="{x:Static objEnums:SurfaceAttributes.Solid}"/>
             <sub:FlagListItem Content="Water" 					Flag="{x:Static objEnums:SurfaceAttributes.Water}"/>
-            <sub:FlagListItem Content="Water 2" 				Flag="{x:Static objEnums:SurfaceAttributes.Water2}"/>
+            <sub:FlagListItem Content="Water No Alpha" 			Flag="{x:Static objEnums:SurfaceAttributes.WaterNoAlpha}"/>
             <sub:FlagListItem Content="No Friction" 			Flag="{x:Static objEnums:SurfaceAttributes.NoFriction}"/>
             <sub:FlagListItem Content="No Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.NoAcceleration}"/>
             <sub:FlagListItem Content="Less Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.LessAcceleration}"/>
@@ -430,9 +489,52 @@
             <sub:FlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SurfaceAttributes.NoShadows}"/>
             <sub:FlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SurfaceAttributes.NoFog}"/>
             <sub:FlagListItem Content="Unknown 24" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown24}"/>
-            <sub:FlagListItem Content="Unknown 27" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown27}"/>
-            <sub:FlagListItem Content="Unknown 29" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown29}"/>
-            <sub:FlagListItem Content="Unknown 30" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown30}"/>
+            <sub:FlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SurfaceAttributes.DynamicCollision}"/>
+            <sub:FlagListItem Content="Offset Bounds Center" 	Flag="{x:Static objEnums:SurfaceAttributes.OffsetBoundsCenter}"/>
+            <sub:FlagListItem Content="BoundsRadiusSmall" 		Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusSmall}"/>
+            <sub:FlagListItem Content="BoundsRadiusTiny" 		Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusTiny}"/>
+        </sub:FlagListBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="SA2SurfaceAttributes" DataType="{x:Type objEnums:SA2SurfaceAttributes}">
+        <sub:FlagListBox Style="{StaticResource HexFlagList8}">
+            <sub:HexFlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Solid}"/>
+            <sub:HexFlagListItem Content="Water" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Water}"/>
+            <sub:HexFlagListItem Content="No Friction" 			    Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFriction}"/>
+            <sub:HexFlagListItem Content="No Acceleration" 		    Flag="{x:Static objEnums:SA2SurfaceAttributes.NoAcceleration}"/>
+            <sub:HexFlagListItem Content="Less Acceleration" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.LessAcceleration}"/>
+            <sub:HexFlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Diggable}"/>
+            <sub:HexFlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.NotClimbable}"/>
+            <sub:HexFlagListItem Content="Ignore Slope" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.IgnoreSlope}"/>
+            <sub:HexFlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Hurt}"/>
+            <sub:HexFlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Footprints}"/>
+            <sub:HexFlagListItem Content="Cannot Land" 			    Flag="{x:Static objEnums:SA2SurfaceAttributes.CannotLand}"/>
+            <sub:HexFlagListItem Content="Water No Alpha" 		    Flag="{x:Static objEnums:SA2SurfaceAttributes.WaterNoAlpha}"/>
+            <sub:HexFlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.NoShadows}"/>
+            <sub:HexFlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:HexFlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFog}"/>
+            <sub:HexFlagListItem Content="Unknown 24" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown24}"/>
+            <sub:HexFlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.DynamicCollision}"/>
+            <sub:HexFlagListItem Content="Offset Bounds Center" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.OffsetBoundsCenter}"/>
+            <sub:HexFlagListItem Content="BoundsRadiusSmall" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusSmall}"/>
+            <sub:HexFlagListItem Content="BoundsRadiusTiny" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusTiny}"/>
+            <sub:HexFlagListItem Content="Visible" 				    Flag="{x:Static objEnums:SA2SurfaceAttributes.Visible}"/>
+        </sub:FlagListBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="SA1SurfaceAttributes" DataType="{x:Type objEnums:SA1SurfaceAttributes}">
+        <sub:FlagListBox Style="{StaticResource HexFlagList8}">
+            <sub:HexFlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Solid}"/>
+            <sub:HexFlagListItem Content="Water" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Water}"/>
+            <sub:HexFlagListItem Content="No Friction" 			    Flag="{x:Static objEnums:SA1SurfaceAttributes.NoFriction}"/>
+            <sub:HexFlagListItem Content="No Acceleration" 		    Flag="{x:Static objEnums:SA1SurfaceAttributes.NoAcceleration}"/>
+            <sub:HexFlagListItem Content="Cannot Land" 			    Flag="{x:Static objEnums:SA1SurfaceAttributes.CannotLand}"/>
+            <sub:HexFlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:HexFlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Diggable}"/>
+            <sub:HexFlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.NotClimbable}"/>
+            <sub:HexFlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Hurt}"/>
+            <sub:HexFlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Footprints}"/>
+            <sub:HexFlagListItem Content="Visible" 				    Flag="{x:Static objEnums:SA1SurfaceAttributes.Visible}"/>
         </sub:FlagListBox>
     </DataTemplate>
 

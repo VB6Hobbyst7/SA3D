@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     internal class EnumComboBox : ComboBox
     {
@@ -22,7 +22,7 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
                     if(ecb.SelectedIndex >= 0)
                     {
                         item = (ComboBoxItem)ecb.Items[ecb.SelectedIndex];
-                    
+
                         if(item.Tag == e.NewValue)
                             return;
                     }

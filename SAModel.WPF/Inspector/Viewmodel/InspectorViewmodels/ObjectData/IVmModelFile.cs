@@ -4,7 +4,7 @@ using SATools.SAModel.ObjData.Animation;
 using System;
 using System.Collections.ObjectModel;
 
-namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
+namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 {
     internal class IVmModelFile : InspectorViewModel
     {
@@ -36,9 +36,6 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmModelFile() : base() { }
 
-        public IVmModelFile(ModelFile source) : base(source) 
-        {
-            Models = Model.GetObjects();
-        }
+        public IVmModelFile(ModelFile source) : base(source) => Models = Model.GetObjects();
     }
 }

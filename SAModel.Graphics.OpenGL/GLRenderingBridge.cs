@@ -59,7 +59,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         public override void InitializeGraphics(System.Drawing.Size resolution, Structs.Color background)
         {
             GL.Viewport(default, resolution);
-            GL.ClearColor(background.SystemCol);
+            GL.ClearColor(background.SystemColor);
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Lequal);
             GL.Enable(EnableCap.Multisample);
@@ -148,7 +148,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
         }
 
-        public override void UpdateBackgroundColor(Structs.Color color) => GL.ClearColor(color.SystemCol);
+        public override void UpdateBackgroundColor(Structs.Color color) => GL.ClearColor(color.SystemColor);
 
         #endregion
 

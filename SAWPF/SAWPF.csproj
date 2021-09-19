@@ -5,12 +5,29 @@
 	  <OutputType>Library</OutputType>
 	  <UseWPF>true</UseWPF>
 	  <AssemblyName>SAWPF</AssemblyName>
-	  <RootNamespace>SATools.SAWP</RootNamespace>
+	  <RootNamespace>SATools.SAWPF</RootNamespace>
 	  <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Gu.Wpf.NumericInput" Version="0.5.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="WndColorPicker.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="WndColorPicker.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

@@ -266,7 +266,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         public void SetUniform(string name, Color data)
         {
             Use();
-            GL.Uniform4(_uniformLocations[name].location, data.SystemCol);
+            GL.Uniform4(_uniformLocations[name].location, data.SystemColor);
         }
 
         public void Use() => GL.UseProgram(_handle);

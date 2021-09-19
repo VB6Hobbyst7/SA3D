@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SAModel.WPF.Inspector.Viewmodel
+namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
     internal class InvalidInspectorTypeException : Exception
     {
@@ -9,9 +9,6 @@ namespace SAModel.WPF.Inspector.Viewmodel
         /// </summary>
         public Type Type { get; }
 
-        public InvalidInspectorTypeException(Type type) : base($"No Inspector viewmodel for type \"{type}\" found")
-        {
-            Type = type;
-        }
+        public InvalidInspectorTypeException(Type type) : base($"No Inspector viewmodel for type \"{type}\" found") => Type = type;
     }
 }

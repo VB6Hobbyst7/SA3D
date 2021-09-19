@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Generic base class for the struct subcontrols

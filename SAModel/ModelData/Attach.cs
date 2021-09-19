@@ -50,6 +50,12 @@ namespace SATools.SAModel.ModelData
         public string Name { get; set; }
 
         /// <summary>
+        /// Format of the attach
+        /// </summary>
+        public virtual AttachFormat Format
+            => AttachFormat.Buffer;
+
+        /// <summary>
         /// Bounding sphere of the attach
         /// </summary>
         public Bounds MeshBounds { get; set; }
@@ -78,6 +84,12 @@ namespace SATools.SAModel.ModelData
         /// </summary>
         public bool BufferHasTransparent { get; private set; }
 
+        /// <summary>
+        /// Whether the attach uses weights
+        /// </summary>
+        public virtual bool HasWeight
+            => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
+
         protected Attach() { }
 
         /// <summary>
@@ -91,18 +103,6 @@ namespace SATools.SAModel.ModelData
             Name = "attach_" + GenerateIdentifier();
             RecalculateBounds();
         }
-
-        /// <summary>
-        /// Whether the attach uses weights
-        /// </summary>
-        public virtual bool HasWeight
-            => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
-
-        /// <summary>
-        /// Format of the attach
-        /// </summary>
-        public virtual AttachFormat Format
-            => AttachFormat.Buffer;
 
         /// <summary>
         /// Reads an attach from a file

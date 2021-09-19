@@ -36,7 +36,7 @@ namespace SATools.SAModel.ModelData.GC
         public StructType StructType { get; }
 
         /// <summary>
-        /// The size of a single object in the list in bytes
+        /// The size of a single element in the list in bytes
         /// </summary>
         public uint StructSize => GCExtensions.GetStructSize(StructType, DataType);
 
@@ -100,12 +100,12 @@ namespace SATools.SAModel.ModelData.GC
             if(!normals)
             {
                 Attribute = VertexAttribute.Position;
-                StructType = StructType.Normal_XYZ;
+                StructType = StructType.NormalXYZ;
             }
             else
             {
                 Attribute = VertexAttribute.Normal;
-                StructType = StructType.Position_XYZ;
+                StructType = StructType.PositionXYZ;
             }
         }
 
@@ -118,7 +118,7 @@ namespace SATools.SAModel.ModelData.GC
             Attribute = VertexAttribute.Tex0;
             _uvData = uvData;
             DataType = DataType.Signed16;
-            StructType = StructType.TexCoord_ST;
+            StructType = StructType.TexCoordST;
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace SATools.SAModel.ModelData.GC
             Attribute = VertexAttribute.Color0;
             _colorData = colorData;
             DataType = DataType.RGBA8;
-            StructType = StructType.Color_RGBA;
+            StructType = StructType.ColorRGBA;
         }
 
         /// <summary>

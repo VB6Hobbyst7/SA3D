@@ -1,9 +1,9 @@
-﻿using SAModel.WPF.Inspector.Viewmodel;
+﻿using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     internal class DetailButton : Button
     {

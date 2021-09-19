@@ -1,8 +1,8 @@
-﻿using SAModel.WPF.Inspector.Viewmodel;
-using SATools.SAModel.ObjData;
+﻿using SATools.SAModel.ObjData;
+using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SATools.SAModel.WPF.Inspector.XAML
 {
     internal static class DesignDataFactory
     {
@@ -70,7 +70,7 @@ namespace SAModel.WPF.Inspector.XAML
             [DisplayName("Unsigned Long")]
             [Tooltip("An Unsigned 64 bit Number")]
             public ulong UnsignedLongValue { get; set; }
-            
+
             [DisplayName("Integer")]
             [Tooltip("A Signed 32 bit Number")]
             public int IntegerValue { get; set; }

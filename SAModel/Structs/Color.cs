@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Reloaded.Memory.Streams.Writers;
 using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
@@ -164,7 +165,7 @@ namespace SATools.SAModel.Structs
         /// <summary>
         /// Color as system color
         /// </summary>
-        public System.Drawing.Color SystemCol
+        public System.Drawing.Color SystemColor
         {
             get => System.Drawing.Color.FromArgb(A, R, G, B);
             set
@@ -173,6 +174,74 @@ namespace SATools.SAModel.Structs
                 G = value.G;
                 B = value.B;
                 A = value.A;
+            }
+        }
+
+        /// <summary>
+        /// RGBA string - #RRGGBBAA <br/>
+        /// setter formats: <br/>
+        /// #RRGGBBAA <br/>
+        /// #RRGGBB <br/>
+        /// #RGBA <br/>
+        /// #RGB <br/>
+        /// (The # is optional for all formats)
+        /// </summary>
+        public string Hex
+        {
+            get => ToString();
+            set
+            {
+                string hex = value.Replace(" ", "");
+                hex = hex.StartsWith("#") ? hex[1..] : hex;
+
+                // check if the format is valid
+                if(hex.Length < 3 || hex.Length == 5 || hex.Length == 7 || hex.Length > 8
+                    || !Regex.IsMatch(hex, "^[0-9a-fA-F]+$"))
+                    throw new FormatException("Invalid Color format!");
+
+                byte conv(char character) 
+                    => (byte)(character >= 'A' ? character - 'A' + 10 : character - '0');
+
+                byte comp(byte f, byte s) 
+                    => (byte)(f | (s << 4));
+
+                hex = hex.ToUpper();
+                switch(hex.Length)
+                {
+                    case 3: // RGB
+                        R = conv(hex[0]);
+                        G = conv(hex[1]);
+                        B = conv(hex[2]);
+                        A = byte.MaxValue;
+
+                        R = comp(R, R);
+                        G = comp(G, G);
+                        B = comp(B, B);
+                        break;
+                    case 4: // RGBA
+                        R = conv(hex[0]);
+                        G = conv(hex[1]);
+                        B = conv(hex[2]);
+                        A = conv(hex[3]);
+
+                        R = comp(R, R);
+                        G = comp(G, G);
+                        B = comp(B, B);
+                        A = comp(A, A);
+                        break;
+                    case 6: // RRGGBB
+                        R = comp(conv(hex[1]), conv(hex[0]));
+                        G = comp(conv(hex[3]), conv(hex[2]));
+                        B = comp(conv(hex[5]), conv(hex[4]));
+                        A = byte.MaxValue;
+                        break;
+                    case 8: // RRGGBBAA
+                        R = comp(conv(hex[1]), conv(hex[0]));
+                        G = comp(conv(hex[3]), conv(hex[2]));
+                        B = comp(conv(hex[5]), conv(hex[4]));
+                        A = comp(conv(hex[7]), conv(hex[6]));
+                        break;
+                }
             }
         }
 
@@ -387,6 +456,7 @@ namespace SATools.SAModel.Structs
         bool IEquatable<Color>.Equals(Color other) => Equals(other);
 
         #endregion
+
         public override string ToString() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
     }
 }

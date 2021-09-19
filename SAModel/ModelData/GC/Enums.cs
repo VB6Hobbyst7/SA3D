@@ -11,42 +11,42 @@ namespace SATools.SAModel.ModelData.GC
         /// <summary>
         /// 2D Position (X, Y)
         /// </summary>
-        Position_XY = 0,
+        PositionXY = 0,
         /// <summary>
         /// 3D Position (X, Y, Z)
         /// </summary>
-        Position_XYZ = 1,
+        PositionXYZ = 1,
 
         /// <summary>
         /// XYZ Normal
         /// </summary>
-        Normal_XYZ = 2,
+        NormalXYZ = 2,
         /// <summary>
         /// Normal
         /// </summary>
-        Normal_NBT = 3,
+        NormalNBT = 3,
         /// <summary>
         /// Normal
         /// </summary>
-        Normal_NBT3 = 4,
+        NormalNBT3 = 4,
 
         /// <summary>
         /// Color with 3 Channels
         /// </summary>
-        Color_RGB = 5,
+        ColorRGB = 5,
         /// <summary>
         /// Color with 4 Channels
         /// </summary>
-        Color_RGBA = 6,
+        ColorRGBA = 6,
 
         /// <summary>
         /// 1D Texture Coordinates
         /// </summary>
-        TexCoord_S = 7,
+        TexCoordS = 7,
         /// <summary>
         /// 2D Texture Coordinates
         /// </summary>
-        TexCoord_ST = 8
+        TexCoordST = 8
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         Unsigned8 = 0,
         /// <summary>
-        /// Equal to <see cref="char"/>
+        /// Equal to <see cref="sbyte"/>
         /// </summary>
         Signed8 = 1,
         /// <summary>
@@ -217,7 +217,7 @@ namespace SATools.SAModel.ModelData.GC
     /// </summary>
     public enum VertexAttribute
     {
-        PositionMatrixIdx = 0,
+        PositionMatrixId = 0,
         Position = 1,
         Normal = 2,
         Color0 = 3,
@@ -348,12 +348,12 @@ namespace SATools.SAModel.ModelData.GC
 
             switch(structType)
             {
-                case StructType.Position_XY:
-                case StructType.TexCoord_ST:
+                case StructType.PositionXY:
+                case StructType.TexCoordST:
                     num_components = 2;
                     break;
-                case StructType.Position_XYZ:
-                case StructType.Normal_XYZ:
+                case StructType.PositionXYZ:
+                case StructType.NormalXYZ:
                     num_components = 3;
                     break;
             }

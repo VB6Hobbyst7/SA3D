@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Interaction logic for UcMatrixDisplay.xaml
@@ -72,48 +72,45 @@ namespace SAModel.WPF.Inspector.XAML.SubControls
 
         public float M21
             => Value.M21;
-                      
+
         public float M22
             => Value.M22;
-                      
+
         public float M23
             => Value.M23;
-                      
+
         public float M24
             => Value.M24;
 
 
         public float M31
             => Value.M31;
-                      
+
         public float M32
             => Value.M32;
-                      
+
         public float M33
             => Value.M33;
-                      
+
         public float M34
             => Value.M34;
 
 
         public float M41
             => Value.M41;
-                      
+
         public float M42
             => Value.M42;
-                      
+
         public float M43
             => Value.M43;
-                      
+
         public float M44
             => Value.M44;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public UcMatrixDisplay()
-        {
-            InitializeComponent();
-        }
+        public UcMatrixDisplay() => InitializeComponent();
 
         protected void OnPropertyChanged(string propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

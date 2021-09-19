@@ -1,11 +1,9 @@
 ﻿using SAWPF.BaseViewModel;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
-namespace SAModel.WPF.Inspector.Viewmodel
+namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
     /// <summary>
     /// SA Model Inspector viewmodel
@@ -65,7 +63,10 @@ namespace SAModel.WPF.Inspector.Viewmodel
                     data = Activator.CreateInstance(listType, info);
                 }
                 else
+                {
                     data = InspectorViewModel.GetViewModel(Value);
+                }
+
                 _viewModels.Add(Value, data);
             }
 

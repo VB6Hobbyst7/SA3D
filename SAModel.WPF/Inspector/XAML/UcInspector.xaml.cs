@@ -1,9 +1,8 @@
-using SAModel.WPF.Inspector.Viewmodel;
-using System.Collections.Generic;
+using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SATools.SAModel.WPF.Inspector.XAML
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml
@@ -19,7 +18,7 @@ namespace SAModel.WPF.Inspector.XAML
         public string CurrentHistoryName
             => Inspector.ActiveHistoryElement.HistoryName;
 
-        public UcInspector() 
+        public UcInspector()
             => InitializeComponent();
 
         /// <summary>

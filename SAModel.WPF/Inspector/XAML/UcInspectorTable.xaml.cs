@@ -1,7 +1,7 @@
-﻿using SAModel.WPF.Inspector.Viewmodel;
+﻿using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System.Windows.Controls;
 
-namespace SAModel.WPF.Inspector.XAML
+namespace SATools.SAModel.WPF.Inspector.XAML
 {
     /// <summary>
     /// Interaction logic for UcInspectorTable.xaml

@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SAModel.WPF.Inspector.Viewmodel
+namespace SATools.SAModel.WPF.Inspector.Viewmodel
 {
-    public enum HexadecimalMode
+    internal enum HexadecimalMode
     {
         /// <summary>
         /// Don't display the number as a hexadecimal

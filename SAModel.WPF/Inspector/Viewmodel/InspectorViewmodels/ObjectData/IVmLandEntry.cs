@@ -4,7 +4,7 @@ using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
 
-namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
+namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 {
     internal class IVmLandEntry : InspectorViewModel
     {
@@ -99,6 +99,16 @@ namespace SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             get => LandEntry.SurfaceAttributes;
             set => LandEntry.SurfaceAttributes = value;
         }
+
+        [DisplayName("SA1 Surface Attributes")]
+        [Tooltip("Geometry rendering and collision information for SA1")]
+        public SA1SurfaceAttributes SA1SurfaceAttributes
+            => LandEntry.SurfaceAttributes.ToSA1();
+
+        [DisplayName("SA2 Surface Attributes")]
+        [Tooltip("Geometry rendering and collision information for SA2")]
+        public SA2SurfaceAttributes SA2SurfaceAttributes
+            => LandEntry.SurfaceAttributes.ToSA2();
 
         [DisplayName("Rotate ZYX")]
         [Tooltip("Inverted Rotational order")]

@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Windows;
 
-namespace SAModel.WPF.Inspector.XAML.SubControls
+namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
     /// <summary>
     /// Interaction logic for UcBounds.xaml
