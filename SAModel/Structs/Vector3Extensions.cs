@@ -238,50 +238,53 @@ namespace SATools.SAModel.Structs
             float radY = DegToRad(rotation.Y);
             float radZ = DegToRad(rotation.Z);
 
-            float sinX = MathF.Sin(radX);
-            float cosX = MathF.Cos(radX);
+            float sX = MathF.Sin(radX);
+            float cX = MathF.Cos(radX);
 
-            float sinY = MathF.Sin(radY);
-            float cosY = MathF.Cos(radY);
+            float sY = MathF.Sin(radY);
+            float cY = MathF.Cos(radY);
 
-            float sinZ = MathF.Sin(radZ);
-            float cosZ = MathF.Cos(radZ);
+            float sZ = MathF.Sin(radZ);
+            float cZ = MathF.Cos(radZ);
+
 
             if(ZYX)
             {
                 // Well, in sa2 it rotates in ZXY order, so thats what we do here. dont ask me...
+                // equal to matZ * matX * matY
                 return new()
                 {
-                    M11 = sinY * sinX * sinZ + cosY * cosZ,
-                    M12 = cosX * sinZ,
-                    M13 = cosY * sinX * sinZ - sinY * cosZ,
+                    M11 = sY * sX * sZ + cY * cZ,
+                    M12 = cX * sZ,
+                    M13 = cY * sX * sZ - sY * cZ,
 
-                    M21 = sinY * sinX * cosZ - cosY * sinZ,
-                    M22 = cosX * cosZ,
-                    M23 = cosY * sinX * cosZ + sinY * sinZ,
+                    M21 = sY * sX * cZ - cY * sZ,
+                    M22 = cX * cZ,
+                    M23 = cY * sX * cZ + sY * sZ,
 
-                    M31 = sinY * cosX,
-                    M32 = -sinX,
-                    M33 = cosY * cosX,
+                    M31 = sY * cX,
+                    M32 = -sX,
+                    M33 = cY * cX,
 
                     M44 = 1
                 };
             }
             else
             {
+                // equal to matX * matY * matZ
                 return new()
                 {
-                    M11 = cosZ * cosY,
-                    M12 = sinZ * cosY,
-                    M13 = -sinY,
+                    M11 = cZ * cY,
+                    M12 = sZ * cY,
+                    M13 = -sY,
 
-                    M21 = cosZ * sinY * sinX - sinZ * cosX,
-                    M22 = sinZ * sinY * sinX + cosZ * cosX,
-                    M23 = cosY * sinX,
+                    M21 = cZ * sY * sX - sZ * cX,
+                    M22 = sZ * sY * sX + cZ * cX,
+                    M23 = cY * sX,
 
-                    M31 = cosZ * sinY * cosX + sinZ * sinX,
-                    M32 = sinZ * sinY * cosX - cosZ * sinX,
-                    M33 = cosY * cosX,
+                    M31 = cZ * sY * cX + sZ * sX,
+                    M32 = sZ * sY * cX - cZ * sX,
+                    M33 = cY * cX,
 
                     M44 = 1
                 };
