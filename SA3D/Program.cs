@@ -146,8 +146,6 @@ namespace SATools.SA3D
                 }
                 else if(ext.EndsWith("mdl") || ext.EndsWith("nj"))
                 {
-
-
                     var file = SAModel.ObjData.ModelFile.Read(path);
                     DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
 

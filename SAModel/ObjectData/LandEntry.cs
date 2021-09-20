@@ -104,12 +104,11 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public SurfaceAttributes SurfaceAttributes { get; set; }
 
-        public bool RotateZYX
-        {
-            get => _model.RotateZYX;
-            set => _model.RotateZYX = value;
-        }
-
+        /// <summary>
+        /// Whether the euler order is "inverted"
+        /// </summary>
+        public bool RotateZYX => _model.RotateZYX;
+        
         /// <summary>
         /// Block mapping bits
         /// </summary>
@@ -163,6 +162,14 @@ namespace SATools.SAModel.ObjData
         /// <param name="bounds"></param>
         public void UpdateBounds(Bounds bounds) 
             => ModelBounds = bounds;
+
+        /// <summary>
+        /// Sets the rotation order
+        /// </summary>
+        /// <param name="newValue">New rotation order state</param>
+        /// <param name="updateRotation">Update the euler rotation, so that the order but not the rotation changes</param>
+        public void SetRotationZYX(bool newValue, bool updateRotation)
+            => _model.SetRotationZYX(newValue, updateRotation);
 
         /// <summary>
         /// Reads a landentry from a byte array

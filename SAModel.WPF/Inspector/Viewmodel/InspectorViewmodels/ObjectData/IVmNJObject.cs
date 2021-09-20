@@ -84,6 +84,31 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             }
         }
 
+        [DisplayName("Rotate ZYX")]
+        [Tooltip("Inverted Rotational order (preserve the euler rotation)")]
+        public bool RotateZYX
+        {
+            get => NJObject.RotateZYX;
+            set
+            {
+                NJObject.SetRotationZYX(value, true);
+                OnPropertyChanged(nameof(Rotation));
+                OnPropertyChanged(nameof(RotateZYXKeep));
+            }
+        }
+
+        [DisplayName("Rotate ZYX (Keep Rotation)")]
+        [Tooltip("Inverted Rotational order. (keep the euler values)")]
+        public bool RotateZYXKeep
+        {
+            get => NJObject.RotateZYX;
+            set
+            {
+                NJObject.SetRotationZYX(value, false);
+                OnPropertyChanged(nameof(RotateZYX));
+            }
+        }
+
         [Tooltip("World space scale")]
         public Vector3 Scale
         {
@@ -105,14 +130,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         [Tooltip("World transform matrix based on local matrix and parent world matrix")]
         public Matrix4x4 WorldMatrix
             => NJObject.GetWorldMatrix();
-
-        [DisplayName("Rotate ZYX")]
-        [Tooltip("Inverted Rotational order")]
-        public bool RotateZYX
-        {
-            get => NJObject.RotateZYX;
-            set => NJObject.RotateZYX = value;
-        }
 
         [Tooltip("Whether the object is animatable")]
         public bool Animate

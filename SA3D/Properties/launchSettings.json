@@ -1,8 +1,7 @@
 {
   "profiles": {
     "SA3D": {
-      "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\Justin113D\\Desktop\\bm_ene_boota\\nj00_boota.nj -mtn C:\\Users\\Justin113D\\Desktop\\bm_ene_boota\\walk_bm1_s_wala_body.njm"
+      "commandName": "Project"
     }
   }
 }

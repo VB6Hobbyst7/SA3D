@@ -67,6 +67,31 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             }
         }
 
+        [DisplayName("Rotate ZYX")]
+        [Tooltip("Inverted Rotational order (preserve the euler rotation)")]
+        public bool RotateZYX
+        {
+            get => LandEntry.RotateZYX;
+            set
+            {
+                LandEntry.SetRotationZYX(value, true);
+                OnPropertyChanged(nameof(Rotation));
+                OnPropertyChanged(nameof(RotateZYXKeep));
+            }
+        }
+
+        [DisplayName("Rotate ZYX (Keep Rotation)")]
+        [Tooltip("Inverted Rotational order (keep the euler values)")]
+        public bool RotateZYXKeep
+        {
+            get => LandEntry.RotateZYX;
+            set
+            {
+                LandEntry.SetRotationZYX(value, false);
+                OnPropertyChanged(nameof(RotateZYX));
+            }
+        }
+
         [Tooltip("World space scale")]
         public Vector3 Scale
         {
@@ -109,14 +134,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         [Tooltip("Geometry rendering and collision information for SA2")]
         public SA2SurfaceAttributes SA2SurfaceAttributes
             => LandEntry.SurfaceAttributes.ToSA2();
-
-        [DisplayName("Rotate ZYX")]
-        [Tooltip("Inverted Rotational order")]
-        public bool RotateZYX
-        {
-            get => LandEntry.RotateZYX;
-            set => LandEntry.RotateZYX = value;
-        }
 
         [DisplayName("Block Bit")]
         [Tooltip("Block mapping bits")]

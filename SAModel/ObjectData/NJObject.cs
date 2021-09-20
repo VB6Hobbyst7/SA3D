@@ -161,9 +161,9 @@ namespace SATools.SAModel.ObjData
             => _children.Count;
 
         /// <summary>
-        /// Whether the euler order is inverted
+        /// Whether the euler order is "inverted"
         /// </summary>
-        public bool RotateZYX { get; set; }
+        public bool RotateZYX { get; private set; }
 
         /// <summary>
         /// Whether the object can be influenced by animations
@@ -251,10 +251,23 @@ namespace SATools.SAModel.ObjData
             Parent._children.Add(this);
         }
 
-        private void UpdateMatrix()
+        private void UpdateMatrix() 
+            => LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
+
+        /// <summary>
+        /// Sets the rotation order
+        /// </summary>
+        /// <param name="newValue">New rotation order state</param>
+        /// <param name="updateRotation">Update the euler rotation, so that the order but not the rotation changes</param>
+        public void SetRotationZYX(bool newValue, bool updateRotation = true)
         {
-            //LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
-            LocalMatrix = Vector3Extensions.CreateTransformMatrix(_position, _rotation, _scale, RotateZYX);
+            if(RotateZYX == newValue)
+                return;
+
+            RotateZYX = newValue;
+
+            if(updateRotation)
+                _rotation = QuaternionExtensions.ToEuler(_quaternionRotation, newValue);
         }
 
         /// <summary>
