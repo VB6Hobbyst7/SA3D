@@ -86,7 +86,7 @@ namespace SATools.SAModel.ModelData.GC
                 bool first = true;
                 VertexSet[] vertexData = new VertexSet[2 + (hasUVs ? 1 : 0)];
 
-                IndexAttributeParameter iaParam = new(IndexAttributes.HasPosition);
+                IndexAttributeParameter iaParam = new() { IndexAttributes = IndexAttributes.HasPosition };
                 if(positions.Length > 256)
                     iaParam.IndexAttributes |= IndexAttributes.Position16BitIndex;
                 vertexData[0] = new VertexSet(positions, false);
@@ -121,7 +121,7 @@ namespace SATools.SAModel.ModelData.GC
                 Mesh ProcessBufferMesh(int index)
                 {
                     // generating parameter info
-                    List<Parameter> parameters = new();
+                    List<IParameter> parameters = new();
 
                     BufferMaterial cacheMaterial = cacheAtc.materials[index];
                     if(first)
@@ -145,6 +145,7 @@ namespace SATools.SAModel.ModelData.GC
                             currentMaterial = cacheMaterial;
 
                         parameters.Add(new LightingParameter() {
+                            LightingAttributes = LightingParameter.DefaultLighting.LightingAttributes,
                             ShadowStencil = currentMaterial.ShadowStencil
                         });
 
@@ -174,12 +175,12 @@ namespace SATools.SAModel.ModelData.GC
 
                         parameters.Add(texParam);
 
-                        parameters.Add(new Unknown9Parameter());
-                        parameters.Add(new TexCoordGenParameter(
-                            currentMaterial.TexCoordID, 
-                            currentMaterial.TexGenType, 
-                            currentMaterial.TexGenSrc, 
-                            currentMaterial.MatrixID));
+                        parameters.Add(Unknown9Parameter.DefaultValues);
+                        parameters.Add(new TexCoordGenParameter() {
+                            TexCoordID = currentMaterial.TexCoordID,
+                            TexGenType = currentMaterial.TexGenType,
+                            TexGenSrc = currentMaterial.TexGenSrc,
+                            MatrixID = currentMaterial.MatrixID });
                     }
                     else
                     {
@@ -237,11 +238,11 @@ namespace SATools.SAModel.ModelData.GC
                         || currentMaterial.TexGenSrc != cacheMaterial.TexGenSrc
                         || currentMaterial.MatrixID != cacheMaterial.MatrixID)
                         {
-                            parameters.Add(new TexCoordGenParameter(
-                                currentMaterial.TexCoordID,
-                                currentMaterial.TexGenType,
-                                currentMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : currentMaterial.TexGenSrc,
-                                currentMaterial.MatrixID));
+                            parameters.Add(new TexCoordGenParameter() {
+                                TexCoordID = currentMaterial.TexCoordID,
+                                TexGenType = currentMaterial.TexGenType,
+                                TexGenSrc = currentMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : currentMaterial.TexGenSrc,
+                                MatrixID = currentMaterial.MatrixID});
                         }
 
                         currentMaterial = cacheMaterial;
@@ -321,10 +322,22 @@ namespace SATools.SAModel.ModelData.GC
             {
                 List<BufferMesh> meshes = new();
 
-                Vector3[] positions = atc.VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Position)?.Vector3Data;
-                Vector3[] normals = atc.VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Normal)?.Vector3Data;
-                Color[] colors = atc.VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Color0)?.ColorData;
-                Vector2[] uvs = atc.VertexData.FirstOrDefault(x => x.Attribute == VertexAttribute.Tex0)?.UVData;
+                Vector3[] positions = null;
+                Vector3[] normals = null;
+                Color[] colors = null;
+                Vector2[] uvs = null;
+
+                if(atc.VertexData.TryGetValue(VertexAttribute.Position, out VertexSet tmp))
+                    positions = tmp.Vector3Data;
+
+                if(atc.VertexData.TryGetValue(VertexAttribute.Normal, out tmp))
+                    normals = tmp.Vector3Data;
+
+                if(atc.VertexData.TryGetValue(VertexAttribute.Tex0, out tmp))
+                    uvs = tmp.UVData;
+
+                if(atc.VertexData.TryGetValue(VertexAttribute.Color0, out tmp))
+                    colors = tmp.ColorData;
 
                 BufferMaterial material = new()
                 { 
@@ -351,12 +364,12 @@ namespace SATools.SAModel.ModelData.GC
                 BufferMesh ProcessMesh(Mesh m)
                 {
                     // setting the material properties according to the parameters
-                    foreach(Parameter param in m.Parameters)
+                    foreach(IParameter param in m.Parameters)
                     {
                         switch(param.Type)
                         {
                             case ParameterType.VtxAttrFmt:
-                                VtxAttrFmtParameter vaf = param as VtxAttrFmtParameter;
+                                VtxAttrFmtParameter vaf = (VtxAttrFmtParameter)param;
 
                                 if(vaf.VertexAttribute == VertexAttribute.Tex0 
                                     && (vaf.Unknown & 0xF0) == 0)
@@ -368,17 +381,17 @@ namespace SATools.SAModel.ModelData.GC
 
                                 break;
                             case ParameterType.BlendAlpha:
-                                BlendAlphaParameter blend = param as BlendAlphaParameter;
+                                BlendAlphaParameter blend = (BlendAlphaParameter)param;
                                 material.SourceBlendMode = blend.SourceAlpha;
                                 material.DestinationBlendmode = blend.DestAlpha;
                                 break;
                             case ParameterType.AmbientColor:
-                                AmbientColorParameter ambientCol = param as AmbientColorParameter;
+                                AmbientColorParameter ambientCol = (AmbientColorParameter)param;
                                 material.Ambient = ambientCol.AmbientColor;
                                 break;
                             case ParameterType.Texture:
                                 material.SetAttribute(MaterialAttributes.useTexture, true);
-                                TextureParameter tex = param as TextureParameter;
+                                TextureParameter tex = (TextureParameter)param;
                                 material.TextureIndex = tex.TextureID;
                                 material.MirrorU = tex.Tiling.HasFlag(GCTileMode.MirrorU);
                                 material.MirrorV = tex.Tiling.HasFlag(GCTileMode.MirrorV);
@@ -395,7 +408,7 @@ namespace SATools.SAModel.ModelData.GC
                                 }
                                 break;
                             case ParameterType.TexCoordGen:
-                                TexCoordGenParameter gen = param as TexCoordGenParameter;
+                                TexCoordGenParameter gen = (TexCoordGenParameter)param;
                                 material.SetAttribute(MaterialAttributes.normalMapping, gen.TexGenSrc == TexGenSrc.Normal);
                                 material.MatrixID = gen.MatrixID;
                                 material.TexCoordID = gen.TexCoordID;

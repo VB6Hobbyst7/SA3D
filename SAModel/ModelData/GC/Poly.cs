@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using System;
 using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
@@ -42,13 +41,18 @@ namespace SATools.SAModel.ModelData.GC
         public override string ToString() => $"({PositionIndex}, {NormalIndex}, {Color0Index}, {UV0Index})";
 
         bool IEquatable<Corner>.Equals(Corner other) => Equals(other);
+
+        public static bool operator ==(Corner left, Corner right) 
+            => left.Equals(right);
+
+        public static bool operator !=(Corner left, Corner right) 
+            => !(left == right);
     }
 
     /// <summary>
-    /// A collection of polygons
+    /// A collection of corners forming polygons
     /// </summary>
-    [Serializable]
-    public class Poly : ICloneable
+    public struct Poly : ICloneable
     {
         /// <summary>
         /// The way in which triangles are being stored
