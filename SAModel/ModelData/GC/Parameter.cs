@@ -12,7 +12,7 @@ namespace SATools.SAModel.ModelData.GC
         VtxAttrFmt = 0,
         IndexAttributes = 1,
         Lighting = 2,
-        Unused = 3,
+        //Unused = 3, // Yes, number 3 would probably crash the game
         BlendAlpha = 4,
         AmbientColor = 5,
         Unknown6 = 6, // i assume this is diffuse...

@@ -167,11 +167,11 @@ namespace SATools.SAModel.ModelData.GC
                         if(currentMaterial.MirrorV)
                             texParam.Tiling |= GCTileMode.MirrorV;
 
-                        if(currentMaterial.WrapU)
-                            texParam.Tiling |= GCTileMode.WrapU;
+                        if(currentMaterial.ClampU)
+                            texParam.Tiling |= GCTileMode.ClampU;
 
-                        if(currentMaterial.WrapV)
-                            texParam.Tiling |= GCTileMode.WrapV;
+                        if(currentMaterial.ClampV)
+                            texParam.Tiling |= GCTileMode.ClampV;
 
                         parameters.Add(texParam);
 
@@ -212,8 +212,8 @@ namespace SATools.SAModel.ModelData.GC
                         if(currentMaterial.TextureIndex != cacheMaterial.TextureIndex
                         || currentMaterial.MirrorU != cacheMaterial.MirrorU
                         || currentMaterial.MirrorV != cacheMaterial.MirrorV
-                        || currentMaterial.WrapU != cacheMaterial.WrapU
-                        || currentMaterial.WrapV != cacheMaterial.WrapV)
+                        || currentMaterial.ClampU != cacheMaterial.ClampU
+                        || currentMaterial.ClampV != cacheMaterial.ClampV)
                         {
                             TextureParameter texParam = new();
                             texParam.TextureID = (ushort)currentMaterial.TextureIndex;
@@ -224,11 +224,11 @@ namespace SATools.SAModel.ModelData.GC
                             if(currentMaterial.MirrorV)
                                 texParam.Tiling |= GCTileMode.MirrorV;
 
-                            if(currentMaterial.WrapU)
-                                texParam.Tiling |= GCTileMode.WrapU;
+                            if(currentMaterial.ClampU)
+                                texParam.Tiling |= GCTileMode.ClampU;
 
-                            if(currentMaterial.WrapV)
-                                texParam.Tiling |= GCTileMode.WrapV;
+                            if(currentMaterial.ClampV)
+                                texParam.Tiling |= GCTileMode.ClampV;
 
                             parameters.Add(texParam);
                         }
@@ -398,13 +398,13 @@ namespace SATools.SAModel.ModelData.GC
 
                                 if(tex.Tiling.HasFlag(GCTileMode.Unk_1))
                                 {
-                                    material.WrapU = tex.Tiling.HasFlag(GCTileMode.WrapU);
-                                    material.WrapV = tex.Tiling.HasFlag(GCTileMode.WrapV);
+                                    material.ClampU = tex.Tiling.HasFlag(GCTileMode.ClampU);
+                                    material.ClampV = tex.Tiling.HasFlag(GCTileMode.ClampV);
                                 }
                                 else
                                 {
-                                    material.WrapU = true;
-                                    material.WrapV = true;
+                                    material.ClampU = false;
+                                    material.ClampV = false;
                                 }
                                 break;
                             case ParameterType.TexCoordGen:

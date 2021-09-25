@@ -393,10 +393,10 @@ namespace SATools.SAModel.Convert
                         {
                             case TextureWrapMode.MIRRORED_REPEAT:
                                 result.MirrorU = true;
-                                result.WrapU = true;
+                                result.ClampU = false;
                                 break;
                             case TextureWrapMode.REPEAT:
-                                result.WrapU = true;
+                                result.ClampU = false;
                                 break;
                         }
 
@@ -404,10 +404,10 @@ namespace SATools.SAModel.Convert
                         {
                             case TextureWrapMode.MIRRORED_REPEAT:
                                 result.MirrorV = true;
-                                result.WrapV = true;
+                                result.ClampU = false;
                                 break;
                             case TextureWrapMode.REPEAT:
-                                result.WrapV = true;
+                                result.ClampU = false;
                                 break;
                         }
 

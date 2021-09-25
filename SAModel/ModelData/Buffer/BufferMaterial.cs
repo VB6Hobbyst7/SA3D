@@ -142,15 +142,6 @@ namespace SATools.SAModel.ModelData.Buffer
         public bool ClampU { get; set; }
 
         /// <summary>
-        /// Whether the U channel wraps
-        /// </summary>
-        public bool WrapU
-        {
-            get => !ClampU;
-            set => ClampU = !value;
-        }
-
-        /// <summary>
         /// Whether the U channel mirrors
         /// </summary>
         public bool MirrorU { get; set; }
@@ -159,15 +150,6 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Whether the V channel is clamped
         /// </summary>
         public bool ClampV { get; set; }
-
-        /// <summary>
-        /// Whether the V channel wraps
-        /// </summary>
-        public bool WrapV
-        {
-            get => !ClampV;
-            set => ClampV = !value;
-        }
 
         /// <summary>
         /// Whether the V channel mirrors
