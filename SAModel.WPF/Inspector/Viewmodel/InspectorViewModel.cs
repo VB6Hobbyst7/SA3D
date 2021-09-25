@@ -1,4 +1,4 @@
-﻿using SAWPF.BaseViewModel;
+﻿using SATools.SAWPF.BaseViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -75,9 +75,11 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
 
         public bool IsReadOnly { get; }
 
+        public bool SmoothScroll { get; }
+
         #endregion
 
-        public InspectorElement(object source, PropertyInfo property, string name, string tooltip, bool propertyReadonly, HexadecimalMode hexadecimal)
+        public InspectorElement(object source, PropertyInfo property, string name, string tooltip, bool propertyReadonly, HexadecimalMode hexadecimal, bool smoothScroll)
         {
             Source = source;
             Property = property;
@@ -85,6 +87,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             Tooltip = tooltip;
             IsReadOnly = propertyReadonly;
             Hexadecimal = hexadecimal;
+            SmoothScroll = smoothScroll;
         }
     }
 
@@ -128,6 +131,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             public HexadecimalAttribute(bool hybrid)
                 => Hybrid = hybrid;
         }
+
+        [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+        protected class SmoothScrollCollection : Attribute { }
 
         #endregion
 
@@ -197,8 +203,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
                 string tooltip = p.GetCustomAttribute<TooltipAttribute>()?.Tooltip;
                 bool? hybridHex = p.GetCustomAttribute<HexadecimalAttribute>()?.Hybrid;
                 HexadecimalMode hexMode = hybridHex.HasValue ? (hybridHex == true ? HexadecimalMode.HybridHex : HexadecimalMode.OnlyHex) : HexadecimalMode.NoHex;
+                bool smoothScroll = p.GetCustomAttribute<SmoothScrollCollection>() != null;
 
-                result.Add(new(this, p, displayName, tooltip, !p.CanWrite, hexMode));
+                result.Add(new(this, p, displayName, tooltip, !p.CanWrite, hexMode, smoothScroll));
             }
 
             return result;

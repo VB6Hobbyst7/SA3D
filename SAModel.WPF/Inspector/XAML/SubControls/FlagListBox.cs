@@ -16,26 +16,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 new(null, new((d, e) =>
                 {
                     FlagListBox lb = (FlagListBox)d;
-                    if(lb.Items.Count == 0)
-                        return; // we'll handle this again after loading
-
-                    ulong flag = Convert.ToUInt64(e.NewValue) ^ Convert.ToUInt64(e.OldValue);
-                    if(flag == 0)
-                        return;
-
-                    foreach(FlagListItem item in lb.Items)
-                    {
-                        ulong flagVal = Convert.ToUInt64(item.Tag);
-
-                        bool flagState = (flag & flagVal) != 0;
-                        if(flagState != item.IsSelected)
-                            item.IsSelected = flagState;
-
-                        flag &= ~flagVal;
-                    }
-
-                    if(flag != 0)
-                        throw new FormatException($"Flag had either invalid values or the listbox missed a flag value: {flag:X}");
+                    lb.UpdateCheckboxes(e.NewValue, e.OldValue);
                 })));
 
         public object Value
@@ -47,14 +28,14 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
         private ulong Flag
         {
             get => Convert.ToUInt64(Value ?? 0);
-            set => Value = Enum.ToObject(Value.GetType(), value);
+            set
+            {
+                object newValue = Enum.ToObject(Value.GetType(), value);
+                if(Value == newValue)
+                    return;
+                Value = newValue;
+            }
         }
-
-
-
-        // i have confidence in stack overflow that this way of
-        // handling the changed selection works flawless.
-        // If not, we are doomed
 
         protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
         {
@@ -77,16 +58,21 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 throw new FormatException($"Flag had either invalid values or the listbox missed a flag value: {flag:X}");
         }
 
+        private bool updating;
 
         protected override void OnSelectionChanged(SelectionChangedEventArgs e)
         {
             base.OnSelectionChanged(e);
 
+            if(updating)
+                return;
+
+
             ulong curFlag = Flag;
             ulong newFlag = curFlag;
             foreach(FlagListItem i in e.AddedItems)
             {
-                ulong flag = Convert.ToUInt64(i.Tag);
+                ulong flag = Convert.ToUInt64(i.Flag);
                 if((curFlag & flag) != 0)
                     continue;
 
@@ -95,7 +81,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 
             foreach(FlagListItem i in e.RemovedItems)
             {
-                ulong flag = Convert.ToUInt64(i.Tag);
+                ulong flag = Convert.ToUInt64(i.Flag);
                 if((curFlag & flag) == 0)
                     continue;
 
@@ -103,7 +89,43 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             }
 
             if(curFlag != newFlag)
+            {
+                updating = true;
                 Flag = newFlag;
+                updating = false;
+            }
+
+        }
+
+        private void UpdateCheckboxes(object newValue, object oldValue)
+        {
+            if(updating)
+                return;
+
+            if(Items.Count == 0)
+                return; // we'll handle this again after loading
+
+            ulong flag = Convert.ToUInt64(newValue) ^ Convert.ToUInt64(oldValue);
+            if(flag == 0)
+                return;
+
+            updating = true;
+
+            foreach(FlagListItem item in Items)
+            {
+                ulong flagVal = Convert.ToUInt64(item.Flag);
+
+                bool flagState = (flag & flagVal) != 0;
+                if(flagState != item.IsSelected)
+                    item.IsSelected = flagState;
+
+                flag &= ~flagVal;
+            }
+
+            updating = false;
+
+            if(flag != 0)
+                throw new FormatException($"Flag had either invalid values or the listbox missed a flag value: {flag:X}");
         }
     }
 

@@ -10,7 +10,7 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:numerics="clr-namespace:System.Numerics;assembly=System.Numerics"
     xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel"
-    xmlns:base="clr-namespace:SAWPF.BaseViewModel;assembly=SAWPF"
+    xmlns:base="clr-namespace:SATools.SAWPF.BaseViewModel;assembly=SAWPF"
     xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
@@ -86,6 +86,10 @@
 
     <DataTemplate x:Key="Color" DataType="{x:Type structs:Color}">
         <sub:UcColor local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="GCMesh" DataType="{x:Type gcenums:Mesh}">
+        <sub:UcGCMesh local:InspectorBinding.PropName="Mesh"/>
     </DataTemplate>
     
     <!--#endregion-->
@@ -540,4 +544,43 @@
 
     <!--#endregion-->
 
+    <!--#region  GC parameters-->
+
+    <DataTemplate x:Key="BaseParameter" DataType="{x:Type gcenums:Parameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="VtxAttrFmtParameter" DataType="{x:Type gcenums:VtxAttrFmtParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="IndexAttributeParameter" DataType="{x:Type gcenums:IndexAttributeParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="LightingParameter" DataType="{x:Type gcenums:LightingParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+    
+    <DataTemplate x:Key="AmbientColorParameter" DataType="{x:Type gcenums:AmbientColorParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="BlendAlphaParameter" DataType="{x:Type gcenums:BlendAlphaParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TextureParameter" DataType="{x:Type gcenums:TextureParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TexcoordGenParameter" DataType="{x:Type gcenums:TexCoordGenParameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Unknown9Parameter" DataType="{x:Type gcenums:Unknown9Parameter}">
+        <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
+    </DataTemplate>
+
+    <!--#endregion-->
 </ResourceDictionary>

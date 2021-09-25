@@ -30,7 +30,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                     for(int i = 0; i < ecb.Items.Count; i++)
                     {
                         item = (ComboBoxItem)ecb.Items[i];
-                        if(item.Tag.Equals(e.NewValue))
+                        if(!item.Tag.Equals(e.NewValue))
                             continue;
 
                         ecb.SelectedIndex = i;

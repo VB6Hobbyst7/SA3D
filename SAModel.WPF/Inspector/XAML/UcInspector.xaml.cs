@@ -19,7 +19,10 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             => Inspector.ActiveHistoryElement.HistoryName;
 
         public UcInspector()
-            => InitializeComponent();
+        {
+            InitializeComponent();
+            Resources.MergedDictionaries.Add(InspectorElementTemplateSelector.Selector.Resources);
+        }
 
         /// <summary>
         /// Load an SAModel struct into the inspector

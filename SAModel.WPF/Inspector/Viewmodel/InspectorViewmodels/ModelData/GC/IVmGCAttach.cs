@@ -1,5 +1,6 @@
 ﻿using SATools.SAModel.ModelData.GC;
 using System;
+using System.Linq;
 
 namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.GC
 {
@@ -14,8 +15,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         [DisplayName("Vertex Data")]
         [Tooltip("Vertex data for assembling the polygons")]
-        public VertexSet[] VertexData
-            => Attach.VertexData;
+        public VertexSet[] VertexData { get; }
 
         [DisplayName("Opaque Meshes")]
         [Tooltip("Opaque Polygon information batch")]
@@ -29,6 +29,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmGCAttach() : base() { }
 
-        public IVmGCAttach(GCAttach source) : base(source) { }
+        public IVmGCAttach(GCAttach source) : base(source)
+        {
+            VertexData = Attach.VertexData.Values.ToArray();
+        }
     }
 }

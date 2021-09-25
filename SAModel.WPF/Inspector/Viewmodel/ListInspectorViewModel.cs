@@ -1,4 +1,4 @@
-﻿using SAWPF.BaseViewModel;
+﻿using SATools.SAWPF.BaseViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +74,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             public bool SelectBackground
                 => !ValueType.IsEnum;
 
+            public bool SmoothScroll => Collection.SmoothScroll;
+
             #endregion
 
             public ListInspectorElement(ListInspectorViewModel<T> collection, int valueIndex)
@@ -98,6 +100,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         public Type ContentType
             => typeof(T);
 
+        public bool SmoothScroll { get; }
+
         /// <summary>
         /// Item wrappers to allow access and replacement to source list items
         /// </summary>
@@ -108,6 +112,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             SourceList = (IList<T>)info.Value;
             PropertyName = info.DisplayName;
             Hexadecimal = info.Hexadecimal;
+            SmoothScroll = info.SmoothScroll;
 
             InspectorElements = new();
             for(int i = 0; i < SourceList.Count; i++)

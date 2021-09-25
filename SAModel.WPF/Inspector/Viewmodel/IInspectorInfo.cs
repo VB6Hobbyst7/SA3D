@@ -76,5 +76,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         /// Whether, upon selection, the background should change
         /// </summary>
         public bool SelectBackground { get; }
+
+        public bool SmoothScroll { get; }
     }
 }

@@ -24,6 +24,38 @@
             VerticalAlignment="Center"
             utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text"
             Text="{Binding HexColor, FallbackValue=#FFFFFFFF, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
-        <Button Grid.Column="1" Background="{Binding ButtonBackground}" BorderBrush="#888" BorderThickness="1" Click="OpenColorPicker"/>
+
+        <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
+            <Rectangle.Fill>
+                <DrawingBrush Stretch="None" TileMode="Tile" Viewport="0,0,20,20" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <GeometryDrawing Brush="#DDD">
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="0,0,20,20"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#AAA">
+                                <GeometryDrawing.Geometry>
+                                    <GeometryGroup>
+                                        <RectangleGeometry Rect="0,0,10,10"/>
+                                        <RectangleGeometry Rect="10,10,10,10"/>
+                                    </GeometryGroup>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <Button Grid.Column="1" x:Name="ColorButton" BorderBrush="#888" BorderThickness="1" Click="OpenColorPicker">
+            <Button.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" x:Name="ColorBrush">
+                    <GradientStop Offset="0.33" Color="Red" x:Name="ColorOpaque"/>
+                    <GradientStop Offset="0.66" Color="Transparent" x:Name="ColorTransparent"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
     </Grid>
 </local:BaseStructUserControl>

@@ -95,8 +95,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmLandTable(LandTable landTable) : base(landTable)
         {
-            VisualGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible)).ToList().AsReadOnly();
-            CollisionGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.IsCollision()).ToList().AsReadOnly();
+            VisualGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible)).OrderBy(x => x.ToString()).ToList().AsReadOnly();
+            CollisionGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.IsCollision()).OrderBy(x => x.ToString()).ToList().AsReadOnly();
         }
 
         public override string ToString()

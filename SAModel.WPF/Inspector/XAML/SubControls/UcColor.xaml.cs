@@ -39,22 +39,18 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             }
         }
 
-        public SolidColorBrush ButtonBackground
-        {
-            get
-            {
-                var c = Value;
-                return new(Color.FromArgb(c.A, c.R, c.G, c.B));
-            }
-        }
-
         public UcColor() => InitializeComponent();
 
         protected override void ValuePropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             if(!_manual)
                 HexColor = Value.Hex;
-            OnPropertyChanged(nameof(ButtonBackground));
+
+            var c = Value;
+            Color transparent = Color.FromArgb(c.A, c.R, c.G, c.B);
+            Color opaque = Color.FromArgb(255, transparent.R, transparent.G, transparent.B);
+
+            ColorButton.Background = new LinearGradientBrush(opaque, transparent, new(0.33d, 0), new(0.66d, 0));
         }
 
         private void OpenColorPicker(object sender, RoutedEventArgs e)

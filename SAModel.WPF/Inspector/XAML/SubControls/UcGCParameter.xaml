@@ -1,0 +1,366 @@
+﻿<local:BaseStructUserControl  
+    x:Class="SATools.SAModel.WPF.Inspector.XAML.SubControls.UcGCParameter"
+    x:ClassModifier="internal" x:TypeArguments="gc:IParameter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:SATools.SAModel.WPF.Inspector.XAML.SubControls"
+    xmlns:num="http://gu.se/NumericInput"
+    xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF"
+    xmlns:gc="clr-namespace:SATools.SAModel.ModelData.GC;assembly=SAModel"
+    xmlns:mdl="clr-namespace:SATools.SAModel.ModelData;assembly=SAModel"
+    xmlns:utils="clr-namespace:SATools.SAModel.WPF.Inspector.XAML"
+    mc:Ignorable="d" 
+    d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <Style x:Key="SeperatorBorder" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="0,1,0,0"/>
+            <Setter Property="BorderBrush" Value="#B8B8B8"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="Padding" Value="0,2,0,0"/>
+        </Style>
+
+        <DataTemplate x:Key="VtxAttrFmt">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                
+                    <local:EnumComboBox ToolTip="Vertex type format" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding VertexAttribute, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}">
+                        <ComboBoxItem Content="Position Matrix ID" Tag="{x:Static gc:VertexAttribute.PositionMatrixId}" ToolTip="Position Matrices along with their ID (?)"/>
+                        <ComboBoxItem Content="Position"    Tag="{x:Static gc:VertexAttribute.Position}"   ToolTip="Position data"/>
+                        <ComboBoxItem Content="Normal"      Tag="{x:Static gc:VertexAttribute.Normal}"     ToolTip="Normal data"/>
+                        <ComboBoxItem Content="Color 0"     Tag="{x:Static gc:VertexAttribute.Color0}"     ToolTip="1st color data"/>
+                        <ComboBoxItem Content="Color 1"     Tag="{x:Static gc:VertexAttribute.Color1}"     ToolTip="2nd color data"/>
+                        <ComboBoxItem Content="Texcoord 0"  Tag="{x:Static gc:VertexAttribute.Tex0}"       ToolTip="1st texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 1"  Tag="{x:Static gc:VertexAttribute.Tex1}"       ToolTip="2nd texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 2"  Tag="{x:Static gc:VertexAttribute.Tex2}"       ToolTip="3rd texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 3"  Tag="{x:Static gc:VertexAttribute.Tex3}"       ToolTip="4th texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 4"  Tag="{x:Static gc:VertexAttribute.Tex4}"       ToolTip="5th texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 5"  Tag="{x:Static gc:VertexAttribute.Tex5}"       ToolTip="6th texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 6"  Tag="{x:Static gc:VertexAttribute.Tex6}"       ToolTip="7th texture coordinate data"/>
+                        <ComboBoxItem Content="Texcoord 7"  Tag="{x:Static gc:VertexAttribute.Tex7}"       ToolTip="8th texture coordinate data"/>
+                    </local:EnumComboBox>
+
+                    <TextBlock Grid.Column="1" Text="0x" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Hexadecimal prependix"/>
+                    <sawpf:UShortBox Grid.Column="2" Value="{Binding VAFUnknown, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Style="{DynamicResource HexNumberStyle}" MaxLength="4" StringFormat="X4"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="IndexAttributes">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <local:FlagListBox Style="{DynamicResource HexFlagList8}" utils:InspectorBinding.PropName="{x:Null}"
+                                   Value="{Binding IndexAttributes, Mode=TwoWay}">
+                    <local:HexFlagListItem Content="Bit0" 					Flag="{x:Static gc:IndexAttributes.Bit0}"/>
+                    <local:HexFlagListItem Content="Bit1" 					Flag="{x:Static gc:IndexAttributes.Bit1}"/>
+                    <local:HexFlagListItem Content="Position 16Bit Index" 	Flag="{x:Static gc:IndexAttributes.Position16BitIndex}"/>
+                    <local:HexFlagListItem Content="Has Position" 			Flag="{x:Static gc:IndexAttributes.HasPosition}"/>
+                    <local:HexFlagListItem Content="Normal 16Bit Index" 	Flag="{x:Static gc:IndexAttributes.Normal16BitIndex}"/>
+                    <local:HexFlagListItem Content="Has Normal" 			Flag="{x:Static gc:IndexAttributes.HasNormal}"/>
+                    <local:HexFlagListItem Content="Color 16Bit Index" 		Flag="{x:Static gc:IndexAttributes.Color16BitIndex}"/>
+                    <local:HexFlagListItem Content="Has Color" 				Flag="{x:Static gc:IndexAttributes.HasColor}"/>
+                    <local:HexFlagListItem Content="Bit8" 					Flag="{x:Static gc:IndexAttributes.Bit8}"/>
+                    <local:HexFlagListItem Content="Bit9" 					Flag="{x:Static gc:IndexAttributes.Bit9}"/>
+                    <local:HexFlagListItem Content="UV 16Bit Index" 		Flag="{x:Static gc:IndexAttributes.UV16BitIndex}"/>
+                    <local:HexFlagListItem Content="Has UV" 				Flag="{x:Static gc:IndexAttributes.HasUV}"/>
+                    <local:HexFlagListItem Content="Bit12" 					Flag="{x:Static gc:IndexAttributes.Bit12}"/>
+                    <local:HexFlagListItem Content="Bit13" 					Flag="{x:Static gc:IndexAttributes.Bit13}"/>
+                    <local:HexFlagListItem Content="Bit14" 					Flag="{x:Static gc:IndexAttributes.Bit14}"/>
+                    <local:HexFlagListItem Content="Bit15" 					Flag="{x:Static gc:IndexAttributes.Bit15}"/>
+                </local:FlagListBox>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Lighting">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <Grid>
+                    <Grid.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Margin" Value="5"/>
+                        </Style>
+                    </Grid.Resources>
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2"/>
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2" Grid.Row="2"/>
+
+                    <TextBlock Text="Flags"/>
+                    <TextBlock Grid.Row="1" Text="Shadow Stencil"/>
+                    <TextBlock Grid.Row="2" Text="Unknown 1"/>
+                    <TextBlock Grid.Row="3" Text="Unknown 2"/>
+
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="0x" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Hexadecimal prependix"/>
+                        <sawpf:UShortBox Style="{DynamicResource HexNumberStyle}" utils:InspectorBinding.PropName="{x:Null}" 
+                                         Grid.Column="1" Value="{Binding LightingAttributes, Mode=TwoWay}"
+                                         MaxLength="4" StringFormat="X4"/>
+                    </Grid>
+
+                    <sawpf:ByteBox Style="{DynamicResource BaseNumberStyle}" Grid.Column="1" Grid.Row="1" Value="{Binding LightingShadowStencil, Mode=TwoWay}" MaxValue="15"/>
+                    <sawpf:ByteBox Style="{DynamicResource BaseNumberStyle}" Grid.Column="1" Grid.Row="2" Value="{Binding LightingUnknown1, Mode=TwoWay}" MaxValue="15"/>
+                    <sawpf:ByteBox Style="{DynamicResource BaseNumberStyle}" Grid.Column="1" Grid.Row="3" Value="{Binding LightingUnknown2, Mode=TwoWay}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="AmbientColor">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <local:UcColor Value="{Binding AmbientColor, Mode=TwoWay}" BaseBoxStyle="{DynamicResource BaseNumberStyle}"/>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BlendAlpha">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <Grid>
+                    <Grid.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Margin" Value="5"/>
+                        </Style>
+                    </Grid.Resources>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2"/>
+
+                    <TextBlock Text="Source"/>
+                    <TextBlock Grid.Row="1" Text="Destination"/>
+
+                    <local:EnumComboBox ToolTip="Source Blending mode" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding SourceAlpha, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Column="1">
+                        <ComboBoxItem Content="Zero" Tag="{x:Static mdl:BlendMode.Zero}"/>
+                        <ComboBoxItem Content="One" Tag="{x:Static mdl:BlendMode.One}"/>
+                        <ComboBoxItem Content="Other" Tag="{x:Static mdl:BlendMode.Other}"/>
+                        <ComboBoxItem Content="Other Inverted" Tag="{x:Static mdl:BlendMode.OtherInverted}"/>
+                        <ComboBoxItem Content="SrcAlpha" Tag="{x:Static mdl:BlendMode.SrcAlpha}"/>
+                        <ComboBoxItem Content="SrcAlpha Inverted" Tag="{x:Static mdl:BlendMode.SrcAlphaInverted}"/>
+                        <ComboBoxItem Content="DstAlpha" Tag="{x:Static mdl:BlendMode.DstAlpha}"/>
+                        <ComboBoxItem Content="DstAlpha Inverted" Tag="{x:Static mdl:BlendMode.DstAlphaInverted}"/>
+                    </local:EnumComboBox>
+
+                    <local:EnumComboBox ToolTip="Destination Blending mode" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding DestAlpha, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Row="1" Grid.Column="1">
+                        <ComboBoxItem Content="Zero" Tag="{x:Static mdl:BlendMode.Zero}"/>
+                        <ComboBoxItem Content="One" Tag="{x:Static mdl:BlendMode.One}"/>
+                        <ComboBoxItem Content="Other" Tag="{x:Static mdl:BlendMode.Other}"/>
+                        <ComboBoxItem Content="Other Inverted" Tag="{x:Static mdl:BlendMode.OtherInverted}"/>
+                        <ComboBoxItem Content="SrcAlpha" Tag="{x:Static mdl:BlendMode.SrcAlpha}"/>
+                        <ComboBoxItem Content="SrcAlpha Inverted" Tag="{x:Static mdl:BlendMode.SrcAlphaInverted}"/>
+                        <ComboBoxItem Content="DstAlpha" Tag="{x:Static mdl:BlendMode.DstAlpha}"/>
+                        <ComboBoxItem Content="DstAlpha Inverted" Tag="{x:Static mdl:BlendMode.DstAlphaInverted}"/>
+                    </local:EnumComboBox>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="Texture">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <Grid>
+                    <Grid.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Margin" Value="5"/>
+                        </Style>
+                    </Grid.Resources>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2"/>
+
+                    <TextBlock Text="Texture ID"/>
+                    <TextBlock Grid.Row="1" Text="Tilemode"/>
+
+                    <sawpf:UShortBox Grid.Column="1" Style="{DynamicResource BaseNumberStyle}" Value="{Binding TextureID, Mode=TwoWay}"/>
+
+                    <local:FlagListBox Grid.Column="1" Grid.Row="1" Style="{DynamicResource FlagList}" utils:InspectorBinding.PropName="{x:Null}"
+                                   Value="{Binding TextureTiling, Mode=TwoWay}">
+                        <local:FlagListItem Content="ClampV" 	Flag="{x:Static gc:GCTileMode.RepeatV}"/>
+                        <local:FlagListItem Content="MirrorV" 	Flag="{x:Static gc:GCTileMode.MirrorV}"/>
+                        <local:FlagListItem Content="ClampU" 	Flag="{x:Static gc:GCTileMode.RepeatU}"/>
+                        <local:FlagListItem Content="MirrorU" 	Flag="{x:Static gc:GCTileMode.MirrorU}"/>
+                        <local:FlagListItem Content="Unknown" 	Flag="{x:Static gc:GCTileMode.Unk_1}"/>
+                    </local:FlagListBox>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="TexCoordGen">
+            <Border Style="{StaticResource SeperatorBorder}">
+                <Grid>
+                    <Grid.Resources>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Margin" Value="5"/>
+                        </Style>
+                    </Grid.Resources>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2"/>
+                    <Rectangle Fill="{DynamicResource AlternationColor}" Grid.ColumnSpan="2" Grid.Row="2"/>
+
+                    <TextBlock Text="Coordinate ID"/>
+                    <TextBlock Grid.Row="1" Text="Type"/>
+                    <TextBlock Grid.Row="2" Text="Source"/>
+                    <TextBlock Grid.Row="3" Text="Matrix ID"/>
+
+                    <local:EnumComboBox ToolTip="Texture Coordinate ID" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding TexCoordID, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Column="1" Grid.Row="0">
+                        <ComboBoxItem Content="TexCoord0"   Tag="{x:Static gc:TexCoordID.TexCoord0}"/>
+                        <ComboBoxItem Content="TexCoord1"   Tag="{x:Static gc:TexCoordID.TexCoord1}"/>
+                        <ComboBoxItem Content="TexCoord2"   Tag="{x:Static gc:TexCoordID.TexCoord2}"/>
+                        <ComboBoxItem Content="TexCoord3"   Tag="{x:Static gc:TexCoordID.TexCoord3}"/>
+                        <ComboBoxItem Content="TexCoord4"   Tag="{x:Static gc:TexCoordID.TexCoord4}"/>
+                        <ComboBoxItem Content="TexCoord5"   Tag="{x:Static gc:TexCoordID.TexCoord5}"/>
+                        <ComboBoxItem Content="TexCoord6"   Tag="{x:Static gc:TexCoordID.TexCoord6}"/>
+                        <ComboBoxItem Content="TexCoord7"   Tag="{x:Static gc:TexCoordID.TexCoord7}"/>
+                        <ComboBoxItem Content="TexCoord Max"   Tag="{x:Static gc:TexCoordID.TexCoordMax}"/>
+                        <ComboBoxItem Content="TexCoord Null"   Tag="{x:Static gc:TexCoordID.TexCoordNull}"/>
+                    </local:EnumComboBox>
+
+                    <local:EnumComboBox ToolTip="Texture Generation Type" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding TexGenType, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Column="1" Grid.Row="1">
+                        <ComboBoxItem Content="Matrix2x4"   Tag="{x:Static gc:TexGenType.Matrix2x4}"/>
+                        <ComboBoxItem Content="Matrix3x4"   Tag="{x:Static gc:TexGenType.Matrix3x4}"/>
+                        <ComboBoxItem Content="Bump0"   Tag="{x:Static gc:TexGenType.Bump0}"/>
+                        <ComboBoxItem Content="Bump1"   Tag="{x:Static gc:TexGenType.Bump1}"/>
+                        <ComboBoxItem Content="Bump2"   Tag="{x:Static gc:TexGenType.Bump2}"/>
+                        <ComboBoxItem Content="Bump3"   Tag="{x:Static gc:TexGenType.Bump3}"/>
+                        <ComboBoxItem Content="Bump4"   Tag="{x:Static gc:TexGenType.Bump4}"/>
+                        <ComboBoxItem Content="Bump5"   Tag="{x:Static gc:TexGenType.Bump5}"/>
+                        <ComboBoxItem Content="Bump6"   Tag="{x:Static gc:TexGenType.Bump6}"/>
+                        <ComboBoxItem Content="Bump7"   Tag="{x:Static gc:TexGenType.Bump7}"/>
+                        <ComboBoxItem Content="SRTG"   Tag="{x:Static gc:TexGenType.SRTG}"/>
+                    </local:EnumComboBox>
+
+                    <local:EnumComboBox ToolTip="Texture Generation Type" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding TexGenSrc, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Column="1" Grid.Row="2">
+                        <ComboBoxItem Content="Position" Tag="{x:Static gc:TexGenSrc.Position}"/>
+                        <ComboBoxItem Content="Normal" Tag="{x:Static gc:TexGenSrc.Normal}"/>
+                        <ComboBoxItem Content="Binormal" Tag="{x:Static gc:TexGenSrc.Binormal}"/>
+                        <ComboBoxItem Content="Tangent" Tag="{x:Static gc:TexGenSrc.Tangent}"/>
+                        <ComboBoxItem Content="Tex0" Tag="{x:Static gc:TexGenSrc.Tex0}"/>
+                        <ComboBoxItem Content="Tex1" Tag="{x:Static gc:TexGenSrc.Tex1}"/>
+                        <ComboBoxItem Content="Tex2" Tag="{x:Static gc:TexGenSrc.Tex2}"/>
+                        <ComboBoxItem Content="Tex3" Tag="{x:Static gc:TexGenSrc.Tex3}"/>
+                        <ComboBoxItem Content="Tex4" Tag="{x:Static gc:TexGenSrc.Tex4}"/>
+                        <ComboBoxItem Content="Tex5" Tag="{x:Static gc:TexGenSrc.Tex5}"/>
+                        <ComboBoxItem Content="Tex6" Tag="{x:Static gc:TexGenSrc.Tex6}"/>
+                        <ComboBoxItem Content="Tex7" Tag="{x:Static gc:TexGenSrc.Tex7}"/>
+                        <ComboBoxItem Content="TexCoord0" Tag="{x:Static gc:TexGenSrc.TexCoord0}"/>
+                        <ComboBoxItem Content="TexCoord1" Tag="{x:Static gc:TexGenSrc.TexCoord1}"/>
+                        <ComboBoxItem Content="TexCoord2" Tag="{x:Static gc:TexGenSrc.TexCoord2}"/>
+                        <ComboBoxItem Content="TexCoord3" Tag="{x:Static gc:TexGenSrc.TexCoord3}"/>
+                        <ComboBoxItem Content="TexCoord4" Tag="{x:Static gc:TexGenSrc.TexCoord4}"/>
+                        <ComboBoxItem Content="TexCoord5" Tag="{x:Static gc:TexGenSrc.TexCoord5}"/>
+                        <ComboBoxItem Content="TexCoord6" Tag="{x:Static gc:TexGenSrc.TexCoord6}"/>
+                        <ComboBoxItem Content="Color0" Tag="{x:Static gc:TexGenSrc.Color0}"/>
+                        <ComboBoxItem Content="Color1" Tag="{x:Static gc:TexGenSrc.Color1}"/>
+                    </local:EnumComboBox>
+
+
+                    <local:EnumComboBox ToolTip="Texture Generation Type" Style="{DynamicResource EnumComboBoxStyle}" 
+                                        Value="{Binding MatrixID, Mode=TwoWay}" utils:InspectorBinding.PropName="{x:Null}"
+                                        Grid.Column="1" Grid.Row="3">
+                        <ComboBoxItem Content="Matrix0" Tag="{x:Static gc:TexGenMatrix.Matrix0}"/>
+                        <ComboBoxItem Content="Matrix1" Tag="{x:Static gc:TexGenMatrix.Matrix1}"/>
+                        <ComboBoxItem Content="Matrix2" Tag="{x:Static gc:TexGenMatrix.Matrix2}"/>
+                        <ComboBoxItem Content="Matrix3" Tag="{x:Static gc:TexGenMatrix.Matrix3}"/>
+                        <ComboBoxItem Content="Matrix4" Tag="{x:Static gc:TexGenMatrix.Matrix4}"/>
+                        <ComboBoxItem Content="Matrix5" Tag="{x:Static gc:TexGenMatrix.Matrix5}"/>
+                        <ComboBoxItem Content="Matrix6" Tag="{x:Static gc:TexGenMatrix.Matrix6}"/>
+                        <ComboBoxItem Content="Matrix7" Tag="{x:Static gc:TexGenMatrix.Matrix7}"/>
+                        <ComboBoxItem Content="Matrix8" Tag="{x:Static gc:TexGenMatrix.Matrix8}"/>
+                        <ComboBoxItem Content="Matrix9" Tag="{x:Static gc:TexGenMatrix.Matrix9}"/>
+                        <ComboBoxItem Content="Identity" Tag="{x:Static gc:TexGenMatrix.Identity}"/>
+                    </local:EnumComboBox>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    
+    <StackPanel DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:UcGCParameter}}}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <local:EnumComboBox ToolTip="Parameter Type" Style="{DynamicResource EnumComboBoxStyle}" Value="{Binding ParameterType, FallbackValue={x:Static gc:ParameterType.VtxAttrFmt}}" IsReadOnly="True">
+                <ComboBoxItem Content="Vertex Attribute Format"   Tag="{x:Static gc:ParameterType.VtxAttrFmt}"     ToolTip="Vertex attribute format information"/>
+                <ComboBoxItem Content="Index Attributes"    Tag="{x:Static gc:ParameterType.IndexAttributes}"     ToolTip="Index attributes used in the parameter"/>
+                <ComboBoxItem Content="Lighting"        Tag="{x:Static gc:ParameterType.Lighting}"     ToolTip="Lighting information"/>
+                <ComboBoxItem Content="Blend Alpha"   Tag="{x:Static gc:ParameterType.BlendAlpha}"     ToolTip="Alpha blending mode"/>
+                <ComboBoxItem Content="Ambient Color"   Tag="{x:Static gc:ParameterType.AmbientColor}"     ToolTip="Ambient Color"/>
+                <ComboBoxItem Content="Unknown 6"       Tag="{x:Static gc:ParameterType.Unknown6}"     ToolTip="Likely Diffuse color"/>
+                <ComboBoxItem Content="Unknown 7"       Tag="{x:Static gc:ParameterType.Unknown7}"     ToolTip="Likely Speculer color"/>
+                <ComboBoxItem Content="Texture"         Tag="{x:Static gc:ParameterType.Texture}"     ToolTip="Texture information"/>
+                <ComboBoxItem Content="Unknown 9"       Tag="{x:Static gc:ParameterType.Unknown9}"     />
+                <ComboBoxItem Content="Texture Coordinate generation"   Tag="{x:Static gc:ParameterType.TexCoordGen}"     ToolTip="Texture coordinate information"/>
+            </local:EnumComboBox>
+
+            <TextBlock Grid.Column="1" Text="0x" TextAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0" ToolTip="Hexadecimal prependix"/>
+            <sawpf:UIntBox Grid.Column="2" Value="{Binding Data}" ToolTip="Raw Data of the parameter"
+                           Style="{DynamicResource HexNumberStyle}" MaxLength="8" StringFormat="X8"/>
+        </Grid>
+
+        <ContentPresenter Content="{Binding }" ContentTemplateSelector="{Binding TemplateSelector}"/>
+    </StackPanel>
+</local:BaseStructUserControl>

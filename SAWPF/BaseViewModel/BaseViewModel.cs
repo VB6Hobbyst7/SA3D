@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 
-namespace SAWPF.BaseViewModel
+namespace SATools.SAWPF.BaseViewModel
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

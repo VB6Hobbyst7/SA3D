@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace SAWPF.BaseViewModel
+namespace SATools.SAWPF.BaseViewModel
 {
     /// <summary>
     /// A basic command that runs an Action with a specific parameter
@@ -53,7 +53,7 @@ namespace SAWPF.BaseViewModel
             if(typeof(TParameterType) == null || parameter.GetType() == typeof(TParameterType))
                 _mAction((TParameterType)parameter);
             else
-                throw new ArgumentException("Parameter of type " + parameter.GetType() + ", but it should be " + typeof(TParameterType), "parameter");
+                throw new ArgumentException("Parameter of type " + parameter.GetType() + ", but it should be " + typeof(TParameterType), nameof(parameter));
         }
 
         #endregion

@@ -10,6 +10,8 @@ namespace SAModelInspector
     /// </summary>
     public partial class WndMain : Window
     {
+        object loaded = null;
+
         public WndMain()
         {
             InitializeComponent();
@@ -37,6 +39,7 @@ namespace SAModelInspector
             ModelFile mdlFile = ModelFile.Read(file, ofd.FileName);
             if(mdlFile != null)
             {
+                loaded = mdlFile;
                 Inspector.LoadNewObject(mdlFile);
                 return;
             }
@@ -45,8 +48,43 @@ namespace SAModelInspector
             LandTable ltbl = LandTable.ReadFile(file);
             if(ltbl != null)
             {
+                loaded = ltbl;
+
                 Inspector.LoadNewObject(ltbl);
                 return;
+            }
+        }
+
+        private void SaveFile(object sender, RoutedEventArgs e)
+        {
+            if(loaded == null)
+                return;
+
+
+            if(loaded is ModelFile mdlfile)
+            {
+                SaveFileDialog sfd = new()
+                {
+                    Filter = "Model File (*.*mdl, *.nj, *.gj)|*.BFMDL;*.SA1MDL;*.SA2MDL;*.SA2BMDL;*.NJ;*.GJ"
+                };
+
+                if(sfd.ShowDialog() != true)
+                    return;
+
+                mdlfile.SaveToFile(sfd.FileName, false);
+            }
+
+            if(loaded is LandTable ltbl)
+            {
+                SaveFileDialog sfd = new()
+                {
+                    Filter = "Level File (*.*lvl)|*.BFLVL;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
+                };
+
+                if(sfd.ShowDialog() != true)
+                    return;
+
+                ltbl.WriteFile(sfd.FileName);
             }
         }
     }

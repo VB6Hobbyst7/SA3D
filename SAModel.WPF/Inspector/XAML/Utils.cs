@@ -13,7 +13,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML
     {
         public static InspectorElementTemplateSelector Selector { get; } = new();
 
-        private readonly ResourceDictionary _resources;
+        public ResourceDictionary Resources { get; }
 
         private readonly DataTemplate Empty;
 
@@ -29,12 +29,12 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
         public InspectorElementTemplateSelector()
         {
-            _resources = new() { Source = new("/SAModel.WPF;component/Inspector/XAML/RdInspectorTemplates.xaml", UriKind.RelativeOrAbsolute) };
+            Resources = new() { Source = new("/SAModel.WPF;component/Inspector/XAML/RdInspectorTemplates.xaml", UriKind.RelativeOrAbsolute) };
 
-            Empty = (DataTemplate)_resources["/"];
-            DetailButton = (DataTemplate)_resources["OpenButton"];
-            Hex = (DataTemplate)_resources["OnlyHex"];
-            HybridHex = (DataTemplate)_resources["HybridHex"];
+            Empty = (DataTemplate)Resources["/"];
+            DetailButton = (DataTemplate)Resources["OpenButton"];
+            Hex = (DataTemplate)Resources["OnlyHex"];
+            HybridHex = (DataTemplate)Resources["HybridHex"];
 
             Hex.Resources.Add("TemplateSelector", this);
             HybridHex.Resources.Add("TemplateSelector", this);
@@ -42,9 +42,9 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             _templates = new();
             _hexTemplates = new();
 
-            foreach(string k in _resources.Keys)
+            foreach(string k in Resources.Keys)
             {
-                if(_resources[k] is not DataTemplate t || t.DataType == null)
+                if(Resources[k] is not DataTemplate t || t.DataType == null)
                     continue;
 
                 Type type = (Type)t.DataType;
@@ -94,8 +94,12 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            string templateName = item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>)
-                ? "ListTemplate" : "GridTemplate";
+            string templateName = "GridTemplate";
+            if(item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>))
+            {
+                bool smoothScroll =  (bool)item.GetType().GetProperty("SmoothScroll").GetValue(item);
+                templateName = smoothScroll ? "SmoothListTemplate" : "ListTemplate";
+            }
 
             return ((FrameworkElement)container).FindResource(templateName) as DataTemplate;
         }
@@ -130,7 +134,8 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             }
 
             Binding binding = new();
-            IInspectorInfo element = (IInspectorInfo)((FrameworkElement)d).DataContext;
+            if(((FrameworkElement)d).DataContext is not IInspectorInfo element)
+                return;
 
             binding.Path = new(element.BindingPath);
             binding.Mode = element.IsReadOnly ? BindingMode.OneWay : BindingMode.TwoWay;

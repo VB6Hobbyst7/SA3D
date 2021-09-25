@@ -1,7 +1,7 @@
 ﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
-using SAWPF.BaseViewModel;
+using SATools.SAWPF.BaseViewModel;
 using System;
 
 namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData
