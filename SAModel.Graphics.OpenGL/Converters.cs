@@ -27,7 +27,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             return filter switch
             {
                 FilterMode.PointSampled => TextureMinFilter.NearestMipmapNearest,
-                FilterMode.Bilinear => TextureMinFilter.NearestMipmapLinear,
+                FilterMode.Bilinear => TextureMinFilter.LinearMipmapNearest,
                 FilterMode.Trilinear => TextureMinFilter.LinearMipmapLinear,
                 _ => throw new InvalidCastException($"{filter} has no corresponding OpenGL filter"),
             };
