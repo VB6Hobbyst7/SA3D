@@ -81,7 +81,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             VertexSet? GetSet(VertexAttribute attrib)
             {
-                if(VertexData.TryGetValue(VertexAttribute.Position, out VertexSet checkPositions))
+                if(VertexData.TryGetValue(attrib, out VertexSet checkPositions))
                     return checkPositions;
                 return null;
             }

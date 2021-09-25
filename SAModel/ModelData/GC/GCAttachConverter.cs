@@ -83,7 +83,6 @@ namespace SATools.SAModel.ModelData.GC
                 bool hasColors = colors.Any(x => x != Color.White) || !normals.Any(x => x != Vector3.UnitY);
 
                 // Puttin together the vertex sets
-                bool first = true;
                 VertexSet[] vertexData = new VertexSet[2 + (hasUVs ? 1 : 0)];
 
                 IndexAttributeParameter iaParam = new() { IndexAttributes = IndexAttributes.HasPosition };
@@ -124,9 +123,8 @@ namespace SATools.SAModel.ModelData.GC
                     List<IParameter> parameters = new();
 
                     BufferMaterial cacheMaterial = cacheAtc.materials[index];
-                    if(first)
+                    if(currentMaterial == null)
                     {
-                        first = false;
 
                         parameters.Add(new VtxAttrFmtParameter(VertexAttribute.Position));
                         parameters.Add(new VtxAttrFmtParameter(hasColors ? VertexAttribute.Color0 : VertexAttribute.Normal));
@@ -161,17 +159,17 @@ namespace SATools.SAModel.ModelData.GC
                         TextureParameter texParam = new();
                         texParam.TextureID = (ushort)currentMaterial.TextureIndex;
 
+                        if(!currentMaterial.ClampU)
+                            texParam.Tiling |= GCTileMode.RepeatU;
+
+                        if(!currentMaterial.ClampV)
+                            texParam.Tiling |= GCTileMode.RepeatV;
+
                         if(currentMaterial.MirrorU)
                             texParam.Tiling |= GCTileMode.MirrorU;
 
                         if(currentMaterial.MirrorV)
                             texParam.Tiling |= GCTileMode.MirrorV;
-
-                        if(currentMaterial.ClampU)
-                            texParam.Tiling |= GCTileMode.ClampU;
-
-                        if(currentMaterial.ClampV)
-                            texParam.Tiling |= GCTileMode.ClampV;
 
                         parameters.Add(texParam);
 
@@ -188,7 +186,7 @@ namespace SATools.SAModel.ModelData.GC
                         {
                             parameters.Add(new LightingParameter()
                             {
-                                ShadowStencil = currentMaterial.ShadowStencil
+                                ShadowStencil = cacheMaterial.ShadowStencil
                             });
                         }
 
@@ -197,15 +195,15 @@ namespace SATools.SAModel.ModelData.GC
                         {
                             parameters.Add(new BlendAlphaParameter()
                             {
-                                SourceAlpha = currentMaterial.SourceBlendMode,
-                                DestAlpha = currentMaterial.DestinationBlendmode
+                                SourceAlpha = cacheMaterial.SourceBlendMode,
+                                DestAlpha = cacheMaterial.DestinationBlendmode
                             });
                         }
 
                         if(currentMaterial.Ambient != cacheMaterial.Ambient)
                         {
                             parameters.Add(new AmbientColorParameter() {
-                                AmbientColor = currentMaterial.Ambient 
+                                AmbientColor = cacheMaterial.Ambient 
                             });
                         }
 
@@ -216,19 +214,19 @@ namespace SATools.SAModel.ModelData.GC
                         || currentMaterial.ClampV != cacheMaterial.ClampV)
                         {
                             TextureParameter texParam = new();
-                            texParam.TextureID = (ushort)currentMaterial.TextureIndex;
+                            texParam.TextureID = (ushort)cacheMaterial.TextureIndex;
 
-                            if(currentMaterial.MirrorU)
+                            if(!cacheMaterial.ClampU)
+                                texParam.Tiling |= GCTileMode.RepeatU;
+
+                            if(!cacheMaterial.ClampV)
+                                texParam.Tiling |= GCTileMode.RepeatV;
+
+                            if(cacheMaterial.MirrorU)
                                 texParam.Tiling |= GCTileMode.MirrorU;
 
-                            if(currentMaterial.MirrorV)
+                            if(cacheMaterial.MirrorV)
                                 texParam.Tiling |= GCTileMode.MirrorV;
-
-                            if(currentMaterial.ClampU)
-                                texParam.Tiling |= GCTileMode.ClampU;
-
-                            if(currentMaterial.ClampV)
-                                texParam.Tiling |= GCTileMode.ClampV;
 
                             parameters.Add(texParam);
                         }
@@ -239,10 +237,10 @@ namespace SATools.SAModel.ModelData.GC
                         || currentMaterial.MatrixID != cacheMaterial.MatrixID)
                         {
                             parameters.Add(new TexCoordGenParameter() {
-                                TexCoordID = currentMaterial.TexCoordID,
-                                TexGenType = currentMaterial.TexGenType,
-                                TexGenSrc = currentMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : currentMaterial.TexGenSrc,
-                                MatrixID = currentMaterial.MatrixID});
+                                TexCoordID = cacheMaterial.TexCoordID,
+                                TexGenType = cacheMaterial.TexGenType,
+                                TexGenSrc = cacheMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : cacheMaterial.TexGenSrc,
+                                MatrixID = cacheMaterial.MatrixID});
                         }
 
                         currentMaterial = cacheMaterial;
@@ -279,12 +277,14 @@ namespace SATools.SAModel.ModelData.GC
                 for(int i = 0; i < cacheAtc.materials.Length; i++)
                     (cacheAtc.materials[i].UseAlpha ? translucentMeshIndices : opaqueMeshIndices).Add(i);
 
+                currentMaterial = null;
                 Mesh[] opaqueMeshes = opaqueMeshIndices.Select(x => ProcessBufferMesh(x)).ToArray();
 
-                first = true;
+                currentMaterial = null;
                 Mesh[] translucentMeshes = translucentMeshIndices.Select(x => ProcessBufferMesh(x)).ToArray();
 
                 GCAttach result = new(vertexData, opaqueMeshes, translucentMeshes);
+                result.MeshBounds = ogAtc.MeshBounds;
 
                 if(optimize)
                 {
@@ -393,19 +393,11 @@ namespace SATools.SAModel.ModelData.GC
                                 material.SetAttribute(MaterialAttributes.useTexture, true);
                                 TextureParameter tex = (TextureParameter)param;
                                 material.TextureIndex = tex.TextureID;
+                                material.ClampU = !tex.Tiling.HasFlag(GCTileMode.RepeatU);
+                                material.ClampV = !tex.Tiling.HasFlag(GCTileMode.RepeatV);
                                 material.MirrorU = tex.Tiling.HasFlag(GCTileMode.MirrorU);
                                 material.MirrorV = tex.Tiling.HasFlag(GCTileMode.MirrorV);
 
-                                if(tex.Tiling.HasFlag(GCTileMode.Unk_1))
-                                {
-                                    material.ClampU = tex.Tiling.HasFlag(GCTileMode.ClampU);
-                                    material.ClampV = tex.Tiling.HasFlag(GCTileMode.ClampV);
-                                }
-                                else
-                                {
-                                    material.ClampU = false;
-                                    material.ClampV = false;
-                                }
                                 break;
                             case ParameterType.TexCoordGen:
                                 TexCoordGenParameter gen = (TexCoordGenParameter)param;
