@@ -91,7 +91,13 @@
     <DataTemplate x:Key="GCMesh" DataType="{x:Type gcenums:Mesh}">
         <sub:UcGCMesh local:InspectorBinding.PropName="Mesh"/>
     </DataTemplate>
-    
+
+    <DataTemplate x:Key="GCPoly" DataType="{x:Type gcenums:Poly}">
+        <sub:UcGCPoly local:InspectorBinding.PropName="Poly"/>
+    </DataTemplate>
+
+
+
     <!--#endregion-->
     
     <!--#region Number templates-->
@@ -103,6 +109,10 @@
         <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
         <Setter Property="Background" Value="Transparent"/>
     </Style>
+
+    <DataTemplate x:Key="GCCorner" DataType="{x:Type gcenums:Corner}">
+        <sub:UcGCCorner local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
 
     <DataTemplate x:Key="Vector2" DataType="{x:Type numerics:Vector2}">
         <sub:UcVector2 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
