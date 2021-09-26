@@ -16,7 +16,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             set => Source = value;
         }
 
-        [DisplayName("Local position of the vertex")]
+        [Tooltip("Local position of the vertex")]
         public Vector3 Position
         {
             get => Vertex.Position;
@@ -29,7 +29,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Local normal of the vertex")]
+        [Tooltip("Local normal of the vertex")]
         public Vector3 Normal
         {
             get => Vertex.Normal;
@@ -42,7 +42,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Diffuse Color of the vertex (unused)")]
+        [Tooltip("Diffuse Color of the vertex (unused)")]
         public Color Diffuse
         {
             get => Vertex.Diffuse;
@@ -55,7 +55,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Specular color of the vertex (unused)")]
+        [Tooltip("Specular color of the vertex (unused)")]
         public Color Specular
         {
             get => Vertex.Specular;
@@ -68,7 +68,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Attributes (either ninja or user)")]
+        [Tooltip("Attributes (either ninja or user)")]
         [Hexadecimal]
         public uint Attributes
         {
@@ -82,7 +82,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Cache index")]
+        [Tooltip("Cache index")]
         public ushort Index
         {
             get => Vertex.Index;
@@ -95,7 +95,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
 
-        [DisplayName("Weight of the vertex. Ranges from 0 to 1")]
+        [Tooltip("Weight of the vertex. Ranges from 0 to 1")]
         public float Weight
         {
             get => Vertex.Weight;

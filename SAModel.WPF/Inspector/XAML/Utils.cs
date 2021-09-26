@@ -139,7 +139,8 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
             binding.Path = new(element.BindingPath);
             binding.Mode = element.IsReadOnly ? BindingMode.OneWay : BindingMode.TwoWay;
-            binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            if(!element.IsReadOnly)
+                binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 
             BindingOperations.SetBinding(d, dp, binding);
         }

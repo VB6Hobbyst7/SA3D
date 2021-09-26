@@ -11,6 +11,7 @@ namespace SATools.SAWPF.BaseViewModel
 
         public event PropertyChangedEventHandler PropertyChanged = (sender, e) => { };
 
-        protected void OnPropertyChanged(string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected void OnPropertyChanged(string propertyName = null) 
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

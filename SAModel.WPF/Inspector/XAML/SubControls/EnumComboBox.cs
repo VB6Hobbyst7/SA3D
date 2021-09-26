@@ -32,7 +32,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                         item = (ComboBoxItem)ecb.Items[i];
                         if(!item.Tag.Equals(e.NewValue))
                             continue;
-
+                           
                         ecb.SelectedIndex = i;
                         return;
                     }
@@ -76,7 +76,6 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             if(_handle)
                 Handle();
             _handle = true;
-
         }
 
         protected override void OnDropDownClosed(EventArgs e)
