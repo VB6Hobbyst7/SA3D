@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -17,27 +16,27 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Local position of the vertex
         /// </summary>
-        public Vector3 Position;
+        public Vector3 Position { get; set; }
 
         /// <summary>
         /// Local normal of the vertex
         /// </summary>
-        public Vector3 Normal;
+        public Vector3 Normal { get; set; }
 
         /// <summary>
         /// Diffuse Color of the vertex (unused)
         /// </summary>
-        public Color Diffuse;
+        public Color Diffuse { get; set; }
 
         /// <summary>
         /// Specular color of the vertex (unused)
         /// </summary>
-        public Color Specular;
+        public Color Specular { get; set; }
 
         /// <summary>
         /// Attributes (either ninja or user)
         /// </summary>
-        public uint Attributes;
+        public uint Attributes { get; set; }
 
         /// <summary>
         /// Cache index

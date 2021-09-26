@@ -115,19 +115,14 @@ namespace SATools.SAModel.ModelData
         /// <returns></returns>
         public static Attach Read(AttachFormat format, byte[] source, uint address, uint imageBase, bool DX, Dictionary<uint, string> labels)
         {
-            switch(format)
+            return format switch
             {
-                case AttachFormat.BASIC:
-                    return BASIC.BasicAttach.Read(source, address, imageBase, DX, labels);
-                case AttachFormat.CHUNK:
-                    return CHUNK.ChunkAttach.Read(source, address, imageBase, labels);
-                case AttachFormat.GC:
-                    return GC.GCAttach.Read(source, address, imageBase, labels);
-                case AttachFormat.Buffer:
-                    return ReadBuffer(source, address, imageBase, labels);
-                default:
-                    throw new NotImplementedException();
-            }
+                AttachFormat.BASIC => BASIC.BasicAttach.Read(source, address, imageBase, DX, labels),
+                AttachFormat.CHUNK => CHUNK.ChunkAttach.Read(source, address, imageBase, labels),
+                AttachFormat.GC => GC.GCAttach.Read(source, address, imageBase, labels),
+                AttachFormat.Buffer => ReadBuffer(source, address, imageBase, labels),
+                _ => throw new NotImplementedException(),
+            };
         }
 
         /// <summary>

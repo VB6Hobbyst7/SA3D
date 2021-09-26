@@ -326,6 +326,9 @@ namespace SATools.SAModel.ModelData.GC
         Mask = (1 << 5) - 1
     }
 
+#pragma warning disable IDE0010
+#pragma warning disable IDE0066
+
     /// <summary>
     /// Extentions GC enums
     /// </summary>
