@@ -28,7 +28,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         /// <summary>
         /// Actual value
         /// </summary>
-        public object Value { get; }
+        public object Value { get; set; }
 
         /// <summary>
         /// The type of the property

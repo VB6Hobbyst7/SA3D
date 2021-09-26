@@ -64,7 +64,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
                 }
                 else
                 {
-                    data = InspectorViewModel.GetViewModel(Value);
+                    data = InspectorViewModel.GetViewModel(info);
                 }
 
                 _viewModels.Add(Value, data);

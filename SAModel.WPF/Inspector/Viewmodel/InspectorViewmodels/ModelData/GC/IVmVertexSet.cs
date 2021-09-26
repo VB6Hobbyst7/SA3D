@@ -9,7 +9,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             => typeof(VertexSet);
 
         private VertexSet VertexSet
-            => (VertexSet)_source;
+            => (VertexSet)Source;
 
         [Tooltip("The type of vertex data that is stored")]
         public VertexAttribute Attribute
@@ -59,6 +59,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmVertexSet() : base() { }
 
-        public IVmVertexSet(VertexSet source) : base(source) { }
+        public IVmVertexSet(object source) : base(source) { }
     }
 }

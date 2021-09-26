@@ -10,7 +10,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             => typeof(GCAttach);
 
         private GCAttach Attach
-            => (GCAttach)_source;
+            => (GCAttach)Source;
 
 
         [DisplayName("Vertex Data")]
@@ -29,7 +29,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmGCAttach() : base() { }
 
-        public IVmGCAttach(GCAttach source) : base(source)
+        public IVmGCAttach(object source) : base(source)
         {
             VertexData = Attach.VertexData.Values.ToArray();
         }

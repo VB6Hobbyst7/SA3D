@@ -23,7 +23,7 @@
             Background="Transparent" 
             VerticalAlignment="Center"
             utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text"
-            Text="{Binding HexColor, FallbackValue=#FFFFFFFF, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
+            Text="{Binding HexColor, FallbackValue=#00000000, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"/>
 
         <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1">
             <Rectangle.Fill>
@@ -52,8 +52,8 @@
         <Button Grid.Column="1" x:Name="ColorButton" BorderBrush="#888" BorderThickness="1" Click="OpenColorPicker">
             <Button.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0" x:Name="ColorBrush">
-                    <GradientStop Offset="0.33" Color="Red" x:Name="ColorOpaque"/>
-                    <GradientStop Offset="0.66" Color="Transparent" x:Name="ColorTransparent"/>
+                    <GradientStop Offset="0.33" Color="#FF000000" x:Name="ColorOpaque"/>
+                    <GradientStop Offset="0.66" Color="#00000000" x:Name="ColorTransparent"/>
                 </LinearGradientBrush>
             </Button.Background>
         </Button>

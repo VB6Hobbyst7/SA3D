@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using PropertyChanged;
+using System.Numerics;
 using System.Windows;
 
 namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
@@ -8,6 +9,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
     /// </summary>
     internal partial class UcQuaternion : BaseStructUserControl<Quaternion>
     {
+        [SuppressPropertyChangedWarnings]
         private float this[int i]
         {
             get

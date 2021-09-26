@@ -25,7 +25,10 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             => $"Source.{Property.Name}";
 
         public object Value
-            => Property.GetValue(Source);
+        {
+            get => Property.GetValue(Source);
+            set => Property.SetValue(Source, value);
+        }
 
         public Type ValueType
             => Value?.GetType() ?? Property.PropertyType;
@@ -144,16 +147,30 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
 
         protected abstract Type ViewmodelType { get; }
 
+        private readonly object _container;
+
         /// <summary>
         /// Data source
         /// </summary>
-        protected readonly object _source;
+        protected object Source
+        {
+            get => _container is IInspectorInfo f ? f.Value : _container;
+            set
+            {
+                if(_container is IInspectorInfo f)
+                {
+                    f.Value = value;
+                    return;
+                }
+                throw new InvalidOperationException("Source has no container!");
+            }
+        }
 
         protected InspectorViewModel() { }
 
         protected InspectorViewModel(object source)
         {
-            _source = source;
+            _container = source;
             InspectorElements = GetInspectorElements();
         }
 
@@ -181,6 +198,19 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
                 throw new InvalidInspectorTypeException(source.GetType());
 
             return (InspectorViewModel)Activator.CreateInstance(ivmType, source);
+        }
+
+        /// <summary>
+        /// Creates a corresponding viewmodel for an object
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static InspectorViewModel GetViewModel(IInspectorInfo info)
+        {
+            if(!_viewmodelTypes.TryGetValue(info.ValueType, out Type ivmType))
+                throw new InvalidInspectorTypeException(info.ValueType);
+
+            return (InspectorViewModel)Activator.CreateInstance(ivmType, (object)info);
         }
 
         /// <summary>

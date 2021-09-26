@@ -12,7 +12,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => typeof(LandEntry);
 
         private LandEntry LandEntry
-            => (LandEntry)_source;
+            => (LandEntry)Source;
 
         [Tooltip("C label of the LandEntry Object")]
         public string Name
@@ -155,6 +155,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmLandEntry() : base() { }
 
-        public IVmLandEntry(LandEntry source) : base(source) { }
+        public IVmLandEntry(object source) : base(source) { }
     }
 }

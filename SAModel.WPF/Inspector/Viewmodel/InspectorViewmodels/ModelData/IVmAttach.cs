@@ -12,9 +12,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData
             => typeof(Attach);
 
         private Attach Attach
-            => (Attach)_source;
+            => (Attach)Source;
 
-        [Tooltip("C label of the LandTable")]
+        [Tooltip("C label of the Attach")]
         public string Name
         {
             get => Attach.Name;
@@ -63,7 +63,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData
 
         public IVmAttach() : base() { }
 
-        public IVmAttach(Attach source) : base(source)
+        public IVmAttach(object source) : base(source)
         {
 
         }

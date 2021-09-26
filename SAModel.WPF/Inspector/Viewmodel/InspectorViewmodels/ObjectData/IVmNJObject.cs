@@ -12,7 +12,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => typeof(NJObject);
 
         private NJObject NJObject
-            => (NJObject)_source;
+            => (NJObject)Source;
 
         [Tooltip("C label of the NJObject Object")]
         public string Name
@@ -151,6 +151,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmNJObject() : base() { }
 
-        public IVmNJObject(NJObject source) : base(source) { }
+        public IVmNJObject(object source) : base(source) { }
     }
 }

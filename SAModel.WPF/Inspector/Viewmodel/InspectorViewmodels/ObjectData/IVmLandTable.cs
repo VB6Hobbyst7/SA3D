@@ -13,7 +13,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => typeof(LandTable);
 
         private LandTable LandTable
-            => (LandTable)_source;
+            => (LandTable)Source;
 
         [Tooltip("C label of the LandTable")]
         public string Name
@@ -93,7 +93,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmLandTable() : base() { }
 
-        public IVmLandTable(LandTable landTable) : base(landTable)
+        public IVmLandTable(object source) : base(source)
         {
             VisualGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.HasFlag(SurfaceAttributes.Visible)).OrderBy(x => x.ToString()).ToList().AsReadOnly();
             CollisionGeometry = LandTable.Geometry.Where(x => x.SurfaceAttributes.IsCollision()).OrderBy(x => x.ToString()).ToList().AsReadOnly();

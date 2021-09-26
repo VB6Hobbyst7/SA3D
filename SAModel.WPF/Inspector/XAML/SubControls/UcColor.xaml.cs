@@ -11,7 +11,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
     internal partial class UcColor : BaseStructUserControl<Structs.Color>
     {
 
-        private string _hexColor;
+        private string _hexColor = "#00000000";
         private bool _manual;
 
         public string HexColor

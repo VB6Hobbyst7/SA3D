@@ -11,7 +11,8 @@
     xmlns:numerics="clr-namespace:System.Numerics;assembly=System.Numerics"
     xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel"
     xmlns:base="clr-namespace:SATools.SAWPF.BaseViewModel;assembly=SAWPF"
-    xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF">
+    xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF"
+    xmlns:basic="clr-namespace:SATools.SAModel.ModelData.BASIC;assembly=SAModel">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
     
@@ -88,16 +89,6 @@
         <sub:UcColor local:InspectorBinding.PropName="Value"/>
     </DataTemplate>
 
-    <DataTemplate x:Key="GCMesh" DataType="{x:Type gcenums:Mesh}">
-        <sub:UcGCMesh local:InspectorBinding.PropName="Mesh"/>
-    </DataTemplate>
-
-    <DataTemplate x:Key="GCPoly" DataType="{x:Type gcenums:Poly}">
-        <sub:UcGCPoly local:InspectorBinding.PropName="Poly"/>
-    </DataTemplate>
-
-
-
     <!--#endregion-->
     
     <!--#region Number templates-->
@@ -109,10 +100,6 @@
         <Setter Property="ValidationTrigger" Value="PropertyChanged"/>
         <Setter Property="Background" Value="Transparent"/>
     </Style>
-
-    <DataTemplate x:Key="GCCorner" DataType="{x:Type gcenums:Corner}">
-        <sub:UcGCCorner local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
-    </DataTemplate>
 
     <DataTemplate x:Key="Vector2" DataType="{x:Type numerics:Vector2}">
         <sub:UcVector2 local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
@@ -145,6 +132,11 @@
         <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
     </Style>
 
+    <DataTemplate x:Key="Byte" DataType="{x:Type sys:Byte}">
+        <sawpf:ByteBox ToolTip="Unsigned Byte ( 8 bits )"
+            Style="{StaticResource NumberStyle}"/>
+    </DataTemplate>
+    
     <DataTemplate x:Key="Int64" DataType="{x:Type sys:Int64}">
         <sawpf:LongBox ToolTip="Signed 64 bit integer ( Long )"
             Style="{StaticResource NumberStyle}"/>
@@ -253,10 +245,14 @@
     <!--#region Enums-->
 
     <Style x:Key="EnumComboBoxStyle" TargetType="{x:Type sub:EnumComboBox}">
+        <Setter Property="local:InspectorBinding.PropName" Value="Value"/>
+
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
                 <Setter Property="IsReadOnly" Value="True"/>
+            </DataTrigger>
 
+            <Trigger Property="IsReadOnly" Value="True">
                 <Setter Property="ItemContainerStyle">
                     <Setter.Value>
                         <Style TargetType="{x:Type ComboBoxItem}">
@@ -265,12 +261,12 @@
                         </Style>
                     </Setter.Value>
                 </Setter>
-            </DataTrigger>
+            </Trigger>
         </Style.Triggers>
     </Style>
 
     <DataTemplate x:Key="LandtableFormat" DataType="{x:Type objEnums:LandtableFormat}">
-        <sub:EnumComboBox ToolTip="Landtable Data Format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+        <sub:EnumComboBox ToolTip="Landtable Data Format" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="SA1"    Tag="{x:Static objEnums:LandtableFormat.SA1}"       ToolTip="Sonic Adventure 1 LandTable (BASIC)"/>
             <ComboBoxItem Content="SADX"   Tag="{x:Static objEnums:LandtableFormat.SADX}"      ToolTip="Sonic Adventure DX LandTable (BASIC)"/>
             <ComboBoxItem Content="SA2"    Tag="{x:Static objEnums:LandtableFormat.SA2}"       ToolTip="Sonic Adventure 2 LandTable (CHUNK / BASIC)"/>
@@ -280,7 +276,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="AttachFormat" DataType="{x:Type attachEnums:AttachFormat}">
-        <sub:EnumComboBox ToolTip="Attach format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+        <sub:EnumComboBox ToolTip="Attach format" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="BASIC"   Tag="{x:Static attachEnums:AttachFormat.BASIC}"     ToolTip="BASIC mesh format"/>
             <ComboBoxItem Content="CHUNK"   Tag="{x:Static attachEnums:AttachFormat.CHUNK}"     ToolTip="CHUNK mesh format"/>
             <ComboBoxItem Content="GC"      Tag="{x:Static attachEnums:AttachFormat.GC}"        ToolTip="Gamecube mesh format"/>
@@ -289,7 +285,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="VertexAttribute" DataType="{x:Type gcenums:VertexAttribute}">
-        <sub:EnumComboBox ToolTip="Vertex type format" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+        <sub:EnumComboBox ToolTip="Vertex type format" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="Position Matrix ID" Tag="{x:Static gcenums:VertexAttribute.PositionMatrixId}" ToolTip="Position Matrices along with their ID (?)"/>
             <ComboBoxItem Content="Position"    Tag="{x:Static gcenums:VertexAttribute.Position}"   ToolTip="Position data"/>
             <ComboBoxItem Content="Normal"      Tag="{x:Static gcenums:VertexAttribute.Normal}"     ToolTip="Normal data"/>
@@ -307,7 +303,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="DataType" DataType="{x:Type gcenums:DataType}">
-        <sub:EnumComboBox ToolTip="Data storage type" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+        <sub:EnumComboBox ToolTip="Data storage type" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="Unsigned8"   Tag="{x:Static gcenums:DataType.Unsigned8}"     ToolTip="Equal to byte"/>
             <ComboBoxItem Content="Signed8"     Tag="{x:Static gcenums:DataType.Signed8}"       ToolTip="Equal to sbyte"/>
             <ComboBoxItem Content="Unsigned16"  Tag="{x:Static gcenums:DataType.Unsigned16}"    ToolTip="Equal to ushort"/>
@@ -323,7 +319,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="StructType" DataType="{x:Type gcenums:StructType}">
-        <sub:EnumComboBox ToolTip="Component structure type" local:InspectorBinding.PropName="Value" Style="{StaticResource EnumComboBoxStyle}">
+        <sub:EnumComboBox ToolTip="Component structure type" Style="{StaticResource EnumComboBoxStyle}">
             <ComboBoxItem Content="Position XY"   Tag="{x:Static gcenums:StructType.PositionXY}"     ToolTip="2D Position"/>
             <ComboBoxItem Content="Position XYZ"   Tag="{x:Static gcenums:StructType.PositionXYZ}"     ToolTip="3D Position"/>
             <ComboBoxItem Content="Normal XYZ"   Tag="{x:Static gcenums:StructType.NormalXYZ}"     ToolTip="3D Normal"/>
@@ -333,6 +329,37 @@
             <ComboBoxItem Content="Color RGBA"   Tag="{x:Static gcenums:StructType.ColorRGBA}"     ToolTip="RGBA Color"/>
             <ComboBoxItem Content="TexCoord S"   Tag="{x:Static gcenums:StructType.TexCoordS}"     ToolTip="1D Texture Coordinate"/>
             <ComboBoxItem Content="TexCoord ST"   Tag="{x:Static gcenums:StructType.TexCoordST}"     ToolTip="2D Texture Coordinate"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="BlendMode" DataType="{x:Type attachEnums:BlendMode}">
+        <sub:EnumComboBox ToolTip="Blending mode" Style="{DynamicResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Zero" Tag="{x:Static attachEnums:BlendMode.Zero}"/>
+            <ComboBoxItem Content="One" Tag="{x:Static attachEnums:BlendMode.One}"/>
+            <ComboBoxItem Content="Other" Tag="{x:Static attachEnums:BlendMode.Other}"/>
+            <ComboBoxItem Content="Other Inverted" Tag="{x:Static attachEnums:BlendMode.OtherInverted}"/>
+            <ComboBoxItem Content="SrcAlpha" Tag="{x:Static attachEnums:BlendMode.SrcAlpha}"/>
+            <ComboBoxItem Content="SrcAlpha Inverted" Tag="{x:Static attachEnums:BlendMode.SrcAlphaInverted}"/>
+            <ComboBoxItem Content="DstAlpha" Tag="{x:Static attachEnums:BlendMode.DstAlpha}"/>
+            <ComboBoxItem Content="DstAlpha Inverted" Tag="{x:Static attachEnums:BlendMode.DstAlphaInverted}"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="FilterMode" DataType="{x:Type attachEnums:FilterMode}">
+        <sub:EnumComboBox ToolTip="Texture Filtering Mode" Style="{DynamicResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="PointSampled" Tag="{x:Static attachEnums:FilterMode.PointSampled}"/>
+            <ComboBoxItem Content="Bilinear" Tag="{x:Static attachEnums:FilterMode.Bilinear}"/>
+            <ComboBoxItem Content="Trilinear" Tag="{x:Static attachEnums:FilterMode.Trilinear}"/>
+            <ComboBoxItem Content="Reserved" Tag="{x:Static attachEnums:FilterMode.Reserved}"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="BASICPolyType" DataType="{x:Type basic:BASICPolyType}">
+        <sub:EnumComboBox ToolTip="Texture Filtering Mode" Style="{DynamicResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Triangles" Tag="{x:Static basic:BASICPolyType.Triangles}"/>
+            <ComboBoxItem Content="Quads" Tag="{x:Static basic:BASICPolyType.Quads}"/>
+            <ComboBoxItem Content="NPoly" Tag="{x:Static basic:BASICPolyType.NPoly}"/>
+            <ComboBoxItem Content="Strips" Tag="{x:Static basic:BASICPolyType.Strips}"/>
         </sub:EnumComboBox>
     </DataTemplate>
 
@@ -554,7 +581,19 @@
 
     <!--#endregion-->
 
-    <!--#region  GC parameters-->
+    <!--#region  GC stuff-->
+
+    <DataTemplate x:Key="GCCorner" DataType="{x:Type gcenums:Corner}">
+        <sub:UcGCCorner local:InspectorBinding.PropName="Value" BaseBoxStyle="{StaticResource BaseNumberStyle}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="GCMesh" DataType="{x:Type gcenums:Mesh}">
+        <sub:UcGCMesh local:InspectorBinding.PropName="Mesh"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="GCPoly" DataType="{x:Type gcenums:Poly}">
+        <sub:UcGCPoly local:InspectorBinding.PropName="Poly"/>
+    </DataTemplate>
 
     <DataTemplate x:Key="BaseParameter" DataType="{x:Type gcenums:Parameter}">
         <sub:UcGCParameter local:InspectorBinding.PropName="Value"/>
@@ -593,4 +632,5 @@
     </DataTemplate>
 
     <!--#endregion-->
+
 </ResourceDictionary>

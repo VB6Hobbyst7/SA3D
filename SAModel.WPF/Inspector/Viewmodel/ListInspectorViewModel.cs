@@ -37,7 +37,10 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
                 => Value?.GetType() ?? Collection.ContentType;
 
             object IInspectorInfo.Value
-                => Value;
+            {
+                get => Value;
+                set => Value = (T)value;
+            }
 
             public string DetailName
             {

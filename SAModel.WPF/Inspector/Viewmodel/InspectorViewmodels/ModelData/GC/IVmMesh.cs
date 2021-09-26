@@ -9,7 +9,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             => typeof(Mesh);
 
         private Mesh Mesh
-            => (Mesh)_source;
+            => Source == null ? default : (Mesh)Source;
 
         [SmoothScrollCollection]
         public IParameter[] Parameters
@@ -20,6 +20,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmMesh() : base() { }
 
-        public IVmMesh(Mesh source) : base(source) { }
+        public IVmMesh(object source) : base(source) { }
     }
 }

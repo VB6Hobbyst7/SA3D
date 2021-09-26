@@ -9,7 +9,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             => typeof(Poly);
 
         private Poly Poly
-            => (Poly)_source;
+            => (Poly)Source;
 
         public PolyType PolyType
             => Poly.Type;
@@ -19,6 +19,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmGCPoly() : base() { }
 
-        public IVmGCPoly(Poly source) : base(source) { }
+        public IVmGCPoly(object source) : base(source) { }
     }
 }

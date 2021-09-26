@@ -12,7 +12,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => typeof(ModelFile);
 
         private ModelFile ModelFile
-            => (ModelFile)_source;
+            => (ModelFile)Source;
 
         [Tooltip("Mesh format of the file")]
         public AttachFormat Format
@@ -36,6 +36,6 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
 
         public IVmModelFile() : base() { }
 
-        public IVmModelFile(ModelFile source) : base(source) => Models = Model.GetObjects();
+        public IVmModelFile(object source) : base(source) => Models = Model.GetObjects();
     }
 }
