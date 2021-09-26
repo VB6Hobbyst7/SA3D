@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using System;
 using System.IO;
 using static SATools.SACommon.ByteConverter;
@@ -9,57 +8,24 @@ namespace SATools.SAModel.ModelData.BASIC
     /// <summary>
     /// A BASIC primitive
     /// </summary>
-    [Serializable]
-    public abstract class Poly : ICloneable
+    public interface IPoly : ICloneable
     {
-        /// <summary>
-        /// Indices for position and normal data
-        /// </summary>
-        public ushort[] Indices { get; protected set; }
-
-        protected Poly() { }
-
         /// <summary>
         /// Type of the primitive
         /// </summary>
-        public abstract BASICPolyType Type { get; }
+        public BASICPolyType Type { get; }
+
+        /// <summary>
+        /// Indices for position and normal data
+        /// </summary>
+        public ushort[] Indices { get; }
 
         /// <summary>
         /// Size of the primitive
         /// </summary>
-        public virtual uint Size => (uint)Indices.Length * 2;
+        public uint Size { get; }
 
-        /// <summary>
-        /// Write the contents to a stream
-        /// </summary>
-        /// <param name="writer">Output stream</param>
-        public virtual void Write(EndianWriter writer)
-        {
-            foreach(ushort i in Indices)
-                writer.WriteUInt16(i);
-        }
-
-        /// <summary>
-        /// Writes the indices as an NJA struct
-        /// </summary>
-        /// <param name="writer">The output stream</param>
-        public virtual void WriteNJA(TextWriter writer)
-        {
-            foreach(ushort i in Indices)
-            {
-                writer.Write(i);
-                writer.Write(", ");
-            }
-        }
-
-        /// <summary>
-        /// Reads a primitive from a file
-        /// </summary>
-        /// <param name="type">Primitive type to read</param>
-        /// <param name="source">Source of the file</param>
-        /// <param name="address">Address at which the primitive is located</param>
-        /// <returns></returns>
-        public static Poly Read(BASICPolyType type, byte[] source, ref uint address)
+        public static IPoly Read(BASICPolyType type, byte[] source, ref uint address)
         {
             return type switch
             {
@@ -70,33 +36,72 @@ namespace SATools.SAModel.ModelData.BASIC
             };
         }
 
-        object ICloneable.Clone() => Clone();
+        /// <summary>
+        /// Write the contents to a stream
+        /// </summary>
+        /// <param name="writer">Output stream</param>
+        public void Write(EndianWriter writer);
 
-        public Poly Clone()
-        {
-            Poly p = (Poly)MemberwiseClone();
-            p.Indices = (ushort[])Indices.Clone();
-            return p;
-        }
+        /// <summary>
+        /// Writes the indices as an NJA struct
+        /// </summary>
+        /// <param name="writer">The output stream</param>
+        public void WriteNJA(TextWriter writer);
 
-        public override string ToString() => $"{Type}: {Indices.Length}";
     }
 
+    internal static class IPolyExtensions
+    {
+        internal static uint DefaultSize(this IPoly poly)
+            => (uint)poly.Indices.Length * 2;
+
+        internal static void DefaultWrite(this IPoly poly, EndianWriter writer)
+        {
+            foreach(ushort i in poly.Indices)
+                writer.WriteUInt16(i);
+        }
+
+        internal static void DefaultWriteNJA(this IPoly poly, TextWriter writer)
+        {
+            foreach(ushort i in poly.Indices)
+            {
+                writer.Write(i);
+                writer.Write(", ");
+            }
+        }
+
+        internal static string DefaultToString(this IPoly poly)
+            => $"{poly.Type}: {poly.Indices.Length}";
+    }
+    
     /// <summary>
     /// A primitive with three corners
     /// </summary>
-    [Serializable]
-    public class Triangle : Poly
+    public struct Triangle : IPoly
     {
-        public override BASICPolyType Type => BASICPolyType.Triangles;
+        private ushort[] _indices;
 
-        /// <summary>
-        /// Creates a new empty triangle
-        /// </summary>
-        public Triangle()
+        public ushort[] Indices
         {
-            Indices = new ushort[3];
+            get
+            {
+                if(_indices == null)
+                    _indices = new ushort[3];
+                return _indices;
+            }
         }
+
+        public BASICPolyType Type 
+            => BASICPolyType.Triangles;
+
+        public uint Size
+            => this.DefaultSize();
+
+        public void Write(EndianWriter writer)
+            => this.DefaultWrite(writer);
+
+        public void WriteNJA(TextWriter writer)
+            => this.DefaultWriteNJA(writer);
 
         /// <summary>
         /// Reads a triangle from a file
@@ -106,83 +111,101 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <returns></returns>
         public static Triangle Read(byte[] source, ref uint address)
         {
-            Triangle t = new();
-            t.Indices[0] = source.ToUInt16(address);
-            t.Indices[1] = source.ToUInt16(address + 2);
-            t.Indices[2] = source.ToUInt16(address + 4);
+            Triangle t = new()
+            {
+                _indices = new ushort[] {
+                    source.ToUInt16(address),
+                    source.ToUInt16(address + 2),
+                    source.ToUInt16(address + 4)
+                }
+            };
             address += 6;
             return t;
         }
 
         public override string ToString()
-            => $"Triangle: [{Indices[0]}, {Indices[1]}, {Indices[2]}]";
+            => $"Triangle: [{_indices[0]}, {_indices[1]}, {_indices[2]}]";
+
+        public object Clone() => this;
     }
 
     /// <summary>
-    /// A primitive with four corners
+    /// A primitive with three corners
     /// </summary>
-    [Serializable]
-    public class Quad : Poly
+    public struct Quad : IPoly
     {
-        public override BASICPolyType Type => BASICPolyType.Quads;
+        private ushort[] _indices;
 
-        /// <summary>
-        /// Creates a new empty quad
-        /// </summary>
-        public Quad()
+        public ushort[] Indices
         {
-            Indices = new ushort[4];
+            get
+            {
+                if(_indices == null)
+                    _indices = new ushort[4];
+                return _indices;
+            }
         }
 
+        public BASICPolyType Type
+            => BASICPolyType.Quads;
+
+        public uint Size
+            => this.DefaultSize();
+
+        public void Write(EndianWriter writer)
+            => this.DefaultWrite(writer);
+
+        public void WriteNJA(TextWriter writer)
+            => this.DefaultWriteNJA(writer);
+
         /// <summary>
-        /// Reads a quad from a file
+        /// Reads a triangle from a file
         /// </summary>
         /// <param name="source">Source of the file</param>
-        /// <param name="address">Address at which the quad is located</param>
+        /// <param name="address">Address at which the triangle is located</param>
         /// <returns></returns>
         public static Quad Read(byte[] source, ref uint address)
         {
-            Quad t = new();
-            t.Indices[0] = source.ToUInt16(address);
-            t.Indices[1] = source.ToUInt16(address + 2);
-            t.Indices[2] = source.ToUInt16(address + 4);
-            t.Indices[3] = source.ToUInt16(address + 6);
+            Quad t = new()
+            {
+                _indices = new ushort[] {
+                    source.ToUInt16(address),
+                    source.ToUInt16(address + 2),
+                    source.ToUInt16(address + 4),
+                    source.ToUInt16(address + 6)
+                }
+            };
             address += 8;
             return t;
         }
+
+        public override string ToString()
+            => $"Quad: [{_indices[0]}, {_indices[1]}, {_indices[2]}, {_indices[3]}]";
+
+        public object Clone() => this;
     }
 
     /// <summary>
-    /// A triangle strip primitive
+    /// A triangle strip
     /// </summary>
-    [Serializable]
-    public class Strip : Poly
+    public struct Strip : IPoly
     {
-        /// <summary>
-        /// Culling start direction
-        /// </summary>
-        public bool Reversed { get; private set; }
+        public ushort[] Indices { get; set; }
 
-        public override BASICPolyType Type => BASICPolyType.Strips;
+        public bool Reversed { get; set; }
 
-        public override uint Size => base.Size + 2;
+        public BASICPolyType Type
+            => BASICPolyType.Strips;
 
-        /// <summary>
-        /// Creates an empty strip with fixed length
-        /// </summary>
-        /// <param name="indexCount">Length of the indices</param>
-        /// <param name="reversed">Culling start direction</param>
-        public Strip(int indexCount, bool reversed)
+        public uint Size
+            => 2 + this.DefaultSize();
+
+        public Strip(uint size, bool reversed)
         {
-            Indices = new ushort[indexCount];
+            Indices = new ushort[size];
             Reversed = reversed;
         }
 
-        /// <summary>
-        /// Creates a new strip from existing indices
-        /// </summary>
-        /// <param name="indices">Indices</param>
-        /// <param name="reversed">Culling start direction</param>
         public Strip(ushort[] indices, bool reversed)
         {
             Indices = indices;
@@ -209,21 +232,25 @@ namespace SATools.SAModel.ModelData.BASIC
             return new Strip(indices, reversed);
         }
 
-        public override void Write(EndianWriter writer)
+        public void Write(EndianWriter writer)
         {
             writer.WriteUInt16((ushort)((Indices.Length & 0x7FFF) | (Reversed ? 0x8000 : 0)));
-            base.Write(writer);
+            this.DefaultWrite(writer);
         }
 
-        public override void WriteNJA(TextWriter writer)
+        public void WriteNJA(TextWriter writer)
         {
             writer.Write("Strip(");
             writer.Write(Reversed ? "NJD_TRIMESH_END , " : "0, ");
             writer.Write(Indices.Length & 0x7FFF);
             writer.Write("), ");
-            base.WriteNJA(writer);
+            this.DefaultWriteNJA(writer);
         }
 
-        public override string ToString() => $"{Type}: {Reversed} - {Indices.Length}";
+        public override string ToString() 
+            => $"{Type}: {Reversed} - {Indices.Length}";
+
+        public object Clone() => this;
     }
+
 }

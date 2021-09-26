@@ -91,6 +91,11 @@ namespace SATools.SAModel.ModelData.BASIC
                 NormalName = "normal_" + identifier;
         }
 
+        public override void RecalculateBounds()
+        {
+            MeshBounds = Bounds.FromPoints(Positions);
+        }
+
         /// <summary>
         /// Reads a BASIC attach from a byte array
         /// </summary>
@@ -112,7 +117,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
             // creating the data sets
             Vector3[] positions = new Vector3[source.ToUInt32(address + 8)];
-            Vector3[] normals = new Vector3[positions.Length];
+            Vector3[] normals;
             Mesh[] meshes = new Mesh[source.ToUInt16(address + 20)];
 
             // reading positions
@@ -133,6 +138,7 @@ namespace SATools.SAModel.ModelData.BASIC
             string nrmName = null;
             if(nrmAddr != 0)
             {
+                normals = new Vector3[positions.Length];
                 nrmAddr -= imageBase;
                 nrmName = labels.ContainsKey(nrmAddr) ? labels[nrmAddr] : "normal_" + nrmAddr.ToString("X8");
                 for(int i = 0; i < normals.Length; i++)
@@ -409,7 +415,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
         public override Attach Clone()
         {
-            return new BasicAttach((Vector3[])Positions.Clone(), (Vector3[])Normals.Clone(), Meshes.ContentClone(), Materials.ContentClone())
+            return new BasicAttach((Vector3[])Positions.Clone(), (Vector3[])Normals.Clone(), Meshes.ContentClone(), (Material[])Materials.Clone())
             {
                 Name = Name,
                 PositionName = PositionName,

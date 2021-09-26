@@ -11,9 +11,26 @@ namespace SATools.SAModel.ModelData.BASIC
     /// <summary>
     /// BASIC format material
     /// </summary>
-    [Serializable]
-    public class Material : ICloneable
+    public struct Material
     {
+        public static readonly Material DefaultValues = new()
+        {
+            DiffuseColor = Color.White,
+            SpecularColor = new Color(0xFF, 0xFF, 0xFF, 0),
+            UseAlpha = true,
+            UseTexture = true,
+            DoubleSided = false,
+            FlatShading = false,
+            IgnoreLighting = false,
+            ClampU = false,
+            ClampV = false,
+            MirrorU = false,
+            MirrorV = false,
+            EnvironmentMap = false,
+            DestinationAlpha = BlendMode.SrcAlphaInverted,
+            SourceAlpha = BlendMode.SrcAlpha,
+        };
+
         #region Basic Variables (internal use)
 
         /// <summary>
@@ -111,7 +128,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Texture mirror along the V axis
         /// </summary>
-        public bool FlipV
+        public bool MirrorV
         {
             get => (Attributes & 0x20000u) != 0;
             set => _ = value ? (Attributes |= 0x20000u) : (Attributes &= ~0x20000u);
@@ -120,7 +137,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Texture mirror along the U axis
         /// </summary>
-        public bool FlipU
+        public bool MirrorU
         {
             get => (Attributes & 0x40000u) != 0;
             set => _ = value ? (Attributes |= 0x40000u) : (Attributes &= ~0x40000u);
@@ -210,27 +227,6 @@ namespace SATools.SAModel.ModelData.BASIC
         #endregion
 
         /// <summary>
-        /// Create a new material.
-        /// </summary>
-        public Material()
-        {
-            DiffuseColor = Color.White;
-            SpecularColor = new Color(0xFF, 0xFF, 0xFF, 0);
-            UseAlpha = true;
-            UseTexture = true;
-            DoubleSided = false;
-            FlatShading = false;
-            IgnoreLighting = false;
-            ClampU = false;
-            ClampV = false;
-            FlipU = false;
-            FlipV = false;
-            EnvironmentMap = false;
-            DestinationAlpha = BlendMode.SrcAlphaInverted;
-            SourceAlpha = BlendMode.SrcAlpha;
-        }
-
-        /// <summary>
         /// Reads a material from a byte array, and raises the address to not point at the material afterwards
         /// </summary>
         /// <param name="source">Byte source</param>
@@ -316,10 +312,6 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt32(Attributes);
         }
 
-        object ICloneable.Clone() => Clone();
-
-        public Material Clone() => (Material)MemberwiseClone();
-
         public override bool Equals(object obj)
         {
             return obj is Material material &&
@@ -335,6 +327,12 @@ namespace SATools.SAModel.ModelData.BASIC
             return HashCode.Combine(DiffuseColor, SpecularColor, Exponent, TextureID, Attributes);
         }
 
-        public override string ToString() => $"{TextureID}";
+        public override string ToString() => $"Texture: {TextureID} / Use Alpha: {UseAlpha}";
+
+        public static bool operator ==(Material left, Material right)
+            => left.Equals(right);
+
+        public static bool operator !=(Material left, Material right) 
+            => !(left == right);
     }
 }

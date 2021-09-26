@@ -43,7 +43,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Primitive data
         /// </summary>
-        public ReadOnlyCollection<Poly> Polys { get; }
+        public ReadOnlyCollection<IPoly> Polys { get; }
 
         /// <summary>
         /// The amount of corners/loops in the polygons. Determines the lengths of the other arrays
@@ -112,10 +112,10 @@ namespace SATools.SAModel.ModelData.BASIC
             }
         }
 
-        private Mesh(BASICPolyType polyType, Poly[] polys, Vector3[] normals, Color[] colors, Vector2[] texcoords)
+        private Mesh(BASICPolyType polyType, IPoly[] polys, Vector3[] normals, Color[] colors, Vector2[] texcoords)
         {
             PolyType = polyType;
-            Polys = new ReadOnlyCollection<Poly>(polys);
+            Polys = new ReadOnlyCollection<IPoly>(polys);
             Normals = normals;
             Colors = colors;
             Texcoords = texcoords;
@@ -130,15 +130,15 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="hasColor">Whether the model uses color data</param>
         /// <param name="hasTexcoords">Whether the model uses texture coordinate data</param>
         /// <param name="materialID">Material index</param>
-        public Mesh(BASICPolyType polyType, Poly[] polys, bool hasNormal, bool hasColor, bool hasTexcoords, ushort materialID)
+        public Mesh(BASICPolyType polyType, IPoly[] polys, bool hasNormal, bool hasColor, bool hasTexcoords, ushort materialID)
         {
             PolyType = polyType;
             MaterialID = materialID;
-            Polys = new ReadOnlyCollection<Poly>(polys);
+            Polys = new ReadOnlyCollection<IPoly>(polys);
             string identifier = GenerateIdentifier();
 
             int cornerCount = 0;
-            foreach(Poly p in polys)
+            foreach(IPoly p in polys)
                 cornerCount += p.Indices.Length;
             PolygonCornerCount = cornerCount;
 
@@ -172,7 +172,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="colorName">Name of color data <br/> null if data doesnt exist</param>
         /// <param name="texcoordName">Name of texcoord data <br/> null if data doesnt exist</param>
         /// <param name="materialID">Material index</param>
-        public Mesh(BASICPolyType polyType, string polyName, Poly[] polys, string normalName, string colorName, string texcoordName, ushort materialID)
+        public Mesh(BASICPolyType polyType, string polyName, IPoly[] polys, string normalName, string colorName, string texcoordName, ushort materialID)
             : this(polyType, polys, normalName != null, colorName != null, texcoordName != null, materialID)
         {
             PolyName = polyName;
@@ -215,12 +215,12 @@ namespace SATools.SAModel.ModelData.BASIC
             string texcoordName = texcoordAddr == 0 ? null : labels.ContainsKey(texcoordAddr -= imageBase) ? labels[texcoordAddr] : "uv_" + texcoordAddr.ToString("X8");
 
             // reading polygons
-            Poly[] polys = Array.Empty<Poly>();
+            IPoly[] polys = Array.Empty<IPoly>();
             if(polyAddr > 0)
             {
-                polys = new Poly[polyCount];
+                polys = new IPoly[polyCount];
                 for(int i = 0; i < polyCount; i++)
-                    polys[i] = Poly.Read(polyType, source, ref polyAddr);
+                    polys[i] = IPoly.Read(polyType, source, ref polyAddr);
             }
 
 
@@ -268,7 +268,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Poly p in Polys)
+                foreach(IPoly p in Polys)
                 {
                     writer.Write("\t");
                     p.WriteNJA(writer);
@@ -359,7 +359,7 @@ namespace SATools.SAModel.ModelData.BASIC
             if(!labels.ContainsKey(PolyName))
             {
                 labels.AddLabel(PolyName, writer.Position + imageBase);
-                foreach(Poly p in Polys)
+                foreach(IPoly p in Polys)
                     p.Write(writer);
             }
 

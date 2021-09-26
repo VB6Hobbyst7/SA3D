@@ -70,8 +70,8 @@ namespace SATools.SAModel.ModelData.BASIC
                         mat.SuperSample = bmat.AnisotropicFiltering;
                         mat.ClampU = bmat.ClampU;
                         mat.ClampV = bmat.ClampV;
-                        mat.FlipU = bmat.MirrorU;
-                        mat.FlipV = bmat.MirrorV;
+                        mat.MirrorU = bmat.MirrorU;
+                        mat.MirrorV = bmat.MirrorV;
                         mat.UseAlpha = bmat.UseAlpha;
                         mat.SourceAlpha = bmat.SourceBlendMode;
                         mat.DestinationAlpha = bmat.DestinationBlendmode;
@@ -87,7 +87,7 @@ namespace SATools.SAModel.ModelData.BASIC
                     // creating the polygons
 
                     BufferCorner[] bCorners = cacheAtc.corners[i];
-                    Triangle[] triangles = new Triangle[bCorners.Length / 3];
+                    IPoly[] triangles = new IPoly[bCorners.Length / 3];
                     Vector2[] texcoords = new Vector2[bCorners.Length];
                     Color[] colors = new Color[bCorners.Length];
 
@@ -188,17 +188,10 @@ namespace SATools.SAModel.ModelData.BASIC
                 foreach(Mesh mesh in atc.Meshes)
                 {
                     // creating the material
-                    Material mat = atc.Materials != null && mesh.MaterialID < atc.Materials.Length ? atc.Materials[mesh.MaterialID] : null;
                     BufferMaterial bMat;
-                    if(mat == null)
+                    if(atc.Materials != null && mesh.MaterialID < atc.Materials.Length)
                     {
-                        bMat = new BufferMaterial()
-                        {
-                            Diffuse = new Color(0xF9, 0xF9, 0xF9, 0xFF)
-                        };
-                    }
-                    else
-                    {
+                        Material mat = atc.Materials[mesh.MaterialID];
                         bMat = new BufferMaterial()
                         {
                             Diffuse = mat.DiffuseColor,
@@ -210,8 +203,8 @@ namespace SATools.SAModel.ModelData.BASIC
                             AnisotropicFiltering = mat.SuperSample,
                             ClampU = mat.ClampU,
                             ClampV = mat.ClampV,
-                            MirrorU = mat.FlipU,
-                            MirrorV = mat.FlipV,
+                            MirrorU = mat.MirrorU,
+                            MirrorV = mat.MirrorV,
                             UseAlpha = mat.UseAlpha,
                             SourceBlendMode = mat.SourceAlpha,
                             DestinationBlendmode = mat.DestinationAlpha,
@@ -224,12 +217,19 @@ namespace SATools.SAModel.ModelData.BASIC
                         bMat.SetAttribute(MaterialAttributes.useTexture, mat.UseTexture);
                         bMat.SetAttribute(MaterialAttributes.normalMapping, mat.EnvironmentMap);
                     }
+                    else
+                    {
+                        bMat = new BufferMaterial()
+                        {
+                            Diffuse = new Color(0xF9, 0xF9, 0xF9, 0xFF)
+                        };
+                    }
 
                     List<BufferCorner> corners = new();
                     List<uint> triangles = new();
                     int polyIndex = 0;
 
-                    foreach(Poly p in mesh.Polys)
+                    foreach(IPoly p in mesh.Polys)
                     {
                         uint l = (uint)corners.Count;
                         switch(mesh.PolyType)
