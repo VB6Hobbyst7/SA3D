@@ -88,7 +88,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     }
                     ids.AddRange(Enumerable.Range(vc.IndexOffset, vc.Vertices.Length));
                 }
-            hasWeight = PolyChunks.OfType<PolyChunkStrip>().SelectMany(a => a.Strips).SelectMany(a => a.Corners).Any(a => !ids.Contains(a.index));
+            hasWeight = PolyChunks.OfType<PolyChunkStrip>().SelectMany(a => a.Strips).SelectMany(a => a.Corners).Any(a => !ids.Contains(a.Index));
         }
 
         /// <summary>

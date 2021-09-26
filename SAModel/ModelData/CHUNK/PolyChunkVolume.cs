@@ -8,24 +8,58 @@ namespace SATools.SAModel.ModelData.CHUNK
     /// </summary>
     public class PolyChunkVolume : PolyChunkSize
     {
-        [Serializable]
-        public sealed class Triangle : Poly
+        public interface IPoly : ICloneable
         {
+            /// <summary>
+            /// Indices of the polygon
+            /// </summary>
+            public ushort[] Indices { get; }
+
+            /// <summary>
+            /// Size of the polygon in bytes
+            /// </summary>
+            public abstract ushort Size(byte userAttributes);
+
+            /// <summary>
+            /// Write the polygon to a stream
+            /// </summary>
+            /// <param name="writer">Output stream</param>
+            /// <param name="userAttribs">Userflag count (0 - 3)</param>
+            public abstract void Write(EndianWriter writer, byte userAttribs);
+        }
+
+        public struct Triangle : IPoly
+        {
+            ushort[] _userAttributes;
+            ushort[] _indices;
+
+            public ushort[] Indices
+            {
+                get
+                {
+                    if(_indices == null)
+                        _indices = new ushort[3];
+                    return _indices;
+                }
+                private set => _indices = value;
+            }
+
             /// <summary>
             /// user attributes of the triangle
             /// </summary>
-            public ushort[] UserAttributes { get; private set; }
-
-            public override ushort Size(byte userAttributes)
+            public ushort[] UserAttributes
             {
-                return (ushort)(6u + userAttributes * 2u);
+                get
+                {
+                    if(_userAttributes == null)
+                        _userAttributes = new ushort[3];
+                    return _userAttributes;
+                }
+                private set => _userAttributes = value;
             }
 
-            public Triangle() : base()
-            {
-                UserAttributes = new ushort[3];
-                Indices = new ushort[3];
-            }
+            public ushort Size(byte userAttributes) 
+                => (ushort)(6u + userAttributes * 2u);
 
             /// <summary>
             /// Reads a triangle from a byte array
@@ -53,7 +87,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return tri;
             }
 
-            public override void Write(EndianWriter writer, byte userAttribs)
+            public void Write(EndianWriter writer, byte userAttribs)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
@@ -61,43 +95,61 @@ namespace SATools.SAModel.ModelData.CHUNK
                     writer.WriteUInt16(UserAttributes[i]);
             }
 
-            public override Poly Clone()
+            object ICloneable.Clone() => Clone();
+
+            public Triangle Clone()
             {
-                Triangle p = (Triangle)base.Clone();
+                Triangle p = this;
+                p.Indices = (ushort[])Indices.Clone();
                 p.UserAttributes = (ushort[])UserAttributes.Clone();
                 return p;
             }
+
         }
 
-        [Serializable]
-        public sealed class Quad : Poly
+        public struct Quad : IPoly
         {
+            ushort[] _userAttributes;
+            ushort[] _indices;
+
+            public ushort[] Indices
+            {
+                get
+                {
+                    if(_indices == null)
+                        _indices = new ushort[4];
+                    return _indices;
+                }
+                private set => _indices = value;
+            }
+
             /// <summary>
-            /// user attributes of the Quad
+            /// user attributes of the triangle
             /// </summary>
-            public ushort[] UserAttributes { get; private set; }
-
-            public override ushort Size(byte userAttributes)
+            public ushort[] UserAttributes
             {
-                return (ushort)(8u + userAttributes * 2u);
+                get
+                {
+                    if(_userAttributes == null)
+                        _userAttributes = new ushort[3];
+                    return _userAttributes;
+                }
+                private set => _userAttributes = value;
             }
 
-            public Quad() : base()
-            {
-                UserAttributes = new ushort[4];
-                Indices = new ushort[3];
-            }
+            public ushort Size(byte userAttributes)
+                => (ushort)(8u + userAttributes * 2u);
 
             /// <summary>
-            /// Reads a quad from a byte array
+            /// Reads a triangle from a byte array
             /// </summary>
             /// <param name="source">Byte source</param>
             /// <param name="address">Address at which the strip is located</param>
             /// <param name="userAttribs">Amount of user attributes to read</param>
             /// <returns></returns>
-            public static Quad Read(byte[] source, ref uint address, byte userAttribs)
+            public static Triangle Read(byte[] source, ref uint address, byte userAttribs)
             {
-                Quad tri = new();
+                Triangle tri = new();
 
                 for(int i = 0; i < 4; i++)
                 {
@@ -114,29 +166,34 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return tri;
             }
 
-            public override void Write(EndianWriter writer, byte userAttributes)
+            public void Write(EndianWriter writer, byte userAttribs)
             {
                 foreach(ushort i in Indices)
                     writer.WriteUInt16(i);
-                for(int i = 0; i < userAttributes; i++)
+                for(int i = 0; i < userAttribs; i++)
                     writer.WriteUInt16(UserAttributes[i]);
             }
 
-            public override Poly Clone()
+            object ICloneable.Clone() => Clone();
+
+            public Quad Clone()
             {
-                Quad p = (Quad)base.Clone();
+                Quad p = this;
+                p.Indices = (ushort[])Indices.Clone();
                 p.UserAttributes = (ushort[])UserAttributes.Clone();
                 return p;
             }
+
         }
 
-        [Serializable]
-        public sealed class Strip : Poly
+        public struct Strip : IPoly
         {
             /// <summary>
             /// Culling direction
             /// </summary>
             public bool Reversed { get; private set; }
+
+            public ushort[] Indices { get; private set; }
 
             /// <summary>
             /// First user attributes of the strip
@@ -153,12 +210,12 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// </summary>
             public ushort[] UserAttributes3 { get; private set; }
 
-            public override ushort Size(byte userAttributes)
+            public ushort Size(byte userAttributes)
             {
                 return (ushort)(2u + Indices.Length * (2u + userAttributes * 2u));
             }
 
-            public Strip(int size, bool rev) : base()
+            public Strip(int size, bool rev)
             {
                 Indices = new ushort[size];
                 UserAttributes1 = new ushort[size - 2];
@@ -167,7 +224,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Reversed = rev;
             }
 
-            public Strip(ushort[] indices, bool rev) : base()
+            public Strip(ushort[] indices, bool rev)
             {
                 Indices = indices;
                 UserAttributes1 = new ushort[Indices.Length - 2];
@@ -217,7 +274,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return r;
             }
 
-            public override void Write(EndianWriter writer, byte userAttribs)
+            public void Write(EndianWriter writer, byte userAttribs)
             {
 
                 bool flag1 = userAttribs > 0;
@@ -250,9 +307,12 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             }
 
-            public override Poly Clone()
+            object ICloneable.Clone() => Clone();
+
+            public Strip Clone()
             {
-                Strip r = (Strip)base.Clone();
+                Strip r = this;
+                r.Indices = (ushort[])Indices.Clone();
                 r.UserAttributes1 = (ushort[])UserAttributes1.Clone();
                 r.UserAttributes2 = (ushort[])UserAttributes2.Clone();
                 r.UserAttributes3 = (ushort[])UserAttributes3.Clone();
@@ -261,44 +321,9 @@ namespace SATools.SAModel.ModelData.CHUNK
         }
 
         /// <summary>
-        /// Polygon base class for volumes
-        /// </summary>
-        [Serializable]
-        public abstract class Poly : ICloneable
-        {
-            /// <summary>
-            /// Indices of the polygon
-            /// </summary>
-            public ushort[] Indices { get; protected set; }
-
-            internal Poly() { }
-
-            /// <summary>
-            /// Size of the polygon in bytes
-            /// </summary>
-            public abstract ushort Size(byte userAttributes);
-
-            /// <summary>
-            /// Write the polygon to a stream
-            /// </summary>
-            /// <param name="writer">Output stream</param>
-            /// <param name="userAttribs">Userflag count (0 - 3)</param>
-            public abstract void Write(EndianWriter writer, byte userAttribs);
-
-            object ICloneable.Clone() => Clone();
-
-            public virtual Poly Clone()
-            {
-                Poly result = (Poly)MemberwiseClone();
-                Indices = (ushort[])Indices.Clone();
-                return result;
-            }
-        }
-
-        /// <summary>
         /// Polygons of the volume
         /// </summary>
-        public Poly[] Polys { get; private set; }
+        public IPoly[] Polys { get; private set; }
 
         /// <summary>
         /// User attribute count (ranges from 0 to 3)
@@ -311,7 +336,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <param name="polyType"> smaller than/equal to 3 is triangle, 4 is quad and more than 4 is strip</param>
         public PolyChunkVolume(uint polyType, ushort polycount, byte userFlagCount) : base(polyType > 4 ? ChunkType.Volume_Strip : polyType == 4 ? ChunkType.Volume_Polygon4 : ChunkType.Volume_Polygon3)
         {
-            Polys = new Poly[polycount];
+            Polys = new IPoly[polycount];
             UserAttributes = userFlagCount;
         }
 
@@ -329,7 +354,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             ChunkType type = (ChunkType)(header & 0xFF);
             byte attrib = (byte)(header >> 8);
-            uint polyType = (type - ChunkType.Volume) + 3u;
+            uint polyType = (type - ChunkType.Volume_Polygon3) + 3u;
             ushort polyCount = (ushort)(Header2 & 0x3FFFu);
             byte userAttribs = (byte)(Header2 >> 14);
 
@@ -366,7 +391,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             // updating the size
             uint size = 2;
-            foreach(Poly p in Polys)
+            foreach(IPoly p in Polys)
                 size += p.Size(UserAttributes);
             size /= 2;
             if(size > ushort.MaxValue)
@@ -380,7 +405,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             writer.WriteUInt16((ushort)(Math.Min(Polys.Length, 0x3FFFu) | (ushort)(UserAttributes << 14)));
 
-            foreach(Poly p in Polys)
+            foreach(IPoly p in Polys)
             {
                 p.Write(writer, UserAttributes);
             }

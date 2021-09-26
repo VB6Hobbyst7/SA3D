@@ -433,5 +433,8 @@ namespace SATools.SAModel.ObjData
             writer.WriteLine("DEFAULT_END");
             writer.WriteLine();
         }
+
+        public override string ToString()
+            => $"{(NJFile ? "" : "NJ")} Modelfile - {Format}";
     }
 }

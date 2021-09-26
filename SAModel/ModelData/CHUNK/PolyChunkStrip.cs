@@ -13,7 +13,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Single strip in the chunk
         /// </summary>
-        public class Strip : ICloneable
+        public struct Strip : ICloneable
         {
             /// <summary>
             /// Single corner in a strip
@@ -23,37 +23,40 @@ namespace SATools.SAModel.ModelData.CHUNK
                 /// <summary>
                 /// Vertex Cache index
                 /// </summary>
-                public ushort index;
+                public ushort Index { get; set; }
 
                 /// <summary>
                 /// Corner
                 /// </summary>
-                public Vector2 uv;
+                public Vector2 Texcoord { get; set; }
 
                 /// <summary>
                 /// Normal of the corner
                 /// </summary>
-                public Vector3 normal;
+                public Vector3 Normal { get; set; }
 
                 /// <summary>
                 /// Vertex color
                 /// </summary>
-                public Color color;
+                public Color Color { get; set; }
 
                 /// <summary>
                 /// First custom flag
                 /// </summary>
-                public ushort userFlag1;
+                public ushort UserFlag1 { get; set; }
 
                 /// <summary>
                 /// Second custom flag
                 /// </summary>
-                public ushort userFlag2;
+                public ushort UserFlag2 { get; set; }
 
                 /// <summary>
                 /// Third custom flag
                 /// </summary>
-                public ushort userFlag3;
+                public ushort UserFlag3 { get; set; }
+
+                public override string ToString()
+                    => $"{Index} : {{ {Texcoord.X: 0.000;-0.000}, {Texcoord.Y: 0.000;-0.000} }}, {Color}";
             }
 
             /// <summary>
@@ -112,28 +115,28 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     Corner c = new()
                     {
-                        index = source.ToUInt16(address)
+                        Index = source.ToUInt16(address)
                     };
                     address += 2;
 
                     if(hasUV)
-                        c.uv = Vector2Extensions.Read(source, ref address, IOType.Short) * multiplier;
+                        c.Texcoord = Vector2Extensions.Read(source, ref address, IOType.Short) * multiplier;
                     if(hasNormal)
-                        c.normal = Vector3Extensions.Read(source, ref address, IOType.Float);
+                        c.Normal = Vector3Extensions.Read(source, ref address, IOType.Float);
                     else if(hasColor)
-                        c.color = Color.Read(source, ref address, IOType.ARGB8_16);
+                        c.Color = Color.Read(source, ref address, IOType.ARGB8_16);
 
                     if(flag1 && i > 1)
                     {
-                        c.userFlag1 = source.ToUInt16(address);
+                        c.UserFlag1 = source.ToUInt16(address);
                         address += 2;
                         if(flag2)
                         {
-                            c.userFlag2 = source.ToUInt16(address);
+                            c.UserFlag2 = source.ToUInt16(address);
                             address += 2;
                             if(flag3)
                             {
-                                c.userFlag3 = source.ToUInt16(address);
+                                c.UserFlag3 = source.ToUInt16(address);
                                 address += 2;
                             }
                         }
@@ -167,24 +170,24 @@ namespace SATools.SAModel.ModelData.CHUNK
                 for(int i = 0; i < length; i++)
                 {
                     Corner c = Corners[i];
-                    writer.WriteUInt16(c.index);
+                    writer.WriteUInt16(c.Index);
                     if(hasUV)
-                        (c.uv * multiplier).Write(writer, IOType.Short);
+                        (c.Texcoord * multiplier).Write(writer, IOType.Short);
                     if(hasNormal)
-                        c.normal.Write(writer, IOType.Float);
+                        c.Normal.Write(writer, IOType.Float);
                     else if(hasColor)
-                        c.color.Write(writer, IOType.ARGB8_16);
+                        c.Color.Write(writer, IOType.ARGB8_16);
 
 
                     if(flag1 && i > 1)
                     {
-                        writer.WriteUInt16(c.userFlag1);
+                        writer.WriteUInt16(c.UserFlag1);
                         if(flag2)
                         {
-                            writer.WriteUInt16(c.userFlag2);
+                            writer.WriteUInt16(c.UserFlag2);
                             if(flag3)
                             {
-                                writer.WriteUInt16(c.userFlag3);
+                                writer.WriteUInt16(c.UserFlag3);
                             }
                         }
                     }
@@ -194,6 +197,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             object ICloneable.Clone() => Clone();
 
             public Strip Clone() => new((Corner[])Corners.Clone(), Reversed);
+
+            public override string ToString()
+                => $"{Reversed} : {Corners.Length}";
         }
 
 
@@ -499,7 +505,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public byte UserAttributes { get; private set; }
 
-        public PolyChunkStrip(ushort stripCount, byte userFlagCount) : base(ChunkType.Strip)
+        public PolyChunkStrip(ushort stripCount, byte userFlagCount) : base(ChunkType.Strip_Strip)
         {
             Strips = new Strip[stripCount];
             UserAttributes = userFlagCount;
@@ -575,5 +581,8 @@ namespace SATools.SAModel.ModelData.CHUNK
             result.Strips = Strips.ContentClone();
             return result;
         }
+
+        public override string ToString()
+            => $"{Type} - 0x{Attributes:X2}, {UserAttributes} : {Strips.Length}";
     }
 }

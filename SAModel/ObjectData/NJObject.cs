@@ -659,6 +659,6 @@ namespace SATools.SAModel.ObjData
             return result;
         }
 
-        public override string ToString() => Attach == null ? $"{Name}; / - /" : $"{Name}; {Attach.Format} - {Attach.Name}";
+        public override string ToString() => Attach == null ? $"{Name}; / - /" : $"{Name}; {Attach}";
     }
 }

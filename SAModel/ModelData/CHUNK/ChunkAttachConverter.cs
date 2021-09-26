@@ -213,7 +213,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                                     }
 
                                     foreach(var c in s.Corners)
-                                        corners.Add(new BufferCorner(c.index, c.color, c.uv));
+                                        corners.Add(new BufferCorner(c.Index, c.Color, c.Texcoord));
                                 }
 
                                 if(vertices != null)

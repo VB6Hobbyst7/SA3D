@@ -24,74 +24,80 @@
     /// </summary>
     public enum ChunkType : byte
     {
+#pragma warning disable CA1707
+#pragma warning disable IDE0055
         Null = 0,
-        Bits = 1,
-        Bits_BlendAlpha = Bits + 0,
-        Bits_MipmapDAdjust = Bits + 1,
-        Bits_SpecularExponent = Bits + 2,
-        Bits_CachePolygonList = Bits + 3,
-        Bits_DrawPolygonList = Bits + 4,
-        Tiny = 8,
-        Tiny_TextureID = Tiny + 0,
-        Tiny_TextureID2 = Tiny + 1,
-        Material = 16,
-        Material_Diffuse = Material + 1,
-        Material_Ambient = Material + 2,
-        Material_DiffuseAmbient = Material + 3,
-        Material_Specular = Material + 4,
-        Material_DiffuseSpecular = Material + 5,
-        Material_AmbientSpecular = Material + 6,
-        Material_DiffuseAmbientSpecular = Material + 7,
-        Material_Bump = Material + 8,
-        Material_Diffuse2 = Material + 9,
-        Material_Ambient2 = Material + 10,
-        Material_DiffuseAmbient2 = Material + 11,
-        Material_Specular2 = Material + 12,
-        Material_DiffuseSpecular2 = Material + 13,
-        Material_AmbientSpecular2 = Material + 14,
-        Material_DiffuseAmbientSpecular2 = Material + 15,
-        Vertex = 32,
-        Vertex_VertexSH = Vertex + 0,
-        Vertex_VertexNormalSH = Vertex + 1,
-        Vertex_Vertex = Vertex + 2,
-        Vertex_VertexDiffuse8 = Vertex + 3,
-        Vertex_VertexUserAttributes = Vertex + 4,
-        Vertex_VertexNinjaAttributes = Vertex + 5,
-        Vertex_VertexDiffuseSpecular5 = Vertex + 6,
-        Vertex_VertexDiffuseSpecular4 = Vertex + 7,
-        Vertex_VertexDiffuseSpecular16 = Vertex + 8,
-        Vertex_VertexNormal = Vertex + 9,
-        Vertex_VertexNormalDiffuse8 = Vertex + 10,
-        Vertex_VertexNormalUserAttributes = Vertex + 11,
-        Vertex_VertexNormalNinjaAttributes = Vertex + 12,
-        Vertex_VertexNormalDiffuseSpecular5 = Vertex + 13,
-        Vertex_VertexNormalDiffuseSpecular4 = Vertex + 14,
-        Vertex_VertexNormalDiffuseSpecular16 = Vertex + 15,
-        Vertex_VertexNormalX = Vertex + 16,
-        Vertex_VertexNormalXDiffuse8 = Vertex + 17,
-        Vertex_VertexNormalXUserAttributes = Vertex + 18,
-        Volume = 56,
-        Volume_Polygon3 = Volume + 0,
-        Volume_Polygon4 = Volume + 1,
-        Volume_Strip = Volume + 2,
-        Strip = 64,
-        Strip_Strip = Strip + 0,
-        Strip_StripUVN = Strip + 1,
-        Strip_StripUVH = Strip + 2,
-        Strip_StripNormal = Strip + 3,
-        Strip_StripUVNNormal = Strip + 4,
-        Strip_StripUVHNormal = Strip + 5,
-        Strip_StripColor = Strip + 6,
-        Strip_StripUVNColor = Strip + 7,
-        Strip_StripUVHColor = Strip + 8,
-        Strip_Strip2 = Strip + 9,
-        Strip_StripUVN2 = Strip + 10,
-        Strip_StripUVH2 = Strip + 11,
+        Bits_BlendAlpha 		= CHUNKEnumExtensions.Bits + 0,
+        Bits_MipmapDAdjust 		= CHUNKEnumExtensions.Bits + 1,
+        Bits_SpecularExponent 	= CHUNKEnumExtensions.Bits + 2,
+        Bits_CachePolygonList 	= CHUNKEnumExtensions.Bits + 3,
+        Bits_DrawPolygonList 	= CHUNKEnumExtensions.Bits + 4,
+        Tiny_TextureID 		= CHUNKEnumExtensions.Tiny + 0,
+        Tiny_TextureID2 	= CHUNKEnumExtensions.Tiny + 1,
+        Material                            = CHUNKEnumExtensions.Material + 0,
+        Material_Diffuse 					= CHUNKEnumExtensions.Material + 1,
+        Material_Ambient 					= CHUNKEnumExtensions.Material + 2,
+        Material_DiffuseAmbient 			= CHUNKEnumExtensions.Material + 3,
+        Material_Specular 					= CHUNKEnumExtensions.Material + 4,
+        Material_DiffuseSpecular 			= CHUNKEnumExtensions.Material + 5,
+        Material_AmbientSpecular 			= CHUNKEnumExtensions.Material + 6,
+        Material_DiffuseAmbientSpecular 	= CHUNKEnumExtensions.Material + 7,
+        Material_Bump 						= CHUNKEnumExtensions.Material + 8,
+        Material_Diffuse2 					= CHUNKEnumExtensions.Material + 9,
+        Material_Ambient2 					= CHUNKEnumExtensions.Material + 10,
+        Material_DiffuseAmbient2 			= CHUNKEnumExtensions.Material + 11,
+        Material_Specular2 					= CHUNKEnumExtensions.Material + 12,
+        Material_DiffuseSpecular2 			= CHUNKEnumExtensions.Material + 13,
+        Material_AmbientSpecular2 			= CHUNKEnumExtensions.Material + 14,
+        Material_DiffuseAmbientSpecular2 	= CHUNKEnumExtensions.Material + 15,
+        Vertex_VertexSH 						= CHUNKEnumExtensions.Vertex + 0,
+        Vertex_VertexNormalSH 					= CHUNKEnumExtensions.Vertex + 1,
+        Vertex_Vertex 							= CHUNKEnumExtensions.Vertex + 2,
+        Vertex_VertexDiffuse8 					= CHUNKEnumExtensions.Vertex + 3,
+        Vertex_VertexUserAttributes 			= CHUNKEnumExtensions.Vertex + 4,
+        Vertex_VertexNinjaAttributes 			= CHUNKEnumExtensions.Vertex + 5,
+        Vertex_VertexDiffuseSpecular5 			= CHUNKEnumExtensions.Vertex + 6,
+        Vertex_VertexDiffuseSpecular4 			= CHUNKEnumExtensions.Vertex + 7,
+        Vertex_VertexDiffuseSpecular16 			= CHUNKEnumExtensions.Vertex + 8,
+        Vertex_VertexNormal 					= CHUNKEnumExtensions.Vertex + 9,
+        Vertex_VertexNormalDiffuse8 			= CHUNKEnumExtensions.Vertex + 10,
+        Vertex_VertexNormalUserAttributes 		= CHUNKEnumExtensions.Vertex + 11,
+        Vertex_VertexNormalNinjaAttributes 		= CHUNKEnumExtensions.Vertex + 12,
+        Vertex_VertexNormalDiffuseSpecular5 	= CHUNKEnumExtensions.Vertex + 13,
+        Vertex_VertexNormalDiffuseSpecular4 	= CHUNKEnumExtensions.Vertex + 14,
+        Vertex_VertexNormalDiffuseSpecular16 	= CHUNKEnumExtensions.Vertex + 15,
+        Vertex_VertexNormalX 					= CHUNKEnumExtensions.Vertex + 16,
+        Vertex_VertexNormalXDiffuse8 			= CHUNKEnumExtensions.Vertex + 17,
+        Vertex_VertexNormalXUserAttributes 		= CHUNKEnumExtensions.Vertex + 18,
+        Volume_Polygon3 = CHUNKEnumExtensions.Volume + 0,
+        Volume_Polygon4 = CHUNKEnumExtensions.Volume + 1,
+        Volume_Strip 	= CHUNKEnumExtensions.Volume + 2,
+        Strip_Strip 			= CHUNKEnumExtensions.Strip + 0,
+        Strip_StripUVN 			= CHUNKEnumExtensions.Strip + 1,
+        Strip_StripUVH 			= CHUNKEnumExtensions.Strip + 2,
+        Strip_StripNormal 		= CHUNKEnumExtensions.Strip + 3,
+        Strip_StripUVNNormal 	= CHUNKEnumExtensions.Strip + 4,
+        Strip_StripUVHNormal 	= CHUNKEnumExtensions.Strip + 5,
+        Strip_StripColor 		= CHUNKEnumExtensions.Strip + 6,
+        Strip_StripUVNColor 	= CHUNKEnumExtensions.Strip + 7,
+        Strip_StripUVHColor 	= CHUNKEnumExtensions.Strip + 8,
+        Strip_Strip2 			= CHUNKEnumExtensions.Strip + 9,
+        Strip_StripUVN2 		= CHUNKEnumExtensions.Strip + 10,
+        Strip_StripUVH2 		= CHUNKEnumExtensions.Strip + 11,
         End = 255
+#pragma warning restore CA1707
+#pragma warning restore IDE0055
     }
 
     public static class CHUNKEnumExtensions
     {
+        public const byte Bits = 1;
+        public const byte Tiny = 8;
+        public const byte Material = 16;
+        public const byte Vertex = 32;
+        public const byte Volume = 56;
+        public const byte Strip = 64;
+
         /// <summary>
         /// Checks whether the Chunktype is representing a vertex chunk
         /// </summary>
@@ -99,7 +105,7 @@
         /// <returns></returns>
         public static bool IsVertex(this ChunkType type)
         {
-            return type >= ChunkType.Vertex && type <= ChunkType.Vertex_VertexNormalXUserAttributes;
+            return type >= ChunkType.Vertex_VertexSH && type <= ChunkType.Vertex_VertexNormalXUserAttributes;
         }
 
         /// <summary>
