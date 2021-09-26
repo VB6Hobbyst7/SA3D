@@ -65,6 +65,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         }
 
         [DisplayName("User Attributes")]
+        [Hexadecimal]
         public byte UserAttributes
         {
             get => Material.UserAttributes;

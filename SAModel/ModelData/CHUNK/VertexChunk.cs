@@ -78,6 +78,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             Diffuse = diffuse;
             Specular = specular;
         }
+
+        public override string ToString()
+            => $"{{ {Position.X: 0.000;-0.000}, {Position.Y: 0.000;-0.000}, {Position.Z: 0.000;-0.000} }}, {{ {Normal.X: 0.000;-0.000}, {Normal.Y: 0.000;-0.000}, {Normal.Z: 0.000;-0.000} }} : {Index}, {Weight:F3}";
     }
 
     /// <summary>
@@ -108,7 +111,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Whether the chunk has weighted vertex data
         /// </summary>
-        public bool HasWeight => Type == ChunkType.Vertex_VertexNinjaAttributes || Type == ChunkType.Vertex_VertexNormalNinjaAttributes;
+        public bool HasWeight => Type is ChunkType.Vertex_VertexNinjaAttributes or ChunkType.Vertex_VertexNormalNinjaAttributes;
 
         /// <summary>
         /// Vertices of the chunk
@@ -301,6 +304,9 @@ namespace SATools.SAModel.ModelData.CHUNK
         }
 
         public object Clone() => MemberwiseClone();
+
+        public override string ToString()
+            => $"{Type}, Status {WeightStatus}, offset {IndexOffset} : Verts {Vertices.Length}";
     }
 }
 

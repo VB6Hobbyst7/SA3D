@@ -12,7 +12,8 @@
     xmlns:structs="clr-namespace:SATools.SAModel.Structs;assembly=SAModel"
     xmlns:base="clr-namespace:SATools.SAWPF.BaseViewModel;assembly=SAWPF"
     xmlns:sawpf="clr-namespace:SATools.SAWPF;assembly=SAWPF"
-    xmlns:basic="clr-namespace:SATools.SAModel.ModelData.BASIC;assembly=SAModel">
+    xmlns:basic="clr-namespace:SATools.SAModel.ModelData.BASIC;assembly=SAModel"
+    xmlns:chunk="clr-namespace:SATools.SAModel.ModelData.CHUNK;assembly=SAModel">
 
     <!--Note: datatypes do not reflect datacontext type, but the Inspector binding type-->
     
@@ -200,6 +201,12 @@
         </Style.Triggers>
     </Style>
 
+    <DataTemplate x:Key="Hex:Byte" DataType="{x:Type sys:Byte}">
+        <sawpf:ByteBox ToolTip="Unsigned Byte ( 8 bits )"
+            Style="{StaticResource HexNumberStyle}"
+            MaxLength="2" StringFormat="X2"/>
+    </DataTemplate>
+
     <DataTemplate x:Key="Hex:Int64" DataType="{x:Type sys:Int64}">
         <sawpf:LongBox ToolTip="Hexadecimal signed 64 bit integer ( Long )"
             Style="{StaticResource HexNumberStyle}" 
@@ -360,6 +367,77 @@
             <ComboBoxItem Content="Quads" Tag="{x:Static basic:BASICPolyType.Quads}"/>
             <ComboBoxItem Content="NPoly" Tag="{x:Static basic:BASICPolyType.NPoly}"/>
             <ComboBoxItem Content="Strips" Tag="{x:Static basic:BASICPolyType.Strips}"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ChunkType" DataType="{x:Type chunk:ChunkType}">
+        <sub:EnumComboBox ToolTip="Chunk content type" Style="{DynamicResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Null" Tag="{x:Static chunk:ChunkType.Null}"/>
+            <ComboBoxItem Content="Bits_BlendAlpha" Tag="{x:Static chunk:ChunkType.Bits_BlendAlpha}"/>
+            <ComboBoxItem Content="Bits_MipmapDAdjust" Tag="{x:Static chunk:ChunkType.Bits_MipmapDAdjust}"/>
+            <ComboBoxItem Content="Bits_SpecularExponent" Tag="{x:Static chunk:ChunkType.Bits_SpecularExponent}"/>
+            <ComboBoxItem Content="Bits_CachePolygonList" Tag="{x:Static chunk:ChunkType.Bits_CachePolygonList}"/>
+            <ComboBoxItem Content="Bits_DrawPolygonList" Tag="{x:Static chunk:ChunkType.Bits_DrawPolygonList}"/>
+            <ComboBoxItem Content="Tiny_TextureID" Tag="{x:Static chunk:ChunkType.Tiny_TextureID}"/>
+            <ComboBoxItem Content="Tiny_TextureID2" Tag="{x:Static chunk:ChunkType.Tiny_TextureID2}"/>
+            <ComboBoxItem Content="Material_Diffuse" Tag="{x:Static chunk:ChunkType.Material_Diffuse}"/>
+            <ComboBoxItem Content="Material_Ambient" Tag="{x:Static chunk:ChunkType.Material_Ambient}"/>
+            <ComboBoxItem Content="Material_DiffuseAmbient" Tag="{x:Static chunk:ChunkType.Material_DiffuseAmbient}"/>
+            <ComboBoxItem Content="Material_Specular" Tag="{x:Static chunk:ChunkType.Material_Specular}"/>
+            <ComboBoxItem Content="Material_DiffuseSpecular" Tag="{x:Static chunk:ChunkType.Material_DiffuseSpecular}"/>
+            <ComboBoxItem Content="Material_AmbientSpecular" Tag="{x:Static chunk:ChunkType.Material_AmbientSpecular}"/>
+            <ComboBoxItem Content="Material_DiffuseAmbientSpecular" Tag="{x:Static chunk:ChunkType.Material_DiffuseAmbientSpecular}"/>
+            <ComboBoxItem Content="Material_Bump" Tag="{x:Static chunk:ChunkType.Material_Bump}"/>
+            <ComboBoxItem Content="Material_Diffuse2" Tag="{x:Static chunk:ChunkType.Material_Diffuse2}"/>
+            <ComboBoxItem Content="Material_Ambient2" Tag="{x:Static chunk:ChunkType.Material_Ambient2}"/>
+            <ComboBoxItem Content="Material_DiffuseAmbient2" Tag="{x:Static chunk:ChunkType.Material_DiffuseAmbient2}"/>
+            <ComboBoxItem Content="Material_Specular2" Tag="{x:Static chunk:ChunkType.Material_Specular2}"/>
+            <ComboBoxItem Content="Material_DiffuseSpecular2" Tag="{x:Static chunk:ChunkType.Material_DiffuseSpecular2}"/>
+            <ComboBoxItem Content="Material_AmbientSpecular2" Tag="{x:Static chunk:ChunkType.Material_AmbientSpecular2}"/>
+            <ComboBoxItem Content="Material_DiffuseAmbientSpecular2" Tag="{x:Static chunk:ChunkType.Material_DiffuseAmbientSpecular2}"/>
+            <ComboBoxItem Content="Vertex_VertexSH" Tag="{x:Static chunk:ChunkType.Vertex_VertexSH}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalSH" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalSH}"/>
+            <ComboBoxItem Content="Vertex_Vertex" Tag="{x:Static chunk:ChunkType.Vertex_Vertex}"/>
+            <ComboBoxItem Content="Vertex_VertexDiffuse8" Tag="{x:Static chunk:ChunkType.Vertex_VertexDiffuse8}"/>
+            <ComboBoxItem Content="Vertex_VertexUserAttributes" Tag="{x:Static chunk:ChunkType.Vertex_VertexUserAttributes}"/>
+            <ComboBoxItem Content="Vertex_VertexNinjaAttributes" Tag="{x:Static chunk:ChunkType.Vertex_VertexNinjaAttributes}"/>
+            <ComboBoxItem Content="Vertex_VertexDiffuseSpecular5" Tag="{x:Static chunk:ChunkType.Vertex_VertexDiffuseSpecular5}"/>
+            <ComboBoxItem Content="Vertex_VertexDiffuseSpecular4" Tag="{x:Static chunk:ChunkType.Vertex_VertexDiffuseSpecular4}"/>
+            <ComboBoxItem Content="Vertex_VertexDiffuseSpecular16" Tag="{x:Static chunk:ChunkType.Vertex_VertexDiffuseSpecular16}"/>
+            <ComboBoxItem Content="Vertex_VertexNormal" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormal}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalDiffuse8" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalDiffuse8}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalUserAttributes" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalUserAttributes}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalNinjaAttributes" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalNinjaAttributes}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalDiffuseSpecular5" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalDiffuseSpecular5}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalDiffuseSpecular4" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalDiffuseSpecular4}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalDiffuseSpecular16" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalDiffuseSpecular16}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalX" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalX}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalXDiffuse8" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalXDiffuse8}"/>
+            <ComboBoxItem Content="Vertex_VertexNormalXUserAttributes" Tag="{x:Static chunk:ChunkType.Vertex_VertexNormalXUserAttributes}"/>
+            <ComboBoxItem Content="Volume_Polygon3" Tag="{x:Static chunk:ChunkType.Volume_Polygon3}"/>
+            <ComboBoxItem Content="Volume_Polygon4" Tag="{x:Static chunk:ChunkType.Volume_Polygon4}"/>
+            <ComboBoxItem Content="Volume_Strip" Tag="{x:Static chunk:ChunkType.Volume_Strip}"/>
+            <ComboBoxItem Content="Strip_Strip" Tag="{x:Static chunk:ChunkType.Strip_Strip}"/>
+            <ComboBoxItem Content="Strip_StripUVN" Tag="{x:Static chunk:ChunkType.Strip_StripUVN}"/>
+            <ComboBoxItem Content="Strip_StripUVH" Tag="{x:Static chunk:ChunkType.Strip_StripUVH}"/>
+            <ComboBoxItem Content="Strip_StripNormal" Tag="{x:Static chunk:ChunkType.Strip_StripNormal}"/>
+            <ComboBoxItem Content="Strip_StripUVNNormal" Tag="{x:Static chunk:ChunkType.Strip_StripUVNNormal}"/>
+            <ComboBoxItem Content="Strip_StripUVHNormal" Tag="{x:Static chunk:ChunkType.Strip_StripUVHNormal}"/>
+            <ComboBoxItem Content="Strip_StripColor" Tag="{x:Static chunk:ChunkType.Strip_StripColor}"/>
+            <ComboBoxItem Content="Strip_StripUVNColor" Tag="{x:Static chunk:ChunkType.Strip_StripUVNColor}"/>
+            <ComboBoxItem Content="Strip_StripUVHColor" Tag="{x:Static chunk:ChunkType.Strip_StripUVHColor}"/>
+            <ComboBoxItem Content="Strip_Strip2" Tag="{x:Static chunk:ChunkType.Strip_Strip2}"/>
+            <ComboBoxItem Content="Strip_StripUVN2" Tag="{x:Static chunk:ChunkType.Strip_StripUVN2}"/>
+            <ComboBoxItem Content="Strip_StripUVH2" Tag="{x:Static chunk:ChunkType.Strip_StripUVH2}"/>
+            <ComboBoxItem Content="End" Tag="{x:Static chunk:ChunkType.End}"/>
+        </sub:EnumComboBox>
+    </DataTemplate>
+
+    <DataTemplate x:Key="WeightStatus" DataType="{x:Type chunk:WeightStatus}">
+        <sub:EnumComboBox ToolTip="Chunk weight status" Style="{DynamicResource EnumComboBoxStyle}">
+            <ComboBoxItem Content="Start" Tag="{x:Static chunk:WeightStatus.Start}"/>
+            <ComboBoxItem Content="Middle" Tag="{x:Static chunk:WeightStatus.Middle}"/>
+            <ComboBoxItem Content="End" Tag="{x:Static chunk:WeightStatus.End}"/>
         </sub:EnumComboBox>
     </DataTemplate>
 
