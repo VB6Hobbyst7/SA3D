@@ -105,6 +105,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return p;
             }
 
+            public override string ToString()
+                => $"Triangle - {{ {Indices[0]}, {Indices[1]}, {Indices[2]} }}";
         }
 
         public struct Quad : IPoly
@@ -184,6 +186,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                 return p;
             }
 
+            public override string ToString()
+                => $"Quad - {{ {Indices[0]}, {Indices[1]}, {Indices[2]}, {Indices[3]} }}";
         }
 
         public struct Strip : IPoly
@@ -318,6 +322,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                 r.UserAttributes3 = (ushort[])UserAttributes3.Clone();
                 return r;
             }
+
+            public override string ToString()
+                => $"Strip - {Reversed} : {Indices.Length}";
         }
 
         /// <summary>
@@ -417,5 +424,8 @@ namespace SATools.SAModel.ModelData.CHUNK
             result.Polys = Polys.ContentClone();
             return result;
         }
+
+        public override string ToString()
+            => $"{Type} - {UserAttributes} : {Polys.Length}";
     }
 }
