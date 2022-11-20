@@ -95,10 +95,9 @@ void main()
 		{
 			tex = texture(texture0, uv0);
 		}
+		tex *= col0;
 
-		if((flags & FLAT) != 0)
-			col = col0 * tex;
-		else
+		if((flags & FLAT) == 0)
 		{
 			float alpha = tex.a;
 			vec3 viewDirection = viewDir;

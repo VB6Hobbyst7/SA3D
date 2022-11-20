@@ -115,7 +115,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     Corner c = new()
                     {
-                        Index = source.ToUInt16(address)
+                        Index = source.ToUInt16(address),
+                        Color = Color.White
                     };
                     address += 2;
 
