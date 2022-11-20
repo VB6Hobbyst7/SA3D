@@ -13,6 +13,10 @@ namespace SATools.SAModel.ModelData.CHUNK
     {
 
         private static List<PolyChunk>[] PolyChunkCache = Array.Empty<List<PolyChunk>>();
+        /// <summary>
+        /// Vertex cache needed for the polygon colors
+        /// </summary>
+        private static readonly ChunkVertex[] VertexCache = new ChunkVertex[0x10000];
 
         public static void ConvertModelFromChunk(NJObject model, bool optimize = true)
         {
@@ -35,6 +39,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
 
             Array.Clear(PolyChunkCache, 0, PolyChunkCache.Length);
+            Array.Clear(VertexCache, 0, VertexCache.Length);
 
             foreach(ChunkAttach atc in attaches)
             {
@@ -55,6 +60,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                             for(int j = 0; j < cnk.Vertices.Length; j++)
                             {
                                 ChunkVertex vtx = cnk.Vertices[j];
+                                int vtxIndex = j + cnk.IndexOffset;
+                                VertexCache[vtxIndex] = vtx;
                                 vertexList.Add(new BufferVertex(vtx.Position, vtx.Normal, (ushort)(j + cnk.IndexOffset)));
                             }
                         }
@@ -63,7 +70,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                             for(int j = 0; j < cnk.Vertices.Length; j++)
                             {
                                 ChunkVertex vtx = cnk.Vertices[j];
-                                vertexList.Add(new BufferVertex(vtx.Position, vtx.Normal, (ushort)(vtx.Index + cnk.IndexOffset), vtx.Weight));
+                                int vtxIndex = vtx.Index + cnk.IndexOffset;
+                                VertexCache[vtxIndex] = vtx;
+                                vertexList.Add(new BufferVertex(vtx.Position, vtx.Normal, (ushort)vtxIndex, vtx.Weight));
                             }
                         }
                         vertices = vertexList.ToArray();
@@ -197,7 +206,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                                 List<BufferCorner> corners = new();
                                 List<uint> triangles = new();
 
-                                foreach(var s in stripCnk.Strips)
+                                bool hasColor = cnk.Type.StripHasColor();
+
+                                foreach (var s in stripCnk.Strips)
                                 {
                                     uint l = (uint)corners.Count;
 
@@ -213,7 +224,13 @@ namespace SATools.SAModel.ModelData.CHUNK
                                     }
 
                                     foreach(var c in s.Corners)
-                                        corners.Add(new BufferCorner(c.Index, c.Color, c.Texcoord));
+                                    {
+                                        Color color = hasColor
+                                            ? c.Color 
+                                            : VertexCache[c.Index].Diffuse;
+
+                                        corners.Add(new BufferCorner(c.Index, color, c.Texcoord));
+                                    }
                                 }
 
                                 if(vertices != null)

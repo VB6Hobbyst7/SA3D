@@ -222,11 +222,9 @@ namespace SATools.SAModel.Graphics
             Material.ViewPos = Camera.Realposition;
             Material.ViewDir = Camera.Orthographic ? Camera.Forward : default;
 
-            _bufferingBridge.ClearWeights();
-
             // get rendermeshes for the
             var (opaqueGeo, transparentGeo, all) = RenderHelper.PrepareLandEntries(Scene.VisualGeometry, Camera, _bufferingBridge);
-            var models = RenderHelper.PrepareModels(Scene.GameTasks, null, Camera, _bufferingBridge);
+            var models = PrepareModels();
 
             // First render opaque stuff
             _renderingBridge.ToggleOpaque();
@@ -258,6 +256,11 @@ namespace SATools.SAModel.Graphics
             ExtraRenderStuff(all, opaqueGeo, transparentGeo, models);
 
             Canvas.Render(_screen.Width, _screen.Height);
+        }
+
+        protected virtual List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels()
+        {
+            return RenderHelper.PrepareModels(Scene.GameTasks, null, Camera, _bufferingBridge);
         }
 
         protected internal virtual void ExtraRenderStuff(List<LandEntry> geoData, LandEntryRenderBatch opaqueGeo, LandEntryRenderBatch transparenGeo, List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> models)

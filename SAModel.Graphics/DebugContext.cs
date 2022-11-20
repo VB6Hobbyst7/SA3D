@@ -10,15 +10,12 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
-using System.Reflection;
 using System.Windows.Input;
 using Color = SATools.SAModel.Structs.Color;
-using System.Runtime.InteropServices;
 using SATools.SAModel.Graphics.Properties;
 using System.Collections.Generic;
 using System.Numerics;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
-using SATools.SAModel.ModelData;
 
 namespace SATools.SAModel.Graphics
 {
@@ -269,6 +266,11 @@ namespace SATools.SAModel.Graphics
             BoundsMode = BoundsMode.None;
 
             Scene.OnUpdateEvent += DebugUpdate;
+        }
+
+        override protected List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels()
+        {
+            return RenderHelper.PrepareModels(Scene.GameTasks, ActiveNJO, Camera, _bufferingBridge);
         }
 
         /// <summary>

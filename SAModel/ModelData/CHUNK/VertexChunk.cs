@@ -173,14 +173,16 @@ namespace SATools.SAModel.ModelData.CHUNK
             if(type == ChunkType.Vertex_VertexDiffuseSpecular16 || type > ChunkType.Vertex_VertexNormalDiffuseSpecular4)
                 throw new NotSupportedException($"Unsupported chunk type {type} at {address.ToString("X8")}");
 
-            bool hasNormal = type.HasNormal();
-            uint vec4 = type.IsVec4() ? 4u : 0u;
+            bool hasNormal = type.VertexHasNormal();
+            uint vec4 = type.VertexIsVec4() ? 4u : 0u;
 
             for(int i = 0; i < vertices.Length; i++)
             {
                 ChunkVertex vtx = new()
                 {
-                    Position = Vector3Extensions.Read(source, ref address, IOType.Float)
+                    Position = Vector3Extensions.Read(source, ref address, IOType.Float),
+                    Diffuse = Color.White,
+                    Specular = Color.White,
                 };
                 address += vec4;
 
@@ -238,8 +240,8 @@ namespace SATools.SAModel.ModelData.CHUNK
             uint header1Base = (uint)Type | (uint)(Attributes << 8);
             ushort offset = IndexOffset;
 
-            bool hasNormal = Type.HasNormal();
-            bool vec4 = Type.IsVec4();
+            bool hasNormal = Type.VertexHasNormal();
+            bool vec4 = Type.VertexIsVec4();
 
             while(remainingVerts.Count > 0)
             {
@@ -255,13 +257,13 @@ namespace SATools.SAModel.ModelData.CHUNK
                     ChunkVertex vtx = remainingVerts[i];
                     vtx.Position.Write(writer, IOType.Float);
                     if(vec4)
-                        writer.Write(1u);
+                        writer.Write(1.0f);
 
                     if(hasNormal)
                     {
                         vtx.Normal.Write(writer, IOType.Float);
                         if(vec4)
-                            writer.Write(1u);
+                            writer.Write(0.0f);
                     }
 
                     switch(Type)

@@ -78,8 +78,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         [Tooltip("Ignores specular lighting")]
         public bool IgnoreSpecular
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.IgnoreSpecular;
+            set => Chunk.IgnoreSpecular = value;
         }
 
 
@@ -87,8 +87,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         [Tooltip("Ignores ambient lighting")]
         public bool IgnoreAmbient
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.IgnoreAmbient;
+            set => Chunk.IgnoreAmbient = value;
         }
 
 
@@ -96,8 +96,8 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         [Tooltip("uses alpha")]
         public bool UseAlpha
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.UseAlpha;
+            set => Chunk.UseAlpha = value;
         }
 
 
@@ -105,32 +105,32 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         [Tooltip("Ignores culling")]
         public bool DoubleSide
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.DoubleSide;
+            set => Chunk.DoubleSide = value;
         }
 
         [DisplayName("Flat shading")]
         [Tooltip("Uses no lighting at all (Vertex color lit?)")]
         public bool FlatShading
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.FlatShading;
+            set => Chunk.FlatShading = value;
         }
 
         [DisplayName("Environment mapping")]
         [Tooltip("Environment (matcap/normal) mapping")]
         public bool EnvironmentMapping
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.EnvironmentMapping;
+            set => Chunk.EnvironmentMapping = value;
         }
 
 
         [Tooltip("Unknown what it actually does, but it definitely exists (e.g. sonics light dash models use it)")]
         public bool Unknown7
         {
-            get => Chunk.IgnoreLight;
-            set => Chunk.IgnoreLight = value;
+            get => Chunk.Unknown7;
+            set => Chunk.Unknown7 = value;
         }
 
         [Tooltip("Polygon data of the chunk")]

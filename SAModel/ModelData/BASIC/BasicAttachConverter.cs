@@ -124,7 +124,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
                 if(optimize)
                 {
-
+                    // TODO write optimize logic for buffer -> BASIC
                 }
 
                 result.Name = ogAtc.Name;

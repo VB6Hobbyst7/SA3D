@@ -9,6 +9,7 @@ in vec3 fragpos;
 in vec3 normal;
 in vec2 uv0;
 in vec4 col0;
+in vec4 weightColor;
 
 uniform sampler2D texture0;
 
@@ -25,9 +26,10 @@ uniform sampler2D texture0;
 #define FALLOFF		0x02000000
 #define NORMALS		0x03000000
 #define COLORS		0x04000000
-#define TEXCOORDS	0x05000000
-#define TEXTURES	0x06000000
-#define Culling		0x07000000
+#define WEIGHTS		0x05000000
+#define TEXCOORDS	0x06000000
+#define TEXTURES	0x07000000
+#define Culling		0x08000000
 
 layout(std140, binding = 0) uniform Material
 {
@@ -76,6 +78,8 @@ void main()
 		col = col0;
 	else if(lightingMode == TEXCOORDS)
 		col = vec4(mod(uv0, 1), 1, 1);
+	else if(lightingMode == WEIGHTS)
+		col = weightColor;
 	else if(lightingMode == TEXTURES)
 		col = texture(texture0, uv0);
 	else if(lightingMode == Culling)

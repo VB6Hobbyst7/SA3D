@@ -80,22 +80,27 @@
         /// <summary>
         /// Renders vertex colors
         /// </summary>
-        ColorsWeights = 0x04,
+        Colors = 0x04,
+
+        /// <summary>
+        /// Renders vertex weights
+        /// </summary>
+        Weights = 0x05,
 
         /// <summary>
         /// Renders uv coordinates
         /// </summary>
-        Texcoords = 0x05,
+        Texcoords = 0x06,
 
         /// <summary>
         /// Renders textures only
         /// </summary>
-        Textures = 0x06,
+        Textures = 0x07,
 
         /// <summary>
         /// Displays the culling side
         /// </summary>
-        CullSide = 0x07
+        CullSide = 0x08
     }
 
     /// <summary>

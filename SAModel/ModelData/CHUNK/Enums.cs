@@ -1,4 +1,6 @@
-﻿namespace SATools.SAModel.ModelData.CHUNK
+﻿using System.Reflection;
+
+namespace SATools.SAModel.ModelData.CHUNK
 {
     /// <summary>
     /// Vertex chunk weight status
@@ -109,11 +111,11 @@
         }
 
         /// <summary>
-        /// Checks whether a vertey chunktype uses vector 4 positions/normals
+        /// Checks whether a vertex chunktype uses vector 4 positions/normals
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsVec4(this ChunkType type)
+        public static bool VertexIsVec4(this ChunkType type)
         {
             return type == ChunkType.Vertex_VertexSH || type == ChunkType.Vertex_VertexNormalSH;
         }
@@ -123,9 +125,14 @@
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool HasNormal(this ChunkType type)
+        public static bool VertexHasNormal(this ChunkType type)
         {
             return type == ChunkType.Vertex_VertexNormalSH || type > ChunkType.Vertex_VertexDiffuseSpecular16;
+        }
+
+        public static bool StripHasColor(this ChunkType type)
+        {
+            return type is ChunkType.Strip_StripColor or ChunkType.Strip_StripUVNColor or ChunkType.Strip_StripUVHColor;
         }
 
         /// <summary>

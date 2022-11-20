@@ -164,6 +164,10 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.EnableVertexAttribArray(3);
             GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, sizeof(CacheBuffer), 28);
 
+            // weight
+            GL.EnableVertexAttribArray(4);
+            GL.VertexAttribPointer(4, 4, VertexAttribPointerType.UnsignedByte, true, sizeof(CacheBuffer), 36);
+
             MeshHandles.Add(mesh, new BufferMeshHandle(vao, vbo, eao, vtxCount, mesh.Material));
         }
 

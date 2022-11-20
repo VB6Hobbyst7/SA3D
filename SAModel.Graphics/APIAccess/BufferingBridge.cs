@@ -1,14 +1,9 @@
 ﻿using SATools.SAArchive;
-using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SAModel.Graphics.APIAccess
 {
@@ -16,24 +11,31 @@ namespace SATools.SAModel.Graphics.APIAccess
     /// Vertex ready to be buffered
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct CacheBuffer
+    public readonly struct CacheBuffer
     {
         public readonly Vector3 position;
         public readonly Vector3 normal;
         public readonly Color color;
         public readonly Vector2 uv;
+        public readonly Color weightColor;
 
-        public CacheBuffer(Vector3 position, Vector3 normal, Color color, Vector2 uv)
+        public CacheBuffer(Vector3 position, Vector3 normal, Color color, Vector2 uv, Color weightColor)
         {
             this.position = position;
             this.normal = normal;
             this.color = color;
             this.uv = uv;
+            this.weightColor = weightColor;
         }
     }
 
     public abstract class BufferingBridge
     {
+        /// <summary>
+        /// Weight color array
+        /// </summary>
+        private static readonly Color[] weightColors;
+
         private bool initialized;
 
         public virtual void Initialize()
@@ -43,73 +45,21 @@ namespace SATools.SAModel.Graphics.APIAccess
                 BufferTextureSet(ts.Key);
         }
 
-        #region Vertex caching
-
-        /// <summary>
-        /// Weight color array
-        /// </summary>
-        private static readonly Color[] weightColors;
-
-        /// <summary>
-        /// A single cached vertex
-        /// </summary>
-        private struct CachedVertex
-        {
-            public Vector4 position;
-            public Vector3 normal;
-
-            public Vector3 V3Position => new(position.X, position.Y, position.Z);
-
-            public CachedVertex(Vector4 position, Vector3 normal)
-            {
-                this.position = position;
-                this.normal = normal;
-            }
-
-            public CachedVertex(BufferVertex vtx)
-            {
-                position = new(vtx.Position, 1);
-                normal = vtx.Normal;
-            }
-
-            public override string ToString()
-            {
-                return $"({position.X:f3}, {position.Y:f3}, {position.Z:f3}, {position.W:f3}) - ({normal.X:f3}, {normal.Y:f3}, {normal.Z:f3})";
-            }
-        }
-
-        /// <summary>
-        /// Vertex Cache size
-        /// </summary>
-        private const int VertexCacheSize = 0xFFFF;
-
-        /// <summary>
-        /// Vertex cache
-        /// </summary>
-        private CachedVertex[] Vertices { get; }
-            = new CachedVertex[VertexCacheSize];
-
-        /// <summary>
-        /// weight per cached vertex to visualize on polygons (debug)
-        /// </summary>
-        private float[] VertexWeights { get; }
-            = new float[VertexCacheSize];
-
         static BufferingBridge()
         {
             // calculating colors, so that fetching colors is as fast as possible
-            weightColors = new Color[256];
+            weightColors = new Color[64];
 
-            for(int i = 0; i < 256; i++)
+            for (int i = 0; i < 64; i++)
             {
                 Color c = Color.Black;
 
-                double hue = (((i / 256d) * -.666d + .666d) % 1f) * 6;
+                double hue = (((i / 64d) * -.666d + .666d) % 1f) * 6;
                 int index = (int)hue;
                 byte ff = (byte)((hue - index) * 255);
                 byte q = (byte)(0xFF - ff);
 
-                switch(index)
+                switch (index)
                 {
                     case 0:
                         c.R = 0xFF;
@@ -149,11 +99,49 @@ namespace SATools.SAModel.Graphics.APIAccess
         internal static Color GetWeightColor(float weight)
             => weightColors[(int)(weight * 255)];
 
+        #region Vertex caching
+
         /// <summary>
-        /// Clears <see cref="VertexWeights"/>
+        /// A single cached vertex
         /// </summary>
-        internal void ClearWeights()
-            => Array.Clear(VertexWeights, 0, VertexWeights.Length);
+        private struct CachedVertex
+        {
+            public Vector4 position;
+            public Vector3 normal;
+            public Color weightColor;
+
+            public Vector3 V3Position => new(position.X, position.Y, position.Z);
+
+            public CachedVertex(Vector4 position, Vector3 normal, Color weightColor)
+            {
+                this.position = position;
+                this.normal = normal;
+                this.weightColor = weightColor;
+            }
+
+            public CachedVertex(BufferVertex vtx)
+            {
+                position = new(vtx.Position, 1);
+                normal = vtx.Normal;
+                weightColor = weightColors[0];
+            }
+
+            public override string ToString()
+            {
+                return $"({position.X:f3}, {position.Y:f3}, {position.Z:f3}, {position.W:f3}) - ({normal.X:f3}, {normal.Y:f3}, {normal.Z:f3})";
+            }
+        }
+
+        /// <summary>
+        /// Vertex Cache size
+        /// </summary>
+        private const int VertexCacheSize = 0xFFFF;
+
+        /// <summary>
+        /// Vertex cache
+        /// </summary>
+        private CachedVertex[] Vertices { get; }
+            = new CachedVertex[VertexCacheSize];
 
         /// <summary>
         /// Buffers an attach
@@ -196,9 +184,13 @@ namespace SATools.SAModel.Graphics.APIAccess
                         Vector3 nrm = Vector3.TransformNormal(vtx.Normal, weightnormal) * vtx.Weight;
 
                         int index = vtx.Index + mesh.VertexWriteOffset;
+                        int weight = 0;
 
                         if(active)
-                            VertexWeights[index] = vtx.Weight;
+                        {
+                            weight = (int)(vtx.Weight * 63.0f);
+
+                        }
 
                         if(mesh.ContinueWeight)
                         {
@@ -207,7 +199,7 @@ namespace SATools.SAModel.Graphics.APIAccess
                         }
                         else
                         {
-                            Vertices[index] = new(pos, nrm);
+                            Vertices[index] = new(pos, nrm, weightColors[weight]);
                         }
                     }
                 }
@@ -225,8 +217,9 @@ namespace SATools.SAModel.Graphics.APIAccess
                     toBuffer[i] = new CacheBuffer(
                         vtx.V3Position,
                         vtx.normal,
-                        weightworld.HasValue ? GetWeightColor(VertexWeights[vOffset]) : corner.Color,
-                        corner.Texcoord);
+                        corner.Color,
+                        corner.Texcoord,
+                        vtx.weightColor);
                 }
 
                 BufferVertexCache(mesh, toBuffer);
@@ -296,7 +289,6 @@ namespace SATools.SAModel.Graphics.APIAccess
         #endregion
 
         #region Mesh and Material buffering
-
 
         /// <summary>
         /// Gets called after buffering material data
