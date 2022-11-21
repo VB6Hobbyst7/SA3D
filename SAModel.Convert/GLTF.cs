@@ -119,7 +119,7 @@ namespace SATools.SAModel.Convert
 
                     var (vertices, polydata) = FromWeight(node.Mesh);
                     Matrix4x4 meshMatrix = node.GetWorldMatrix(null, 0);
-                    AttachHelper.FromWeightedBuffer(bones, meshMatrix, vertices, polydata);
+                    WeightedBufferAttach.FromWeightedBuffer(bones, meshMatrix, vertices, polydata);
                 }
             }
 
@@ -212,9 +212,9 @@ namespace SATools.SAModel.Convert
             return atc;
         }
 
-        private static (AttachHelper.VertexWeights[] vertices, BufferMesh[] polydata) FromWeight(Mesh mesh)
+        private static (WeightedVertex[] vertices, BufferMesh[] polydata) FromWeight(Mesh mesh)
         {
-            List<AttachHelper.VertexWeights> vertices = new();
+            List<WeightedVertex> vertices = new();
 
             List<int> offsets = new();
             int offset = 0;
@@ -242,24 +242,26 @@ namespace SATools.SAModel.Convert
                     // normal (may be null)
                     var nrm = normalArray?[i] ?? Vector3.UnitY;
 
+                    WeightedVertex vert = new(new(pos, 1f), nrm);
+
                     var joint = jointsArray[i];
                     var weight = weightsArray[i];
 
                     List<(int, float)> skinning = new();
 
-                    if(weight.X > 0)
-                        skinning.Add(((int)joint.X, weight.X));
+                    if (weight.X > 0)
+                        vert.Weights.Add((int)joint.X, weight.X);
 
                     if(weight.Y > 0)
-                        skinning.Add(((int)joint.Y, weight.Y));
+                        vert.Weights.Add((int)joint.Y, weight.Y);
 
-                    if(weight.Z > 0)
-                        skinning.Add(((int)joint.Z, weight.Z));
+                    if (weight.Z > 0)
+                        vert.Weights.Add((int)joint.Z, weight.Z);
 
-                    if(weight.W > 0)
-                        skinning.Add(((int)joint.W, weight.W));
+                    if (weight.W > 0)
+                        vert.Weights.Add((int)joint.W, weight.W);
 
-                    vertices.Add(new(pos, nrm, skinning.ToArray()));
+                    vertices.Add(vert);
                 }
 
                 offsets.Add(offset);

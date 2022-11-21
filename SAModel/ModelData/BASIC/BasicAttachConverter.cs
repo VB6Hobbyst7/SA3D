@@ -13,53 +13,69 @@ namespace SATools.SAModel.ModelData.BASIC
     /// </summary>
     public static class BasicAttachConverter
     {
-        /// <summary>
-        /// Converts the buffer data of a model to BASIC attaches
-        /// </summary>
-        /// <param name="model">The tip of the model hierarchy to convert</param>
-        /// <param name="optimize">Whether to optimize the data</param>
-        /// <param name="ignoreWeights">Convert regardless of weight information being lost</param>
-        /// <param name="forceUpdate">Still convert, even if the attaches are Basic already</param>
         public static void ConvertModelToBasic(NJObject model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
         {
-            if(model.Parent != null)
+            if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
-            if(model.AttachFormat == AttachFormat.BASIC && !forceUpdate)
+            if (model.AttachFormat == AttachFormat.BASIC && !forceUpdate)
                 return;
 
-            if(model.HasWeight && !ignoreWeights)
-                throw new FormatException("Model is weighted, cannot convert to basic format!");
+            var weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model);
 
-            AttachHelper.ProcessWeightlessModel(model, (cacheAtc, ogAtc) =>
+            ConvertModelToBasic(model, weightedMeshes, optimize, ignoreWeights);
+        }
+
+        public static void ConvertModelToBasic(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        {
+            if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
-                // getting the vertex information
-                Vector3[] positions = new Vector3[cacheAtc.vertices.Length];
+                throw new FormatException("Model is weighted, cannot convert to GC format!");
+            }
+
+            NJObject[] nodes = model.GetObjects();
+            BasicAttach[] attaches = new BasicAttach[nodes.Length];
+
+            foreach (var weightedAttach in meshData)
+            {
+                NJObject node = nodes[weightedAttach.DependencyRootIndex];
+
+                Matrix4x4 worldMatrix = node.GetWorldMatrix();
+                Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
+                Matrix4x4 normalMtx = Matrix4x4.Transpose(invertedWorldMatrix);
+                Matrix4x4.Invert(normalMtx, out Matrix4x4 invertedNormalMtx);
+
+                Vector3[] positions = new Vector3[weightedAttach.Vertices.Length];
                 Vector3[] normals = new Vector3[positions.Length];
                 bool hasNormals = false;
 
-                for(int i = 0; i < positions.Length; i++)
+                for (int i = 0; i < positions.Length; i++)
                 {
-                    var vtx = cacheAtc.vertices[i];
-                    positions[i] = vtx.Position;
-                    normals[i] = vtx.Normal;
-                    if(vtx.Normal != Vector3.UnitY)
+                    var vtx = weightedAttach.Vertices[i];
+
+                    Vector4 localPos = Vector4.Transform(vtx.Position, invertedWorldMatrix);
+                    positions[i] = new(localPos.X, localPos.Y, localPos.Z);
+                    normals[i] = Vector3.Transform(vtx.Normal, invertedNormalMtx);
+
+                    if (vtx.Normal != Vector3.UnitY)
+                    {
                         hasNormals = true;
+                    }
                 }
 
-                if(!hasNormals)
+                if (!hasNormals)
                     normals = null;
 
                 // putting together polygons
-                Mesh[] meshes = new Mesh[cacheAtc.corners.Length];
-                Material[] materials = new Material[cacheAtc.corners.Length];
+                Mesh[] meshes = new Mesh[weightedAttach.Corners.Length];
+                Material[] materials = new Material[weightedAttach.Corners.Length];
 
-                for(int i = 0; i < cacheAtc.corners.Length; i++)
+                for (int i = 0; i < weightedAttach.Corners.Length; i++)
                 {
                     // creating the material
                     Material mat = new();
-                    BufferMaterial bmat = cacheAtc.materials[i];
-                    if(bmat != null)
+                    BufferMaterial bmat = weightedAttach.Materials[i];
+                    if (bmat != null)
                     {
                         mat.DiffuseColor = bmat.Diffuse;
                         mat.SpecularColor = bmat.Specular;
@@ -86,21 +102,21 @@ namespace SATools.SAModel.ModelData.BASIC
 
                     // creating the polygons
 
-                    BufferCorner[] bCorners = cacheAtc.corners[i];
+                    BufferCorner[] bCorners = weightedAttach.Corners[i];
                     IPoly[] triangles = new IPoly[bCorners.Length / 3];
                     Vector2[] texcoords = new Vector2[bCorners.Length];
                     Color[] colors = new Color[bCorners.Length];
 
                     Triangle current = new();
-                    for(int j = 0; j < bCorners.Length; j++)
+                    for (int j = 0; j < bCorners.Length; j++)
                     {
                         BufferCorner corner = bCorners[j];
 
                         int vIndex = j % 3;
                         current.Indices[vIndex] = corner.VertexIndex;
-                        if(vIndex == 2)
+                        if (vIndex == 2)
                         {
-                            triangles[(j-2) / 3] = current;
+                            triangles[(j - 2) / 3] = current;
                             current = new Triangle();
                         }
 
@@ -111,10 +127,10 @@ namespace SATools.SAModel.ModelData.BASIC
                     bool hasTexcoords = texcoords.Any(x => x != default);
                     bool hasColors = colors.Any(x => x != Color.White);
 
-                    Mesh basicmesh = new (BASICPolyType.Triangles, triangles, false, hasColors, hasTexcoords, (ushort)i);
-                    if(hasColors)
+                    Mesh basicmesh = new(BASICPolyType.Triangles, triangles, false, hasColors, hasTexcoords, (ushort)i);
+                    if (hasColors)
                         basicmesh.Colors = colors;
-                    if(hasTexcoords)
+                    if (hasTexcoords)
                         basicmesh.Texcoords = texcoords;
 
                     meshes[i] = basicmesh;
@@ -122,34 +138,34 @@ namespace SATools.SAModel.ModelData.BASIC
 
                 BasicAttach result = new(positions, normals, meshes, materials);
 
-                if(optimize)
+                if (optimize)
                 {
                     // TODO write optimize logic for buffer -> BASIC
                 }
 
-                result.Name = ogAtc.Name;
-                if(ogAtc is BasicAttach ogBasic)
+                result.RecalculateBounds();
+
+                attaches[weightedAttach.DependencyRootIndex] = result;
+            }
+
+            // Linking the attaches to the nodes
+            bool regenerateMeshdata = false;
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i]._attach == null && attaches[i] != null
+                    || nodes[i]._attach != null && attaches[i] == null)
                 {
-                    result.PositionName = ogBasic.PositionName;
-                    result.NormalName = ogBasic.NormalName;
-                    result.MaterialName = ogBasic.MaterialName;
-                    result.MeshName = ogBasic.MeshName;
-
-                    for(int j = 0; j < result.Meshes.Length; j++)
-                    {
-                        // lets just assume that the order of these is the same
-                        Mesh mesh = result.Meshes[j];
-                        Mesh ogMesh = ogBasic.Meshes[j];
-
-                        mesh.PolyName = ogMesh.PolyName;
-                        mesh.NormalName = ogMesh.NormalName;
-                        mesh.ColorName = ogMesh.ColorName;
-                        mesh.TexcoordName = ogMesh.TexcoordName;
-                    }
+                    regenerateMeshdata = true;
                 }
 
-                return result;
-            });
+                nodes[i]._attach = attaches[i];
+            }
+
+            if (regenerateMeshdata)
+            {
+                ConvertModelFromBasic(model, optimize);
+            }
         }
 
         /// <summary>

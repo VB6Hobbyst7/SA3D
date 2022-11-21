@@ -4,6 +4,7 @@ using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,26 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// Vertex cache needed for the polygon colors
         /// </summary>
         private static readonly ChunkVertex[] VertexCache = new ChunkVertex[0x10000];
+
+        public static void ConvertModelToChunk(NJObject model, bool optimize = true, bool forceUpdate = false)
+        {
+            if (model.Parent != null)
+                throw new FormatException($"Model {model.Name} is not hierarchy root!");
+
+            if (model.AttachFormat == AttachFormat.CHUNK && !forceUpdate)
+                return;
+
+            HashSet<Attach> attaches = new();
+            NJObject[] models = model.GetObjects();
+
+            foreach (NJObject obj in models)
+            {
+                if (obj.Attach == null)
+                    continue;
+
+                attaches.Add(obj.Attach);
+            }
+        }
 
         public static void ConvertModelFromChunk(NJObject model, bool optimize = true)
         {

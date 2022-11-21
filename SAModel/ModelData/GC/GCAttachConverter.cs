@@ -1,4 +1,5 @@
-﻿using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SAModel.ModelData.BASIC;
+using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
@@ -13,60 +14,73 @@ namespace SATools.SAModel.ModelData.GC
     /// </summary>
     public static class GCAttachConverter
     {
-        /// <summary>
-        /// Converts a buffer model to the GC format
-        /// </summary>
-        /// <param name="model">The model to converter</param>
-        /// <param name="optimize">Whether to optimize the attaches</param>
-        /// <param name="ignoreWeights">If conversion should still happen, despite weights existing</param>
-        /// <param name="forceUpdate">Whether to convert, regardless of whether the attaches are already GC</param>
         public static void ConvertModelToGC(NJObject model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
         {
-            if(model.Parent != null)
+            if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
-            if(model.AttachFormat == AttachFormat.GC && !forceUpdate)
+            if (model.AttachFormat == AttachFormat.GC && !forceUpdate)
                 return;
 
-            if(model.HasWeight && !ignoreWeights)
-                throw new FormatException("Model is weighted, cannot convert to basic format!");
+            WeightedBufferAttach[] weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model);
 
-            AttachHelper.ProcessWeightlessModel(model, (cacheAtc, ogAtc) =>
+            ConvertModelToGC(model, weightedMeshes, optimize, ignoreWeights);
+        }
+
+        public static void ConvertModelToGC(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        {
+            if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
-                // getting the vertex information
-                Vector3[] positions = new Vector3[cacheAtc.vertices.Length];
+                throw new FormatException("Model is weighted, cannot convert to basic format!");
+            }
+
+            NJObject[] nodes = model.GetObjects();
+            GCAttach[] attaches = new GCAttach[nodes.Length];
+
+            foreach (var weightedAttach in meshData)
+            {
+                NJObject node = nodes[weightedAttach.DependencyRootIndex];
+
+                Matrix4x4 worldMatrix = node.GetWorldMatrix();
+                Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
+                Matrix4x4 normalMtx = Matrix4x4.Transpose(invertedWorldMatrix);
+                Matrix4x4.Invert(normalMtx, out Matrix4x4 invertedNormalMtx);
+
+                Vector3[] positions = new Vector3[weightedAttach.Vertices.Length];
                 Vector3[] normals = new Vector3[positions.Length];
 
-                for(int i = 0; i < positions.Length; i++)
+                for (int i = 0; i < positions.Length; i++)
                 {
-                    var vtx = cacheAtc.vertices[i];
-                    positions[i] = vtx.Position;
-                    normals[i] = vtx.Normal;
+                    var vtx = weightedAttach.Vertices[i];
+
+                    Vector4 localPos = Vector4.Transform(vtx.Position, invertedWorldMatrix);
+                    positions[i] = new(localPos.X, localPos.Y, localPos.Z);
+                    normals[i] = Vector3.Transform(vtx.Normal, invertedNormalMtx);
                 }
 
                 // getting the corner information
                 int cornerCount = 0;
-                for(int i = 0; i < cacheAtc.corners.Length; i++)
-                    cornerCount += cacheAtc.corners[i].Length;
+                for (int i = 0; i < weightedAttach.Corners.Length; i++)
+                    cornerCount += weightedAttach.Corners[i].Length;
 
                 Vector2[] texcoords = new Vector2[cornerCount];
                 Color[] colors = new Color[cornerCount];
-                Corner[][] corners = new Corner[cacheAtc.corners.Length][];
+                Corner[][] corners = new Corner[weightedAttach.Corners.Length][];
 
                 ushort cornerIndex = 0;
-                for(int i = 0; i < corners.Length; i++)
+                for (int i = 0; i < corners.Length; i++)
                 {
-                    BufferCorner[] bufferCorners = cacheAtc.corners[i];
+                    BufferCorner[] bufferCorners = weightedAttach.Corners[i];
                     Corner[] meshCorners = new Corner[bufferCorners.Length];
-                    for(int j = 0; j < bufferCorners.Length; j++)
+                    for (int j = 0; j < bufferCorners.Length; j++)
                     {
                         BufferCorner bcorner = bufferCorners[j];
 
                         texcoords[cornerIndex] = bcorner.Texcoord;
                         colors[cornerIndex] = bcorner.Color;
 
-                        meshCorners[j] = new Corner() 
-                        { 
+                        meshCorners[j] = new Corner()
+                        {
                             PositionIndex = bcorner.VertexIndex,
                             NormalIndex = bcorner.VertexIndex,
                             UV0Index = cornerIndex,
@@ -86,14 +100,14 @@ namespace SATools.SAModel.ModelData.GC
                 VertexSet[] vertexData = new VertexSet[2 + (hasUVs ? 1 : 0)];
 
                 IndexAttributeParameter iaParam = new() { IndexAttributes = IndexAttributes.HasPosition };
-                if(positions.Length > 256)
+                if (positions.Length > 256)
                     iaParam.IndexAttributes |= IndexAttributes.Position16BitIndex;
                 vertexData[0] = new VertexSet(positions, false);
 
-                if(hasColors)
+                if (hasColors)
                 {
                     iaParam.IndexAttributes |= IndexAttributes.HasColor;
-                    if(colors.Length > 256)
+                    if (colors.Length > 256)
                         iaParam.IndexAttributes |= IndexAttributes.Color16BitIndex;
 
                     vertexData[1] = new VertexSet(colors);
@@ -101,16 +115,16 @@ namespace SATools.SAModel.ModelData.GC
                 else
                 {
                     iaParam.IndexAttributes |= IndexAttributes.HasNormal;
-                    if(normals.Length > 256)
+                    if (normals.Length > 256)
                         iaParam.IndexAttributes |= IndexAttributes.Normal16BitIndex;
 
                     vertexData[1] = new VertexSet(normals, true);
                 }
 
-                if(hasUVs)
+                if (hasUVs)
                 {
                     iaParam.IndexAttributes |= IndexAttributes.HasUV;
-                    if(texcoords.Length > 256)
+                    if (texcoords.Length > 256)
                         iaParam.IndexAttributes |= IndexAttributes.UV16BitIndex;
                     vertexData[2] = new VertexSet(texcoords);
                 }
@@ -122,17 +136,17 @@ namespace SATools.SAModel.ModelData.GC
                     // generating parameter info
                     List<IParameter> parameters = new();
 
-                    BufferMaterial cacheMaterial = cacheAtc.materials[index];
-                    if(currentMaterial == null)
+                    BufferMaterial cacheMaterial = weightedAttach.Materials[index];
+                    if (currentMaterial == null)
                     {
 
                         parameters.Add(new VtxAttrFmtParameter(VertexAttribute.Position));
                         parameters.Add(new VtxAttrFmtParameter(hasColors ? VertexAttribute.Color0 : VertexAttribute.Normal));
-                        if(hasUVs)
+                        if (hasUVs)
                             parameters.Add(new VtxAttrFmtParameter(VertexAttribute.Tex0));
                         parameters.Add(iaParam);
 
-                        if(cacheMaterial == null)
+                        if (cacheMaterial == null)
                         {
                             currentMaterial = new BufferMaterial()
                             {
@@ -142,47 +156,52 @@ namespace SATools.SAModel.ModelData.GC
                         else
                             currentMaterial = cacheMaterial;
 
-                        parameters.Add(new LightingParameter() {
+                        parameters.Add(new LightingParameter()
+                        {
                             LightingAttributes = LightingParameter.DefaultLighting.LightingAttributes,
                             ShadowStencil = currentMaterial.ShadowStencil
                         });
 
-                        parameters.Add(new BlendAlphaParameter() { 
+                        parameters.Add(new BlendAlphaParameter()
+                        {
                             SourceAlpha = currentMaterial.SourceBlendMode,
                             DestAlpha = currentMaterial.DestinationBlendmode
                         });
 
-                        parameters.Add(new AmbientColorParameter() { 
+                        parameters.Add(new AmbientColorParameter()
+                        {
                             AmbientColor = currentMaterial.Ambient
                         });
 
                         TextureParameter texParam = new();
                         texParam.TextureID = (ushort)currentMaterial.TextureIndex;
 
-                        if(!currentMaterial.ClampU)
+                        if (!currentMaterial.ClampU)
                             texParam.Tiling |= GCTileMode.RepeatU;
 
-                        if(!currentMaterial.ClampV)
+                        if (!currentMaterial.ClampV)
                             texParam.Tiling |= GCTileMode.RepeatV;
 
-                        if(currentMaterial.MirrorU)
+                        if (currentMaterial.MirrorU)
                             texParam.Tiling |= GCTileMode.MirrorU;
 
-                        if(currentMaterial.MirrorV)
+                        if (currentMaterial.MirrorV)
                             texParam.Tiling |= GCTileMode.MirrorV;
 
                         parameters.Add(texParam);
 
                         parameters.Add(Unknown9Parameter.DefaultValues);
-                        parameters.Add(new TexCoordGenParameter() {
+                        parameters.Add(new TexCoordGenParameter()
+                        {
                             TexCoordID = currentMaterial.TexCoordID,
                             TexGenType = currentMaterial.TexGenType,
                             TexGenSrc = currentMaterial.TexGenSrc,
-                            MatrixID = currentMaterial.MatrixID });
+                            MatrixID = currentMaterial.MatrixID
+                        });
                     }
                     else
                     {
-                        if(currentMaterial.ShadowStencil != cacheMaterial.ShadowStencil)
+                        if (currentMaterial.ShadowStencil != cacheMaterial.ShadowStencil)
                         {
                             parameters.Add(new LightingParameter()
                             {
@@ -190,7 +209,7 @@ namespace SATools.SAModel.ModelData.GC
                             });
                         }
 
-                        if(currentMaterial.SourceBlendMode != cacheMaterial.SourceBlendMode
+                        if (currentMaterial.SourceBlendMode != cacheMaterial.SourceBlendMode
                         || currentMaterial.DestinationBlendmode != cacheMaterial.DestinationBlendmode)
                         {
                             parameters.Add(new BlendAlphaParameter()
@@ -200,14 +219,15 @@ namespace SATools.SAModel.ModelData.GC
                             });
                         }
 
-                        if(currentMaterial.Ambient != cacheMaterial.Ambient)
+                        if (currentMaterial.Ambient != cacheMaterial.Ambient)
                         {
-                            parameters.Add(new AmbientColorParameter() {
-                                AmbientColor = cacheMaterial.Ambient 
+                            parameters.Add(new AmbientColorParameter()
+                            {
+                                AmbientColor = cacheMaterial.Ambient
                             });
                         }
 
-                        if(currentMaterial.TextureIndex != cacheMaterial.TextureIndex
+                        if (currentMaterial.TextureIndex != cacheMaterial.TextureIndex
                         || currentMaterial.MirrorU != cacheMaterial.MirrorU
                         || currentMaterial.MirrorV != cacheMaterial.MirrorV
                         || currentMaterial.ClampU != cacheMaterial.ClampU
@@ -216,45 +236,53 @@ namespace SATools.SAModel.ModelData.GC
                             TextureParameter texParam = new();
                             texParam.TextureID = (ushort)cacheMaterial.TextureIndex;
 
-                            if(!cacheMaterial.ClampU)
+                            if (!cacheMaterial.ClampU)
                                 texParam.Tiling |= GCTileMode.RepeatU;
 
-                            if(!cacheMaterial.ClampV)
+                            if (!cacheMaterial.ClampV)
                                 texParam.Tiling |= GCTileMode.RepeatV;
 
-                            if(cacheMaterial.MirrorU)
+                            if (cacheMaterial.MirrorU)
                                 texParam.Tiling |= GCTileMode.MirrorU;
 
-                            if(cacheMaterial.MirrorV)
+                            if (cacheMaterial.MirrorV)
                                 texParam.Tiling |= GCTileMode.MirrorV;
 
                             parameters.Add(texParam);
                         }
 
-                        if(currentMaterial.TexCoordID != cacheMaterial.TexCoordID
+                        if (currentMaterial.TexCoordID != cacheMaterial.TexCoordID
                         || currentMaterial.TexGenType != cacheMaterial.TexGenType
                         || currentMaterial.TexGenSrc != cacheMaterial.TexGenSrc
                         || currentMaterial.MatrixID != cacheMaterial.MatrixID)
                         {
-                            parameters.Add(new TexCoordGenParameter() {
+                            parameters.Add(new TexCoordGenParameter()
+                            {
                                 TexCoordID = cacheMaterial.TexCoordID,
                                 TexGenType = cacheMaterial.TexGenType,
                                 TexGenSrc = cacheMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : cacheMaterial.TexGenSrc,
-                                MatrixID = cacheMaterial.MatrixID});
+                                MatrixID = cacheMaterial.MatrixID
+                            });
                         }
 
                         currentMaterial = cacheMaterial;
                     }
 
                     // note: a single triangle polygon can only carry 0xFFFF corners, so about 22k tris
-                    Corner[] triangleCorners = corners[index];
+                    Corner[] triangleCorners = new Corner[corners[index].Length];
+                    Array.Copy(corners[index], triangleCorners, triangleCorners.Length);
+
+                    for (int i = 0; i < triangleCorners.Length; i += 3)
+                    {
+                        (triangleCorners[i], triangleCorners[i + 1]) = (triangleCorners[i + 1], triangleCorners[i]);
+                    }
 
                     List<Poly> polygons = new();
-                    if(triangleCorners.Length > 0xFFFF)
+                    if (triangleCorners.Length > 0xFFFF)
                     {
                         int remainingLength = triangleCorners.Length;
                         int offset = 0;
-                        while(remainingLength > 0)
+                        while (remainingLength > 0)
                         {
                             Corner[] finalCorners = new Corner[Math.Max(0xFFFF, remainingLength)];
                             Array.Copy(triangleCorners, offset, finalCorners, 0, finalCorners.Length);
@@ -274,8 +302,8 @@ namespace SATools.SAModel.ModelData.GC
                 List<int> opaqueMeshIndices = new();
                 List<int> translucentMeshIndices = new();
 
-                for(int i = 0; i < cacheAtc.materials.Length; i++)
-                    (cacheAtc.materials[i].UseAlpha ? translucentMeshIndices : opaqueMeshIndices).Add(i);
+                for (int i = 0; i < weightedAttach.Materials.Length; i++)
+                    (weightedAttach.Materials[i].UseAlpha ? translucentMeshIndices : opaqueMeshIndices).Add(i);
 
                 currentMaterial = null;
                 Mesh[] opaqueMeshes = opaqueMeshIndices.Select(x => ProcessBufferMesh(x)).ToArray();
@@ -284,33 +312,50 @@ namespace SATools.SAModel.ModelData.GC
                 Mesh[] translucentMeshes = translucentMeshIndices.Select(x => ProcessBufferMesh(x)).ToArray();
 
                 GCAttach result = new(vertexData, opaqueMeshes, translucentMeshes);
-                result.MeshBounds = ogAtc.MeshBounds;
 
-                if(optimize)
+                if (optimize)
                 {
                     result.OptimizeVertexData();
                     result.OptimizePolygonData();
                 }
 
-                result.Name = ogAtc.Name;
+                result.RecalculateBounds();
+                attaches[weightedAttach.DependencyRootIndex] = result;
+            }
 
-                return result;
-            });
+            // Linking the attaches to the nodes
+            bool regenerateMeshdata = false;
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i]._attach == null && attaches[i] != null
+                    || nodes[i]._attach != null && attaches[i] == null)
+                {
+                    regenerateMeshdata = true;
+                }
+
+                nodes[i]._attach = attaches[i];
+            }
+
+            if (regenerateMeshdata)
+            {
+                ConvertModelFromGC(model, optimize);
+            }
         }
 
         public static void ConvertModelFromGC(NJObject model, bool optimize = true)
         {
-            if(model.Parent != null)
+            if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<GCAttach> attaches = new();
             NJObject[] models = model.GetObjects();
 
-            foreach(NJObject obj in models)
+            foreach (NJObject obj in models)
             {
-                if(obj.Attach == null)
+                if (obj.Attach == null)
                     continue;
-                if(obj.Attach.Format != AttachFormat.GC)
+                if (obj.Attach.Format != AttachFormat.GC)
                     throw new FormatException("Not all Attaches inside the model are a BASIC attaches! Cannot convert");
 
                 GCAttach atc = (GCAttach)obj.Attach;
@@ -318,7 +363,7 @@ namespace SATools.SAModel.ModelData.GC
                 attaches.Add(atc);
             }
 
-            foreach(GCAttach atc in attaches)
+            foreach (GCAttach atc in attaches)
             {
                 List<BufferMesh> meshes = new();
 
@@ -327,20 +372,20 @@ namespace SATools.SAModel.ModelData.GC
                 Color[] colors = null;
                 Vector2[] uvs = null;
 
-                if(atc.VertexData.TryGetValue(VertexAttribute.Position, out VertexSet tmp))
+                if (atc.VertexData.TryGetValue(VertexAttribute.Position, out VertexSet tmp))
                     positions = tmp.Vector3Data;
 
-                if(atc.VertexData.TryGetValue(VertexAttribute.Normal, out tmp))
+                if (atc.VertexData.TryGetValue(VertexAttribute.Normal, out tmp))
                     normals = tmp.Vector3Data;
 
-                if(atc.VertexData.TryGetValue(VertexAttribute.Tex0, out tmp))
+                if (atc.VertexData.TryGetValue(VertexAttribute.Tex0, out tmp))
                     uvs = tmp.UVData;
 
-                if(atc.VertexData.TryGetValue(VertexAttribute.Color0, out tmp))
+                if (atc.VertexData.TryGetValue(VertexAttribute.Color0, out tmp))
                     colors = tmp.ColorData;
 
                 BufferMaterial material = new()
-                { 
+                {
                     MaterialAttributes = MaterialAttributes.noSpecular
                 };
                 material.SetAttribute(MaterialAttributes.Flat, colors != null);
@@ -352,9 +397,9 @@ namespace SATools.SAModel.ModelData.GC
                 Dictionary<uint, ushort> vertexIndices = new();
 
                 // if there are no normals, then we can already initialize the entire thing with all positions
-                if(normals == null)
+                if (normals == null)
                 {
-                    for(ushort i = 0; i < positions.Length; i++)
+                    for (ushort i = 0; i < positions.Length; i++)
                     {
                         bufferVertices.Add(new BufferVertex(positions[i], Vector3.UnitY, i));
                         vertexIndices.Add(i, i);
@@ -364,18 +409,18 @@ namespace SATools.SAModel.ModelData.GC
                 BufferMesh ProcessMesh(Mesh m)
                 {
                     // setting the material properties according to the parameters
-                    foreach(IParameter param in m.Parameters)
+                    foreach (IParameter param in m.Parameters)
                     {
-                        switch(param.Type)
+                        switch (param.Type)
                         {
                             case ParameterType.VtxAttrFmt:
                                 VtxAttrFmtParameter vaf = (VtxAttrFmtParameter)param;
 
-                                if(vaf.VertexAttribute == VertexAttribute.Tex0 
+                                if (vaf.VertexAttribute == VertexAttribute.Tex0
                                     && (vaf.Unknown & 0xF0) == 0)
                                 {
                                     uvFac = 1 << (vaf.Unknown & 0x7);
-                                    if((vaf.Unknown & 0x8) > 0)
+                                    if ((vaf.Unknown & 0x8) > 0)
                                         uvFac = 1 / uvFac;
                                 }
 
@@ -414,21 +459,21 @@ namespace SATools.SAModel.ModelData.GC
                     List<BufferCorner> corners = new();
                     List<uint> trianglelist = new();
 
-                    foreach(Poly p in m.Polys)
+                    foreach (Poly p in m.Polys)
                     {
                         // inverted culling is done manually in the gc strips, so we have to account for that
                         bool rev = p.Corners[0].PositionIndex != p.Corners[1].PositionIndex;
                         int offset = rev ? 0 : 1;
                         uint[] indices = new uint[p.Corners.Length - offset];
 
-                        for(int i = offset; i < p.Corners.Length; i++)
+                        for (int i = offset; i < p.Corners.Length; i++)
                         {
                             Corner c = p.Corners[i];
                             indices[i - offset] = (uint)corners.Count;
 
                             uint posnrmIndex = c.PositionIndex | ((uint)c.NormalIndex << 16);
 
-                            if(!vertexIndices.TryGetValue(posnrmIndex, out ushort vtxIndex))
+                            if (!vertexIndices.TryGetValue(posnrmIndex, out ushort vtxIndex))
                             {
                                 vtxIndex = (ushort)bufferVertices.Count;
                                 bufferVertices.Add(new(positions[c.PositionIndex], normals?[c.NormalIndex] ?? Vector3.UnitY, vtxIndex));
@@ -440,10 +485,10 @@ namespace SATools.SAModel.ModelData.GC
                         }
 
                         // converting indices to triangles
-                        if(p.Type == PolyType.Triangles)
+                        if (p.Type == PolyType.Triangles)
                         {
                             // gc has inverted culling, dont even ask me
-                            for(int i = 0; i < indices.Length; i += 3)
+                            for (int i = 0; i < indices.Length; i += 3)
                             {
                                 uint index = indices[i];
                                 indices[i] = indices[i + 1];
@@ -452,13 +497,13 @@ namespace SATools.SAModel.ModelData.GC
                             trianglelist.AddRange(indices);
 
                         }
-                        else if(p.Type == PolyType.TriangleStrip)
+                        else if (p.Type == PolyType.TriangleStrip)
                         {
                             uint[] newIndices = new uint[(indices.Length - 2) * 3];
-                            for(int i = 0; i < indices.Length - 2; i++)
+                            for (int i = 0; i < indices.Length - 2; i++)
                             {
                                 int index = i * 3;
-                                if(!rev)
+                                if (!rev)
                                 {
                                     newIndices[index] = indices[i];
                                     newIndices[index + 1] = indices[i + 1];
@@ -482,25 +527,25 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 material.UseAlpha = false;
-                foreach(Mesh m in atc.OpaqueMeshes)
+                foreach (Mesh m in atc.OpaqueMeshes)
                     meshes.Add(ProcessMesh(m));
 
                 material.UseAlpha = true;
                 material.Culling = true;
-                foreach(Mesh m in atc.TransparentMeshes)
+                foreach (Mesh m in atc.TransparentMeshes)
                     meshes.Add(ProcessMesh(m));
 
                 // inject the vertex information into the first mesh
-                for(int i = 0; i < meshes.Count; i++)
+                for (int i = 0; i < meshes.Count; i++)
                 {
                     BufferMesh vtxMesh = meshes[i];
                     meshes[i] = new(bufferVertices.ToArray(), false, vtxMesh.Corners, vtxMesh.TriangleList, vtxMesh.Material);
 
                 }
 
-                if(optimize)
+                if (optimize)
                 {
-                    for(int i = 0; i < meshes.Count; i++)
+                    for (int i = 0; i < meshes.Count; i++)
                         meshes[i].Optimize();
                 }
 
