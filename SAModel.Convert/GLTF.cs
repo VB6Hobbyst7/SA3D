@@ -1,18 +1,17 @@
 ﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData.Animation;
 using SATools.SAArchive;
-using System;
-using SharpGLTF.Schema2;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
+using Color = SATools.SAModel.Structs.Color;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Drawing;
+using SharpGLTF.Schema2;
 using SharpGLTF.Memory;
 using System.IO;
-using SATools.SAModel.Structs;
-using Color = SATools.SAModel.Structs.Color;
 using Colourful;
 
 namespace SATools.SAModel.Convert
@@ -38,6 +37,9 @@ namespace SATools.SAModel.Convert
                 Animations = animations;
             }
         }
+
+        static IColorConverter<LinearRGBColor, RGBColor> converter
+                = new ConverterBuilder().FromLinearRGB().ToRGB(RGBWorkingSpaces.sRGB).Build();
 
         public static Contents Read(string filepath, bool importTextures, float? animationFPS)
             => Read(ModelRoot.Load(filepath), importTextures, animationFPS);
@@ -163,9 +165,6 @@ namespace SATools.SAModel.Convert
         {
             List<BufferMesh> result = new(mesh.Primitives.Count);
 
-            IColorConverter<LinearRGBColor, RGBColor> converter
-                = new ConverterBuilder().FromLinearRGB().ToRGB(RGBWorkingSpaces.sRGB).Build();
-
             foreach(var primitive in mesh.Primitives)
             {
                 // read vertices
@@ -289,7 +288,9 @@ namespace SATools.SAModel.Convert
                 {
                     Vector2 uv = uvArray?[i] ?? default;
                     Vector4 col = colorArray?[i] ?? Vector4.UnitW;
-                    corners[i] = new((ushort)i, new(col.X, col.Y, col.Z, col.W), uv);
+
+                    var linearCol = converter.Convert(new(col.X, col.Y, col.Z));
+                    corners[i] = new((ushort)i, new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
                 }
 
                 // Read indices
