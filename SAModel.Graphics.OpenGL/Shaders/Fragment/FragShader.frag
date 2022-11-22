@@ -9,7 +9,7 @@ in vec3 fragpos;
 in vec3 normal;
 in vec2 uv0;
 in vec4 col0;
-in vec4 weightColor;
+in float weightColor;
 
 uniform sampler2D texture0;
 
@@ -68,6 +68,48 @@ float highlights(vec3 viewDirection)
 	return pow(max(dot(viewDirection, reflectDir), 0.0), exponent);
 }
 
+vec4 calcWeightColor(float weight)
+{
+	float hue = mod(weight * -0.625f + 0.666f, 1.0f) * 6f;
+    int index = int(hue);
+    float ff = hue - index;
+    float q = 1.0f - ff;
+
+	vec4 result = vec4(0,0,0,1);
+	if(index == 0)
+	{
+		result.r = 1.0;	
+		result.g = ff;
+	}
+	else if(index == 1)
+	{
+		result.r = q;
+		result.g = 1.0;	
+	}
+	else if(index == 2)
+	{
+		result.g = 1.0;	
+		result.b = ff;
+	}
+	else if(index == 3)
+	{
+		result.g = q;
+		result.b = 1.0;	
+	}
+	else if(index == 4)
+	{
+		result.b = 1.0;	
+		result.r = ff;
+	}
+	else if(index == 5)
+	{
+		result.b = q;
+		result.r = 1.0;	
+	}
+
+	return result;
+}
+
 void main()
 {
 	vec4 col = vec4(0);
@@ -79,7 +121,7 @@ void main()
 	else if(lightingMode == TEXCOORDS)
 		col = vec4(mod(uv0, 1), 1, 1);
 	else if(lightingMode == WEIGHTS)
-		col = weightColor;
+		col = calcWeightColor(weightColor);
 	else if(lightingMode == TEXTURES)
 		col = texture(texture0, uv0);
 	else if(lightingMode == Culling)

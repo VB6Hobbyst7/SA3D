@@ -17,9 +17,9 @@ namespace SATools.SAModel.Graphics.APIAccess
         public readonly Vector3 normal;
         public readonly Color color;
         public readonly Vector2 uv;
-        public readonly Color weightColor;
+        public readonly float weightColor;
 
-        public CacheBuffer(Vector3 position, Vector3 normal, Color color, Vector2 uv, Color weightColor)
+        public CacheBuffer(Vector3 position, Vector3 normal, Color color, Vector2 uv, float weightColor)
         {
             this.position = position;
             this.normal = normal;
@@ -108,22 +108,22 @@ namespace SATools.SAModel.Graphics.APIAccess
         {
             public Vector4 position;
             public Vector3 normal;
-            public Color weightColor;
+            public float weightColor;
 
             public Vector3 V3Position => new(position.X, position.Y, position.Z);
 
-            public CachedVertex(Vector4 position, Vector3 normal, Color weightColor)
+            public CachedVertex(Vector4 position, Vector3 normal)
             {
                 this.position = position;
                 this.normal = normal;
-                this.weightColor = weightColor;
+                this.weightColor = 0;
             }
 
             public CachedVertex(BufferVertex vtx)
             {
                 position = new(vtx.Position, 1);
                 normal = vtx.Normal;
-                weightColor = weightColors[0];
+                weightColor = 0;
             }
 
             public override string ToString()
@@ -184,13 +184,6 @@ namespace SATools.SAModel.Graphics.APIAccess
                         Vector3 nrm = Vector3.TransformNormal(vtx.Normal, weightnormal) * vtx.Weight;
 
                         int index = vtx.Index + mesh.VertexWriteOffset;
-                        int weight = 0;
-
-                        if(active)
-                        {
-                            weight = (int)(vtx.Weight * 63.0f);
-
-                        }
 
                         if(mesh.ContinueWeight)
                         {
@@ -199,7 +192,12 @@ namespace SATools.SAModel.Graphics.APIAccess
                         }
                         else
                         {
-                            Vertices[index] = new(pos, nrm, weightColors[weight]);
+                            Vertices[index] = new(pos, nrm);
+                        }
+
+                        if(active)
+                        {
+                            Vertices[index].weightColor = vtx.Weight;
                         }
                     }
                 }

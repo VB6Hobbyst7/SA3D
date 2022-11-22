@@ -488,7 +488,8 @@ namespace SATools.SAModel.ObjData
                     ModelData.BASIC.BasicAttachConverter.ConvertModelToBasic(this, optimize, ignoreWeights, forceUpdate);
                     break;
                 case AttachFormat.CHUNK:
-                    throw new NotImplementedException();
+                    ModelData.CHUNK.ChunkAttachConverter.ConvertModelToChunk(this, optimize, forceUpdate);
+                    break;
                 case AttachFormat.GC:
                     ModelData.GC.GCAttachConverter.ConvertModelToGC(this, optimize, ignoreWeights, forceUpdate);
                     break;

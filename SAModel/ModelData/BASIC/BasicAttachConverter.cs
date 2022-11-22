@@ -21,12 +21,12 @@ namespace SATools.SAModel.ModelData.BASIC
             if (model.AttachFormat == AttachFormat.BASIC && !forceUpdate)
                 return;
 
-            var weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model);
+            var weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model, true);
 
-            ConvertModelToBasic(model, weightedMeshes, optimize, ignoreWeights);
+            ConvertWeightedToBasic(model, weightedMeshes, optimize, ignoreWeights);
         }
 
-        public static void ConvertModelToBasic(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        public static void ConvertWeightedToBasic(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
         {
             if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
@@ -55,7 +55,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
                     Vector4 localPos = Vector4.Transform(vtx.Position, invertedWorldMatrix);
                     positions[i] = new(localPos.X, localPos.Y, localPos.Z);
-                    normals[i] = Vector3.Transform(vtx.Normal, invertedNormalMtx);
+                    normals[i] = Vector3.TransformNormal(vtx.Normal, invertedNormalMtx);
 
                     if (vtx.Normal != Vector3.UnitY)
                     {

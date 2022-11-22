@@ -1,5 +1,7 @@
 ﻿using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ModelData.GC;
 using SATools.SAModel.ObjData;
+using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +100,7 @@ namespace SATools.SAModel.ModelData
         public HashSet<int> DependingNodeIndices { get; }
         public int DependencyRootIndex { get; }
 
+        public int VertexOffset { get; private set; }
 
         private WeightedBufferAttach(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, HashSet<int> dependingNodes, int dependencyRoot)
         {
@@ -106,6 +109,7 @@ namespace SATools.SAModel.ModelData
             Materials = materials;
             DependingNodeIndices = dependingNodes;
             DependencyRootIndex = dependencyRoot;
+            VertexOffset = 0;
         }
 
         public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, NJObject[] nodes)
@@ -126,13 +130,29 @@ namespace SATools.SAModel.ModelData
         }
 
 
+        public bool CheckHasColors()
+        {
+            foreach (var corners in Corners)
+            {
+                foreach (var corner in corners)
+                {
+                    if (corner.Color != Color.White)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }     
+
+
         /// <summary>
         /// Converts buffer meshes to weighted buffer meshes
         /// </summary>
         /// <param name="model">Model to convert</param>
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
-        public static WeightedBufferAttach[] ToWeightedBuffer(NJObject model)
+        public static WeightedBufferAttach[] ToWeightedBuffer(NJObject model, bool combineAtDependencyRoots)
         {
             // checking if all the meshes have buffer information
             NJObject[] nodes = model.GetObjects();
@@ -187,10 +207,17 @@ namespace SATools.SAModel.ModelData
                     {
                         foreach (BufferVertex vtx in bufferMesh.Vertices)
                         {
+                            int index = vtx.Index + bufferMesh.VertexWriteOffset;
+                            if (vtx.Weight == 0.0f)
+                            {
+                                if(!bufferMesh.ContinueWeight)
+                                    cache[index] = new(default, default);
+                                continue;
+                            }
+
                             Vector4 pos = Vector4.Transform(vtx.Position, worldMatrix) * vtx.Weight;
                             Vector3 nrm = Vector3.TransformNormal(vtx.Normal, normalMtx) * vtx.Weight;
 
-                            int index = vtx.Index + bufferMesh.VertexWriteOffset;
 
                             if (bufferMesh.ContinueWeight)
                             {
@@ -239,6 +266,11 @@ namespace SATools.SAModel.ModelData
                 {
                     result.Add(WeightedBufferAttach.Create(vertices.ToArray(), corners.ToArray(), materials.ToArray(), nodes));
                 }
+            }
+
+            if(!combineAtDependencyRoots)
+            {
+                return result.ToArray();
             }
 
             // check if any of the new attaches are rooted to the same node, and then combine those
@@ -352,7 +384,7 @@ namespace SATools.SAModel.ModelData
                 {
                     (var posmtx, var nrmmtx, var list) = matrices[0];
                     var pos = Vector3.Transform(new(v.Position.X, v.Position.Y, v.Position.Z), posmtx);
-                    var nrm = Vector3.Transform(v.Normal, nrmmtx);
+                    var nrm = Vector3.TransformNormal(v.Normal, nrmmtx);
 
                     list.Add(new BufferVertex(pos, nrm, vIndex));
                 }
@@ -362,7 +394,7 @@ namespace SATools.SAModel.ModelData
                     {
                         (var posmtx, var nrmmtx, var list) = matrices[index];
                         var pos = Vector3.Transform(new(v.Position.X, v.Position.Y, v.Position.Z), posmtx);
-                        var nrm = Vector3.Transform(v.Normal, nrmmtx);
+                        var nrm = Vector3.TransformNormal(v.Normal, nrmmtx);
 
                         list.Add(new BufferVertex(pos, nrm, vIndex, weight));
                     }
@@ -518,5 +550,71 @@ namespace SATools.SAModel.ModelData
             return 0;
         }
 
+        /// <summary>
+        /// Checks for any vertex overlaps in the models and sets their vertex offset accordingly
+        /// </summary>
+        /// <param name="attaches"></param>
+        public static void PlanVertexOffsets(WeightedBufferAttach[] attaches)
+        {
+            int nodeCount = attaches.Max(x => x.DependingNodeIndices.Max()) + 1;
+            List<(int start, int end)>[] ranges = new List<(int start, int end)>[nodeCount];
+            for (int i = 0; i < nodeCount; i++)
+                ranges[i] = new();
+
+            foreach(WeightedBufferAttach wba in attaches)
+            {
+                int startNode = wba.DependingNodeIndices.Min();
+                int endNode = wba.DependingNodeIndices.Max();
+                HashSet<(int start, int end)> blocked = new();
+
+                for(int i = startNode; i <= endNode; i++)
+                {
+                    foreach (var r in ranges[i])
+                        blocked.Add(r);
+                }
+
+                int lowestAvailableStart = 0xFFFF;
+
+                if(blocked.Count == 0)
+                {
+                    lowestAvailableStart = 0;
+                }
+                else
+                {
+                    foreach(var (blockedStart, blockedEnd) in blocked)
+                    {
+                        if (blockedEnd >= lowestAvailableStart)
+                            continue;
+
+                        int checkStart = blockedEnd;
+                        int checkEnd = checkStart + wba.Vertices.Length;
+                        bool fits = true;
+                        foreach(var cr in blocked)
+                        {
+                            if(!(cr.start > checkEnd || cr.end < checkStart))
+                            {
+                                fits = false;
+                                break;
+                            }
+                        }
+
+                        if(fits)
+                        {
+                            lowestAvailableStart = blockedEnd;
+                        }
+                    }
+                }
+
+                int lowestAvailableEnd = lowestAvailableStart + wba.Vertices.Length;
+
+
+                for (int i = startNode; i <= endNode; i++)
+                {
+                    ranges[i].Add((lowestAvailableStart, lowestAvailableEnd));
+                }
+
+                wba.VertexOffset = lowestAvailableStart;
+            }
+        }
     }
 }

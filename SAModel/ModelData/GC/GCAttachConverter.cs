@@ -1,5 +1,4 @@
-﻿using SATools.SAModel.ModelData.BASIC;
-using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
@@ -22,12 +21,12 @@ namespace SATools.SAModel.ModelData.GC
             if (model.AttachFormat == AttachFormat.GC && !forceUpdate)
                 return;
 
-            WeightedBufferAttach[] weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model);
+            WeightedBufferAttach[] weightedMeshes = WeightedBufferAttach.ToWeightedBuffer(model, true);
 
-            ConvertModelToGC(model, weightedMeshes, optimize, ignoreWeights);
+            ConvertWeightedToGC(model, weightedMeshes, optimize, ignoreWeights);
         }
 
-        public static void ConvertModelToGC(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        public static void ConvertWeightedToGC(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
         {
             if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {

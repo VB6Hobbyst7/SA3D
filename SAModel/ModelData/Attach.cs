@@ -235,7 +235,7 @@ namespace SATools.SAModel.ModelData
 
         public virtual void RecalculateBounds()
         {
-            Vector3[] points = MeshData.SelectMany(x => x.Vertices.Select(y => y.Position)).ToArray();
+            Vector3[] points = MeshData.Where(x => x.Vertices != null).SelectMany(x => x.Vertices.Select(y => y.Position)).ToArray();
             MeshBounds = Bounds.FromPoints(points);
         }
 

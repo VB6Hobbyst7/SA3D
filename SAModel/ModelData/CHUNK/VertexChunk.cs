@@ -11,7 +11,7 @@ namespace SATools.SAModel.ModelData.CHUNK
     /// <summary>
     /// Single vertex of a vertex chunk
     /// </summary>
-    public struct ChunkVertex
+    public struct ChunkVertex : IEquatable<ChunkVertex>
     {
         /// <summary>
         /// Local position of the vertex
@@ -44,7 +44,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         public ushort Index
         {
             get => (ushort)(Attributes & 0xFFFF);
-            set => Attributes = (Attributes & ~0xFFFFu) | Index;
+            set => Attributes = (Attributes & ~0xFFFFu) | value;
         }
 
         /// <summary>
@@ -54,6 +54,14 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             get => ((Attributes >> 16) & 0xFFu) / 255f;
             set => Attributes = (Attributes & ~0xFF0000u) | (((uint)(value * 255)) << 16);
+        }
+
+        public ChunkVertex(Vector3 position, Vector3 normal) : this()
+        {
+            Position = position;
+            Normal = normal;
+            Attributes = 0;
+            Weight = 1;
         }
 
         public ChunkVertex(Vector3 position, Vector3 normal, uint attribs) : this()
@@ -81,6 +89,25 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         public override string ToString()
             => $"{{ {Position.X: 0.000;-0.000}, {Position.Y: 0.000;-0.000}, {Position.Z: 0.000;-0.000} }}, {{ {Normal.X: 0.000;-0.000}, {Normal.Y: 0.000;-0.000}, {Normal.Z: 0.000;-0.000} }} : {Index}, {Weight:F3}";
+
+        public override bool Equals(object obj)
+        {
+            return obj is ChunkVertex vertex &&
+                   Position.Equals(vertex.Position) &&
+                   Normal.Equals(vertex.Normal) &&
+                   Diffuse.Equals(vertex.Diffuse) &&
+                   Specular.Equals(vertex.Specular) &&
+                   Attributes == vertex.Attributes &&
+                   Index == vertex.Index &&
+                   Weight == vertex.Weight;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Position, Normal, Diffuse, Specular, Attributes, Index, Weight);
+        }
+
+        public bool Equals(ChunkVertex other) => Equals(other);
     }
 
     /// <summary>
@@ -106,7 +133,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Offset that gets added to every index in the vertices
         /// </summary>
-        public ushort IndexOffset { get; }
+        public ushort IndexOffset { get; set; }
 
         /// <summary>
         /// Whether the chunk has weighted vertex data

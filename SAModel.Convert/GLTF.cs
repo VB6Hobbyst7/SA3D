@@ -71,8 +71,10 @@ namespace SATools.SAModel.Convert
             }
 
             NJObject root;
+            bool extraRoot = false;
             if(roots.Count > 1)
             {
+                extraRoot = true;
                 root = new NJObject()
                 {
                     Name = "Root"
@@ -91,6 +93,9 @@ namespace SATools.SAModel.Convert
 
             foreach(NJObject njo in objects)
             {
+                if (extraRoot && njo == root)
+                    continue;
+
                 Node node = objectsPairs.First(x => x.Value == njo).Key;
 
                 if(node.Mesh == null)

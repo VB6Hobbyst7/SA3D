@@ -22,6 +22,10 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
         public WeightStatus WeightStatus 
             => Chunk.WeightStatus;
 
+        [DisplayName("Index Offset")]
+        public int IndexOffset
+            => Chunk.IndexOffset;
+
         public ChunkVertex[] Vertices
             => Chunk.Vertices;
 

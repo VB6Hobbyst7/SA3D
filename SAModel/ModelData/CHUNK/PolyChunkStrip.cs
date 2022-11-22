@@ -18,7 +18,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             /// <summary>
             /// Single corner in a strip
             /// </summary>
-            public struct Corner
+            public struct Corner : IEquatable<Corner>
             {
                 /// <summary>
                 /// Vertex Cache index
@@ -55,8 +55,37 @@ namespace SATools.SAModel.ModelData.CHUNK
                 /// </summary>
                 public ushort UserFlag3 { get; set; }
 
+                public override bool Equals(object obj)
+                {
+                    return obj is Corner corner &&
+                           Index == corner.Index &&
+                           Texcoord.Equals(corner.Texcoord) &&
+                           Normal.Equals(corner.Normal) &&
+                           Color.Equals(corner.Color) &&
+                           UserFlag1 == corner.UserFlag1 &&
+                           UserFlag2 == corner.UserFlag2 &&
+                           UserFlag3 == corner.UserFlag3;
+                }
+
+                public override int GetHashCode()
+                {
+                    return HashCode.Combine(Index, Texcoord, Normal, Color, UserFlag1, UserFlag2, UserFlag3);
+                }
+
                 public override string ToString()
                     => $"{Index} : {{ {Texcoord.X: 0.000;-0.000}, {Texcoord.Y: 0.000;-0.000} }}, {Color}";
+
+                bool IEquatable<Corner>.Equals(Corner other) => Equals(other);
+
+                public static bool operator ==(Corner left, Corner right)
+                {
+                    return left.Equals(right);
+                }
+
+                public static bool operator !=(Corner left, Corner right)
+                {
+                    return !(left == right);
+                }
             }
 
             /// <summary>
