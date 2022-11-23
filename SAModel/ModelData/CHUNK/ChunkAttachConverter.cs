@@ -450,6 +450,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 // those that initiate and those that continue
                 List<ChunkVertex> initWeightsVerts = new();
                 List<ChunkVertex> continueWeightsVerts = new();
+                List<ChunkVertex> endWeightsVerts = new();
 
                 for (int i = 0; i < multiWeights.Count; i++)
                 {
@@ -464,6 +465,10 @@ namespace SATools.SAModel.ModelData.CHUNK
                     if (vert.Weights.Min(x => x.Key) == nodeIndex)
                     {
                         initWeightsVerts.Add(chunkVert);
+                    }
+                    else if(vert.Weights.Max(x => x.Key) == nodeIndex)
+                    {
+                        endWeightsVerts.Add(chunkVert);
                     }
                     else
                     {
@@ -487,6 +492,15 @@ namespace SATools.SAModel.ModelData.CHUNK
                             ChunkType.Vertex_VertexNormalNinjaAttributes,
                             WeightStatus.Middle, 0,
                             continueWeightsVerts.ToArray()));
+                }
+
+                if (endWeightsVerts.Count > 0)
+                {
+                    chunks.Add(
+                        new VertexChunk(
+                            ChunkType.Vertex_VertexNormalNinjaAttributes,
+                            WeightStatus.End, 0,
+                            endWeightsVerts.ToArray()));
                 }
 
                 vertexChunks.Add((nodeIndex, chunks.ToArray()));
