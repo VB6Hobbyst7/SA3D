@@ -1,52 +1,52 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-	  <OutputType>Library</OutputType>
-	  <UseWPF>true</UseWPF>
-	  <AssemblyName>SAModel.Graphics</AssemblyName>
-	  <RootNamespace>SATools.SAModel.Graphics</RootNamespace>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	  <DebugType>embedded</DebugType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<OutputType>Library</OutputType>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>SAModel.Graphics</AssemblyName>
+		<RootNamespace>SATools.SAModel.Graphics</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
 
 
-  <ItemGroup>
-    <None Remove="debugFont.ttf" />
-    <None Remove="Sphere.bfmdl" />
-    <None Remove="Sphere.bufmdl" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="debugFont.ttf" />
+		<None Remove="Sphere.bfmdl" />
+		<None Remove="Sphere.bufmdl" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SAArchive\SAArchive.csproj" />
-    <ProjectReference Include="..\SACommon\SACommon.csproj" />
-    <ProjectReference Include="..\SAModel\SAModel.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SAArchive\SAArchive.csproj" />
+		<ProjectReference Include="..\SACommon\SACommon.csproj" />
+		<ProjectReference Include="..\SAModel\SAModel.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="debugFont.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Sphere.bfmdl" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="debugFont.ttf">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Sphere.bfmdl" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Settings1.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings1.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Properties\Settings1.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings1.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="Properties\Settings1.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings1.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="Properties\Settings1.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings1.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 
 </Project>

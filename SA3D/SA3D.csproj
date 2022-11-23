@@ -1,33 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <RootNamespace>SATools.SA3D</RootNamespace>
-    <StartupObject>SATools.SA3D.Program</StartupObject>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
-	<DebugType>embedded</DebugType>
-	<Version>0.2.6</Version>
-	<Authors>Justin113D</Authors>
-	<Company>X-Hax</Company>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>SATools.SA3D</RootNamespace>
+		<StartupObject>SATools.SA3D.Program</StartupObject>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<ApplicationIcon>Icons\logo.ico</ApplicationIcon>
+		<DebugType>embedded</DebugType>
+		<Version>0.2.6</Version>
+		<Authors>Justin113D</Authors>
+		<Company>X-Hax</Company>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+		<PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SAArchive\SAArchive.csproj" />
-    <ProjectReference Include="..\SAModel.Convert\SAModel.Convert.csproj" />
-    <ProjectReference Include="..\SAModel.Graphics.OpenGL\SAModel.Graphics.OpenGL.csproj" />
-    <ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
-    <ProjectReference Include="..\SAModel\SAModel.csproj" />
-    <ProjectReference Include="..\SAWPF\SAWPF.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SAArchive\SAArchive.csproj" />
+		<ProjectReference Include="..\SAModel.Convert\SAModel.Convert.csproj" />
+		<ProjectReference Include="..\SAModel.Graphics.OpenGL\SAModel.Graphics.OpenGL.csproj" />
+		<ProjectReference Include="..\SAModel.Graphics\SAModel.Graphics.csproj" />
+		<ProjectReference Include="..\SAModel\SAModel.csproj" />
+		<ProjectReference Include="..\SAWPF\SAWPF.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Resource Include="Icons\**">
@@ -36,14 +36,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Icons\logo.ico" />
-	  <None Remove="Icons\RecordDot_redNoHalo_16x.png" />
-	  <None Remove="Icons\Refresh_16x.png" />
-	  <None Remove="Icons\TreeIcons\Animation.png" />
-	  <None Remove="Icons\TreeIcons\Model.png" />
-	  <None Remove="Icons\TreeIcons\Object.png" />
-	  <None Remove="Icons\TreeIcons\Texture.png" />
-	  <None Remove="Icons\TreeIcons\Textures.png" />
+		<None Remove="Icons\logo.ico" />
+		<None Remove="Icons\RecordDot_redNoHalo_16x.png" />
+		<None Remove="Icons\Refresh_16x.png" />
+		<None Remove="Icons\TreeIcons\Animation.png" />
+		<None Remove="Icons\TreeIcons\Model.png" />
+		<None Remove="Icons\TreeIcons\Object.png" />
+		<None Remove="Icons\TreeIcons\Texture.png" />
+		<None Remove="Icons\TreeIcons\Textures.png" />
 	</ItemGroup>
 
 </Project>

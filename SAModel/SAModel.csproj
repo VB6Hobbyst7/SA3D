@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>SATools.SAModel</RootNamespace>
-	  <AssemblyName>SAModel</AssemblyName>
-	  <DebugType>embedded</DebugType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<RootNamespace>SATools.SAModel</RootNamespace>
+		<AssemblyName>SAModel</AssemblyName>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SACommon\SACommon.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SACommon\SACommon.csproj" />
+	</ItemGroup>
 
 </Project>

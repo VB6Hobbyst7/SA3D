@@ -222,7 +222,7 @@ namespace SATools.SAArchive
                 }
 
 
-                IImage image = Pfim.Pfim.FromStream(str, new PfimConfig());
+                IImage image = Pfim.Pfimage.FromStream(str, new PfimConfig());
                 PixelFormat pxformat = image.Format switch
                 {
                     Pfim.ImageFormat.Rgba32 => PixelFormat.Format32bppArgb,

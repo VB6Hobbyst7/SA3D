@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0-windows</TargetFramework>
+		<TargetFramework>net7.0-windows</TargetFramework>
 		<OutputType>Library</OutputType>
 		<UseWPF>true</UseWPF>
 		<RootNamespace>SATools.SAModel.Graphics.OpenGL</RootNamespace>
@@ -13,8 +13,8 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="OpenTK" Version="4.6.7" />
-		<PackageReference Include="OpenTK.GLWpfControl" Version="4.1.0" />
+		<PackageReference Include="OpenTK" Version="4.7.5" />
+		<PackageReference Include="OpenTK.GLWpfControl" Version="4.2.2" />
 	</ItemGroup>
 
 	<ItemGroup>

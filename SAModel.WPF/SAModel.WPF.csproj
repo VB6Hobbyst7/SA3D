@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <RootNamespace>SATools.SAModel.WPF</RootNamespace>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>SATools.SAModel.WPF</RootNamespace>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Inspector\XAML\UserControls\**" />
-    <EmbeddedResource Remove="Inspector\XAML\UserControls\**" />
-    <None Remove="Inspector\XAML\UserControls\**" />
-    <Page Remove="Inspector\XAML\UserControls\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Inspector\XAML\UserControls\**" />
+		<EmbeddedResource Remove="Inspector\XAML\UserControls\**" />
+		<None Remove="Inspector\XAML\UserControls\**" />
+		<Page Remove="Inspector\XAML\UserControls\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SAModel\SAModel.csproj" />
-    <ProjectReference Include="..\SAWPF\SAWPF.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SAModel\SAModel.csproj" />
+		<ProjectReference Include="..\SAWPF\SAWPF.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Gu.Wpf.NumericInput" Version="0.5.5" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Gu.Wpf.NumericInput" Version="0.5.5" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+		<PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
+	</ItemGroup>
 
 </Project>
