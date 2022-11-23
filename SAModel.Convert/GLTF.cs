@@ -60,6 +60,7 @@ namespace SATools.SAModel.Convert
 
             // lets first set up the object hierarchy
             Dictionary<Node, NJObject> objectsPairs = new();
+            Dictionary<NJObject, Node> invertedObjectsPairs = new();
 
             List<NJObject> roots = new();
             foreach(var n in gltfModel.LogicalNodes)
@@ -69,6 +70,14 @@ namespace SATools.SAModel.Convert
                     roots.Add(FromNode(n, objectsPairs));
                 }
             }
+
+            foreach(var n in objectsPairs)
+            {
+                invertedObjectsPairs.Add(n.Value, n.Key);
+            }
+
+            if (roots.Count == 0)
+                throw new InvalidDataException("GLTF contains no nodes");
 
             NJObject root;
             bool extraRoot = false;
@@ -96,7 +105,7 @@ namespace SATools.SAModel.Convert
                 if (extraRoot && njo == root)
                     continue;
 
-                Node node = objectsPairs.First(x => x.Value == njo).Key;
+                Node node = invertedObjectsPairs[njo];
 
                 if(node.Mesh == null)
                     continue;
