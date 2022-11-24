@@ -16,7 +16,7 @@ namespace SATools.SAModel.ObjData
     /// Hierarchy object for every adventure game
     /// </summary>
     [Serializable]
-    public class NJObject
+    public class ObjectNode
     {
         private Vector3 _position;
 
@@ -43,7 +43,7 @@ namespace SATools.SAModel.ObjData
             get => _attach;
             set
             {
-                foreach (NJObject o in GetObjects())
+                foreach (ObjectNode o in GetObjects())
                 {
                     if (o == this || o.Attach == null)
                         continue;
@@ -64,7 +64,7 @@ namespace SATools.SAModel.ObjData
                 if (Attach != null)
                     return Attach.Format;
 
-                foreach (NJObject obj in GetObjects())
+                foreach (ObjectNode obj in GetObjects())
                 {
                     if (obj.Attach == null)
                         continue;
@@ -131,12 +131,12 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// The objects parent in the hierarchy
         /// </summary>
-        public NJObject Parent { get; private set; }
+        public ObjectNode Parent { get; private set; }
 
         /// <summary>
         /// Returns the Sibling of this object. returns null if it has no sibling
         /// </summary>
-        private NJObject Sibling
+        private ObjectNode Sibling
         {
             get
             {
@@ -150,12 +150,12 @@ namespace SATools.SAModel.ObjData
             }
         }
 
-        private List<NJObject> _children;
+        private List<ObjectNode> _children;
 
         /// <summary>
         /// Children objects in the hierarchy
         /// </summary>
-        public ReadOnlyCollection<NJObject> Children { get; }
+        public ReadOnlyCollection<ObjectNode> Children { get; }
 
         public int ChildCount
             => _children.Count;
@@ -184,7 +184,7 @@ namespace SATools.SAModel.ObjData
             {
                 if (Attach?.HasWeight == true)
                     return true;
-                foreach (NJObject obj in _children)
+                foreach (ObjectNode obj in _children)
                     if (obj.HasWeight)
                         return true;
                 return false;
@@ -226,16 +226,16 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="index">Child index</param>
         /// <returns></returns>
-        public NJObject this[int index]
+        public ObjectNode this[int index]
             => _children[index];
 
         /// <summary>
         /// Creates an emty object
         /// </summary>
-        public NJObject()
+        public ObjectNode()
         {
             Name = "object_" + GenerateIdentifier();
-            _children = new List<NJObject>();
+            _children = new List<ObjectNode>();
             Children = new(_children);
         }
 
@@ -243,7 +243,7 @@ namespace SATools.SAModel.ObjData
         /// Creates an empty object and sets its parent
         /// </summary>
         /// <param name="Parent"></param>
-        public NJObject(NJObject Parent) : this()
+        public ObjectNode(ObjectNode Parent) : this()
         {
             if (Parent == null)
                 return;
@@ -280,10 +280,10 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels">C struct labels</param>
         /// <param name="attaches">Already read attaches</param>
         /// <returns></returns>
-        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
+        public static ObjectNode Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
             => Read(source, address, imageBase, format, DX, null, labels, attaches);
 
-        private static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, NJObject parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
+        private static ObjectNode Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, ObjectNode parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             string name = labels.ContainsKey(address) ? labels[address] : "object_" + address.ToString("X8");
 
@@ -315,7 +315,7 @@ namespace SATools.SAModel.ObjData
             Vector3 rotation = Vector3Extensions.Read(source, ref address, IOType.BAMS32);
             Vector3 scale = Vector3Extensions.Read(source, ref address, IOType.Float);
 
-            NJObject result = new(parent)
+            ObjectNode result = new(parent)
             {
                 Name = name,
                 Attach = atc,
@@ -360,7 +360,7 @@ namespace SATools.SAModel.ObjData
             Scale.Write(writer, IOType.Float);
 
             writer.WriteUInt32(_children.Count == 0 ? 0 : labels.ContainsKey(_children[0].Name) ? labels[_children[0].Name] : throw new NullReferenceException($"Child \"{_children[0].Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
-            NJObject sibling = Sibling;
+            ObjectNode sibling = Sibling;
             writer.WriteUInt32(sibling == null ? 0 : labels.ContainsKey(sibling.Name) ? labels[sibling.Name] : throw new NullReferenceException($"Sibling \"{sibling.Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
 
             labels.AddLabel(Name, address);
@@ -380,7 +380,7 @@ namespace SATools.SAModel.ObjData
             // reserve object space
             uint address = writer.Position + imageBase;
 
-            NJObject[] models = GetObjects();
+            ObjectNode[] models = GetObjects();
             writer.Write(new byte[models.Length * Size]);
             uint modelsEnd = writer.Position;
 
@@ -450,7 +450,7 @@ namespace SATools.SAModel.ObjData
             writer.Write(ChildCount == 0 ? "NULL" : _children[0].Name);
             writer.WriteLine(",");
 
-            NJObject sibling = Sibling;
+            ObjectNode sibling = Sibling;
             writer.Write("Sibling \t");
             writer.WriteLine(sibling == null ? "NULL" : sibling.Name);
 
@@ -516,9 +516,9 @@ namespace SATools.SAModel.ObjData
         /// Returns an array of the entire NjsObject hierarchy starting at this object
         /// </summary>
         /// <returns></returns>
-        public NJObject[] GetObjects()
+        public ObjectNode[] GetObjects()
         {
-            List<NJObject> result = new();
+            List<ObjectNode> result = new();
             GetObjects(result);
             return result.ToArray();
         }
@@ -530,7 +530,7 @@ namespace SATools.SAModel.ObjData
         public int Count()
         {
             int result = 1;
-            foreach (NJObject item in _children)
+            foreach (ObjectNode item in _children)
                 result += item.Count();
             return result;
         }
@@ -542,7 +542,7 @@ namespace SATools.SAModel.ObjData
         public int CountAnimated()
         {
             int result = Animate ? 1 : 0;
-            foreach (NJObject item in _children)
+            foreach (ObjectNode item in _children)
                 result += item.CountAnimated();
             return result;
         }
@@ -554,7 +554,7 @@ namespace SATools.SAModel.ObjData
         public int CountMorph()
         {
             int result = Morph ? 1 : 0;
-            foreach (NJObject item in _children)
+            foreach (ObjectNode item in _children)
                 result += item.CountMorph();
             return result;
         }
@@ -569,17 +569,17 @@ namespace SATools.SAModel.ObjData
             if (Name == name)
                 return true;
 
-            foreach (NJObject item in _children)
+            foreach (ObjectNode item in _children)
                 if (item.ContainsName(name))
                     return true;
 
             return false;
         }
 
-        private void GetObjects(List<NJObject> result)
+        private void GetObjects(List<ObjectNode> result)
         {
             result.Add(this);
-            foreach (NJObject item in _children)
+            foreach (ObjectNode item in _children)
                 result.AddRange(item.GetObjects());
         }
 
@@ -587,7 +587,7 @@ namespace SATools.SAModel.ObjData
         /// Adds an object to the children
         /// </summary>
         /// <param name="child"></param>
-        public void AddChild(NJObject child)
+        public void AddChild(ObjectNode child)
         {
             _children.Add(child);
             child.Parent = this;
@@ -597,9 +597,9 @@ namespace SATools.SAModel.ObjData
         /// Adds a collection of objects to the children
         /// </summary>
         /// <param name="children"></param>
-        public void AddChildren(IEnumerable<NJObject> children)
+        public void AddChildren(IEnumerable<ObjectNode> children)
         {
-            foreach (NJObject child in children)
+            foreach (ObjectNode child in children)
                 AddChild(child);
         }
 
@@ -608,7 +608,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="index"></param>
         /// <param name="child"></param>
-        public void InsertChild(int index, NJObject child)
+        public void InsertChild(int index, ObjectNode child)
         {
             _children.Insert(index, child);
             child.Parent = this;
@@ -618,7 +618,7 @@ namespace SATools.SAModel.ObjData
         /// Removes a child at a specific index
         /// </summary>
         /// <param name="child"></param>
-        public void RemoveChild(NJObject child)
+        public void RemoveChild(ObjectNode child)
         {
             _children.Remove(child);
             child.Parent = null;
@@ -630,7 +630,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="index"></param>
         public void RemoveChildAt(int index)
         {
-            NJObject child = _children[index];
+            ObjectNode child = _children[index];
             _children.RemoveAt(index);
             child.Parent = null;
         }
@@ -640,7 +640,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public void ClearChildren()
         {
-            foreach (NJObject child in _children)
+            foreach (ObjectNode child in _children)
                 child.Parent = null;
             _children.Clear();
         }
@@ -651,11 +651,11 @@ namespace SATools.SAModel.ObjData
         /// Creates a duplicate of the model, which will act as a new sibling to the old model
         /// </summary>
         /// <returns></returns>
-        public NJObject Duplicate()
+        public ObjectNode Duplicate()
         {
-            NJObject result = (NJObject)MemberwiseClone();
+            ObjectNode result = (ObjectNode)MemberwiseClone();
             result.Name += "_Clone";
-            result._children = new List<NJObject>();
+            result._children = new List<ObjectNode>();
             Parent?.AddChild(result);
             return result;
         }

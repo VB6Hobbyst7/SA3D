@@ -6,7 +6,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
 {
     public class VmModelHead : BaseViewModel, ITreeItemData
     {
-        public NJObject ObjectData { get; }
+        public ObjectNode ObjectData { get; }
 
         public TreeItemType ItemType
             => TreeItemType.ModelHead;
@@ -28,7 +28,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         }
 
-        public VmModelHead(NJObject objectData)
+        public VmModelHead(ObjectNode objectData)
         {
             ObjectData = objectData;
         }

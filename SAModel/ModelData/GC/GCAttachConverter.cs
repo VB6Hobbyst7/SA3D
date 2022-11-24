@@ -13,7 +13,7 @@ namespace SATools.SAModel.ModelData.GC
     /// </summary>
     public static class GCAttachConverter
     {
-        public static void ConvertModelToGC(NJObject model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
+        public static void ConvertModelToGC(ObjectNode model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
@@ -26,19 +26,19 @@ namespace SATools.SAModel.ModelData.GC
             ConvertWeightedToGC(model, weightedMeshes, optimize, ignoreWeights);
         }
 
-        public static void ConvertWeightedToGC(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        public static void ConvertWeightedToGC(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
         {
             if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
                 throw new FormatException("Model is weighted, cannot convert to basic format!");
             }
 
-            NJObject[] nodes = model.GetObjects();
+            ObjectNode[] nodes = model.GetObjects();
             GCAttach[] attaches = new GCAttach[nodes.Length];
 
             foreach (var weightedAttach in meshData)
             {
-                NJObject node = nodes[weightedAttach.DependencyRootIndex];
+                ObjectNode node = nodes[weightedAttach.DependencyRootIndex];
 
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
@@ -342,15 +342,15 @@ namespace SATools.SAModel.ModelData.GC
             }
         }
 
-        public static void ConvertModelFromGC(NJObject model, bool optimize = true)
+        public static void ConvertModelFromGC(ObjectNode model, bool optimize = true)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<GCAttach> attaches = new();
-            NJObject[] models = model.GetObjects();
+            ObjectNode[] models = model.GetObjects();
 
-            foreach (NJObject obj in models)
+            foreach (ObjectNode obj in models)
             {
                 if (obj.Attach == null)
                     continue;

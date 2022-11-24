@@ -215,7 +215,7 @@ namespace SATools.SAModel.ModelData
             DependencyRootIndex = dependencyRoot;
         }
 
-        public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, NJObject[] nodes)
+        public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, ObjectNode[] nodes)
         {
             HashSet<int> dependingNodes = new();
 
@@ -255,11 +255,11 @@ namespace SATools.SAModel.ModelData
         /// <param name="model">Model to convert</param>
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
-        public static WeightedBufferAttach[] ToWeightedBuffer(NJObject model, bool combineAtDependencyRoots)
+        public static WeightedBufferAttach[] ToWeightedBuffer(ObjectNode model, bool combineAtDependencyRoots)
         {
             // checking if all the meshes have buffer information
-            NJObject[] nodes = model.GetObjects();
-            foreach (NJObject node in nodes)
+            ObjectNode[] nodes = model.GetObjects();
+            foreach (ObjectNode node in nodes)
             {
                 if (node.Attach == null)
                     continue;
@@ -272,13 +272,13 @@ namespace SATools.SAModel.ModelData
             int[] vertexMap = new int[cache.Length];
 
             // The world matrix for each object
-            Dictionary<NJObject, Matrix4x4> worldMatrices = new();
+            Dictionary<ObjectNode, Matrix4x4> worldMatrices = new();
 
             List<WeightedBufferAttach> result = new();
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                NJObject node = nodes[i];
+                ObjectNode node = nodes[i];
 
                 // get the world matrix
                 Matrix4x4 worldMatrix = node.LocalMatrix;
@@ -437,7 +437,7 @@ namespace SATools.SAModel.ModelData
         }
 
 
-        public static void FromWeightedBuffer(NJObject model, WeightedBufferAttach[] meshData, bool optimize)
+        public static void FromWeightedBuffer(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize)
         {
             List<BufferResult> bufferResults = new();
 
@@ -459,7 +459,7 @@ namespace SATools.SAModel.ModelData
 
             IOffsetableAttachResult.PlanVertexOffsets(bufferResults.ToArray());
 
-            NJObject[] nodes = model.GetObjects();
+            ObjectNode[] nodes = model.GetObjects();
             List<Attach>[] nodeAttaches = new List<Attach>[nodes.Length];
             for (int i = 0; i < nodeAttaches.Length; i++)
                 nodeAttaches[i] = new();
@@ -475,7 +475,7 @@ namespace SATools.SAModel.ModelData
             for (int i = 0; i < nodeAttaches.Length; i++)
             {
                 List<Attach> attaches = nodeAttaches[i];
-                NJObject node = nodes[i];
+                ObjectNode node = nodes[i];
                 if (attaches.Count == 0)
                 {
                     node._attach = null;
@@ -645,9 +645,9 @@ namespace SATools.SAModel.ModelData
         }
 
 
-        private static int GetCommonNodeIndex(NJObject[] nodes, HashSet<int> indices)
+        private static int GetCommonNodeIndex(ObjectNode[] nodes, HashSet<int> indices)
         {
-            Dictionary<NJObject, int> indexMap = new();
+            Dictionary<ObjectNode, int> indexMap = new();
             for (int i = 0; i < nodes.Length; i++)
             {
                 indexMap.Add(nodes[i], i);
@@ -657,7 +657,7 @@ namespace SATools.SAModel.ModelData
 
             foreach (int i in indices)
             {
-                NJObject node = nodes[i];
+                ObjectNode node = nodes[i];
                 while (node != null)
                 {
                     parentIndices[indexMap[node]]++;

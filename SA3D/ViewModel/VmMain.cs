@@ -129,7 +129,7 @@ namespace SATools.SA3D.ViewModel
             switch (mode)
             {
                 case Mode.Model:
-                    NJObject obj = new()
+                    ObjectNode obj = new()
                     {
                         Name = "Root"
                     };
@@ -225,7 +225,7 @@ namespace SATools.SA3D.ViewModel
             GeometryTree.Objects.Add(new VmTreeItem(null, new VmTextureHead(Context.Scene.LandTextureSet)));
         }
 
-        public void InsertModel(NJObject insertRoot, bool insertAtRoot, TextureSet textures, Motion[] animations)
+        public void InsertModel(ObjectNode insertRoot, bool insertAtRoot, TextureSet textures, Motion[] animations)
         {
             if (ApplicationMode == Mode.Model)
             {
@@ -233,7 +233,7 @@ namespace SATools.SA3D.ViewModel
                     && ObjectTree?.Selected.ItemType == TreeItemType.Model
                     && ObjectTree.Selected.Parent.ItemType != TreeItemType.ModelHead)
                 {
-                    ((NJObject)ObjectTree.Selected.Data).AddChild(insertRoot);
+                    ((ObjectNode)ObjectTree.Selected.Data).AddChild(insertRoot);
                 }
                 else
                 {

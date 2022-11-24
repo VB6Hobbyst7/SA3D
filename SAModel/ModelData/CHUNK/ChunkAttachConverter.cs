@@ -100,7 +100,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
         }
 
-        public static void ConvertModelToChunk(NJObject model, bool optimize = true, bool forceUpdate = false)
+        public static void ConvertModelToChunk(ObjectNode model, bool optimize = true, bool forceUpdate = false)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
@@ -113,7 +113,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             ConvertWeightedToChunk(model, weightedMeshes, optimize);
         }
 
-        public static void ConvertWeightedToChunk(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true)
+        public static void ConvertWeightedToChunk(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize = true)
         {
             List<ChunkResult> chunkResults = new();
 
@@ -152,7 +152,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             IOffsetableAttachResult.PlanVertexOffsets(chunkResults.ToArray());
 
-            NJObject[] nodes = model.GetObjects();
+            ObjectNode[] nodes = model.GetObjects();
             List<ChunkAttach>[] nodeChunks = new List<ChunkAttach>[nodes.Length];
             for (int i = 0; i < nodeChunks.Length; i++)
                 nodeChunks[i] = new();
@@ -168,7 +168,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             for (int i = 0; i < nodeChunks.Length; i++)
             {
                 List<ChunkAttach> chunks = nodeChunks[i];
-                NJObject node = nodes[i];
+                ObjectNode node = nodes[i];
                 if (chunks.Count == 0)
                 {
                     node._attach = null;
@@ -667,15 +667,15 @@ namespace SATools.SAModel.ModelData.CHUNK
         }
 
 
-        public static void ConvertModelFromChunk(NJObject model, bool optimize = true)
+        public static void ConvertModelFromChunk(ObjectNode model, bool optimize = true)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<ChunkAttach> attaches = new();
-            NJObject[] models = model.GetObjects();
+            ObjectNode[] models = model.GetObjects();
 
-            foreach (NJObject obj in models)
+            foreach (ObjectNode obj in models)
             {
                 if (obj.Attach == null)
                     continue;

@@ -9,10 +9,10 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
     internal class IVmNJObject : InspectorViewModel
     {
         protected override Type ViewmodelType
-            => typeof(NJObject);
+            => typeof(ObjectNode);
 
-        private NJObject NJObject
-            => (NJObject)Source;
+        private ObjectNode NJObject
+            => (ObjectNode)Source;
 
         [Tooltip("C label of the NJObject Object")]
         public string Name
@@ -22,14 +22,14 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         }
 
         [Tooltip("Parent Object")]
-        public NJObject Parent
+        public ObjectNode Parent
         {
             get => NJObject.Parent;
             set => value.AddChild(NJObject);
         }
 
         [Tooltip("Children objects")]
-        public ReadOnlyCollection<NJObject> Children
+        public ReadOnlyCollection<ObjectNode> Children
             => NJObject.Children;
 
         [Tooltip("Mesh information")]

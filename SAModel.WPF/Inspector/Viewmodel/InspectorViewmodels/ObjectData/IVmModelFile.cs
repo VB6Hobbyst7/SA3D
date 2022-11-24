@@ -24,11 +24,11 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => ModelFile.NJFile;
 
         [Tooltip("The tip of the models object tree")]
-        public NJObject Model
+        public ObjectNode Model
             => ModelFile.Model;
 
         [Tooltip("All objects in hierarchial order")]
-        public NJObject[] Models { get; }
+        public ObjectNode[] Models { get; }
 
         [Tooltip("Animations either embedded or referenced in the file")]
         public ReadOnlyCollection<Motion> Animations

@@ -47,7 +47,7 @@ namespace SATools.SAModel.Graphics
     {
         #region Preparing render meshes
 
-        public static List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels(IReadOnlyCollection<GameTask> tasks, NJObject active, Camera cam, BufferingBridge buffer)
+        public static List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels(IReadOnlyCollection<GameTask> tasks, ObjectNode active, Camera cam, BufferingBridge buffer)
         {
             List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> result = new();
 
@@ -69,12 +69,12 @@ namespace SATools.SAModel.Graphics
         }
 
         private static void PrepareModel(
-            this NJObject obj,
+            this ObjectNode obj,
             List<RenderMesh> opaque,
             List<RenderMesh> transparent,
             BufferingBridge buffer,
             Camera cam,
-            NJObject activeObj,
+            ObjectNode activeObj,
             Matrix4? parentWorld,
             bool weighted)
         {
@@ -106,7 +106,7 @@ namespace SATools.SAModel.Graphics
         }
 
 
-        internal static void GetModelLine(NJObject obj, List<Vector3> lines, Matrix4? parentWorld)
+        internal static void GetModelLine(ObjectNode obj, List<Vector3> lines, Matrix4? parentWorld)
         {
             Matrix4 world = obj.LocalMatrix;
             if (parentWorld.HasValue)

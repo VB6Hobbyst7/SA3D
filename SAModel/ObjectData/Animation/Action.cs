@@ -14,7 +14,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Assigned model
         /// </summary>
-        public NJObject Model { get; }
+        public ObjectNode Model { get; }
 
         /// <summary>
         /// Animation of the model
@@ -26,7 +26,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         /// <param name="model"></param>
         /// <param name="animation"></param>
-        public Action(NJObject model, Motion animation)
+        public Action(ObjectNode model, Motion animation)
         {
             Model = model;
             Animation = animation;
@@ -49,7 +49,7 @@ namespace SATools.SAModel.ObjData.Animation
             if (mdlAddress == 0)
                 throw new FormatException($"Action at {address:X8} does not have a model!");
             mdlAddress -= imagebase;
-            NJObject mdl = NJObject.Read(source, mdlAddress, imagebase, format, DX, labels, attaches);
+            ObjectNode mdl = ObjectNode.Read(source, mdlAddress, imagebase, format, DX, labels, attaches);
 
             uint aniAddress = source.ToUInt32(address + 4);
             if (aniAddress == 0)

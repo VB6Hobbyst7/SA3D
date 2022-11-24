@@ -165,7 +165,7 @@ namespace SATools.SAModel.ObjData
             if (newFormat == Format && !forceUpdate)
                 return;
 
-            NJObject dummyModel = new();
+            ObjectNode dummyModel = new();
 
             void convertAttaches(AttachFormat format, HashSet<Attach> attaches, Dictionary<Attach, Attach> attachMap, HashSet<LandEntry> landentries)
             {
@@ -538,8 +538,8 @@ namespace SATools.SAModel.ObjData
 
             foreach (LandEntryMotion lem in GeometryAnimations)
             {
-                NJObject[] models = lem.Model.GetObjects();
-                foreach (NJObject mdl in models)
+                ObjectNode[] models = lem.Model.GetObjects();
+                foreach (ObjectNode mdl in models)
                 {
                     if (mdl.Attach != null)
                         attaches.Add(mdl.Attach);

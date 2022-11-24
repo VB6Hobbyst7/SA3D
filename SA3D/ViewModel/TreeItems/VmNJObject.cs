@@ -7,7 +7,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
 {
     public class VmNJObject : BaseViewModel, ITreeItemData
     {
-        public NJObject ObjectData { get; }
+        public ObjectNode ObjectData { get; }
 
         #region Transform wrappers
 
@@ -134,7 +134,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public void Select(VmTreeItem parent)
             => VmMain.Context.ActiveNJO = ObjectData;
 
-        public VmNJObject(NJObject objectData)
+        public VmNJObject(ObjectNode objectData)
         {
             ObjectData = objectData;
         }

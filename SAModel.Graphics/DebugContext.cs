@@ -77,7 +77,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// see <see cref="ActiveNJO"/>
         /// </summary>
-        private NJObject _activeNJO;
+        private ObjectNode _activeNJO;
 
         /// <summary>
         /// see <see cref="ActiveLE"/>
@@ -208,7 +208,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Active NJ Object
         /// </summary>
-        public NJObject ActiveNJO
+        public ObjectNode ActiveNJO
         {
             get => _activeNJO;
             set

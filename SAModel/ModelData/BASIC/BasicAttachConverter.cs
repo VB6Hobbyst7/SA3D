@@ -13,7 +13,7 @@ namespace SATools.SAModel.ModelData.BASIC
     /// </summary>
     public static class BasicAttachConverter
     {
-        public static void ConvertModelToBasic(NJObject model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
+        public static void ConvertModelToBasic(ObjectNode model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
@@ -26,19 +26,19 @@ namespace SATools.SAModel.ModelData.BASIC
             ConvertWeightedToBasic(model, weightedMeshes, optimize, ignoreWeights);
         }
 
-        public static void ConvertWeightedToBasic(NJObject model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        public static void ConvertWeightedToBasic(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
         {
             if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
                 throw new FormatException("Model is weighted, cannot convert to GC format!");
             }
 
-            NJObject[] nodes = model.GetObjects();
+            ObjectNode[] nodes = model.GetObjects();
             BasicAttach[] attaches = new BasicAttach[nodes.Length];
 
             foreach (var weightedAttach in meshData)
             {
-                NJObject node = nodes[weightedAttach.DependencyRootIndex];
+                ObjectNode node = nodes[weightedAttach.DependencyRootIndex];
 
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
@@ -173,15 +173,15 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         /// <param name="model">The tip of the model hierarchy to convert</param>
         /// <param name="optimize">Whether the buffer model should be optimized</param>
-        public static void ConvertModelFromBasic(NJObject model, bool optimize = true)
+        public static void ConvertModelFromBasic(ObjectNode model, bool optimize = true)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<BasicAttach> attaches = new();
-            NJObject[] models = model.GetObjects();
+            ObjectNode[] models = model.GetObjects();
 
-            foreach (NJObject obj in models)
+            foreach (ObjectNode obj in models)
             {
                 if (obj.Attach == null)
                     continue;

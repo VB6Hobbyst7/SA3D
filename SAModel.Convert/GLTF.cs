@@ -25,13 +25,13 @@ namespace SATools.SAModel.Convert
 
         public struct Contents
         {
-            public NJObject Root { get; }
+            public ObjectNode Root { get; }
 
             public TextureSet Textures { get; }
 
             public Motion[] Animations { get; }
 
-            public Contents(NJObject root, TextureSet textures, Motion[] animations)
+            public Contents(ObjectNode root, TextureSet textures, Motion[] animations)
             {
                 Root = root;
                 Textures = textures;
@@ -60,10 +60,10 @@ namespace SATools.SAModel.Convert
             }
 
             // lets first set up the object hierarchy
-            Dictionary<Node, NJObject> objectsPairs = new();
-            Dictionary<NJObject, Node> invertedObjectsPairs = new();
+            Dictionary<Node, ObjectNode> objectsPairs = new();
+            Dictionary<ObjectNode, Node> invertedObjectsPairs = new();
 
-            List<NJObject> roots = new();
+            List<ObjectNode> roots = new();
             foreach (var n in gltfModel.LogicalNodes)
             {
                 if (n.VisualParent == null)
@@ -80,12 +80,12 @@ namespace SATools.SAModel.Convert
             if (roots.Count == 0)
                 throw new InvalidDataException("GLTF contains no nodes");
 
-            NJObject root;
+            ObjectNode root;
             bool extraRoot = false;
             if (roots.Count > 1)
             {
                 extraRoot = true;
-                root = new NJObject()
+                root = new ObjectNode()
                 {
                     Name = "Root"
                 };
@@ -97,12 +97,12 @@ namespace SATools.SAModel.Convert
                 root = roots[0];
             }
 
-            NJObject[] objects = root.GetObjects();
+            ObjectNode[] objects = root.GetObjects();
 
             //Note: not supporting reused meshes
             List<WeightedBufferAttach> weightedAttaches = new();
 
-            foreach (NJObject njo in objects)
+            foreach (ObjectNode njo in objects)
             {
                 if (extraRoot && njo == root)
                     continue;
@@ -152,9 +152,9 @@ namespace SATools.SAModel.Convert
             return new Contents(root, textures, animations);
         }
 
-        private static NJObject FromNode(Node node, Dictionary<Node, NJObject> objects)
+        private static ObjectNode FromNode(Node node, Dictionary<Node, ObjectNode> objects)
         {
-            NJObject result = new();
+            ObjectNode result = new();
             if (string.IsNullOrWhiteSpace(node.Name))
                 result.Name = "Node_" + node.LogicalIndex;
             else
@@ -173,7 +173,7 @@ namespace SATools.SAModel.Convert
             return result;
         }
 
-        private static WeightedBufferAttach FromMesh(Mesh mesh, int[] skinMap, Matrix4x4 meshMatrix, NJObject[] nodes)
+        private static WeightedBufferAttach FromMesh(Mesh mesh, int[] skinMap, Matrix4x4 meshMatrix, ObjectNode[] nodes)
         {
             List<WeightedVertex> vertices = new();
             List<BufferCorner[]> corners = new();

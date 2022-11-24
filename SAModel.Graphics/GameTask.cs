@@ -49,7 +49,7 @@ namespace SATools.SAModel.Graphics
 
         private TextureSet _textureSet;
 
-        public NJObject Model { get; private set; }
+        public ObjectNode Model { get; private set; }
 
         public TextureSet TextureSet
         {
@@ -62,14 +62,14 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        public DisplayTask(NJObject obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? (obj == null ? "New Model" : obj.Name) : name)
+        public DisplayTask(ObjectNode obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? (obj == null ? "New Model" : obj.Name) : name)
         {
             Model = obj ?? throw new ArgumentNullException("New model cannot be null!");
             Model.ConvertAttachFormat(AttachFormat.Buffer, true, false);
             TextureSet = textureSet;
         }
 
-        public void ReplaceModel(NJObject newModel)
+        public void ReplaceModel(ObjectNode newModel)
         {
             Model = newModel ?? throw new ArgumentNullException("New model cannot be null!");
             Model?.ConvertAttachFormat(AttachFormat.Buffer, true, false);
@@ -98,7 +98,7 @@ namespace SATools.SAModel.Graphics
 
         public float AnimationTimestamp { get; set; }
 
-        public DebugTask(NJObject obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
+        public DebugTask(ObjectNode obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
         {
             Motions = new();
         }
@@ -113,12 +113,12 @@ namespace SATools.SAModel.Graphics
             AnimationTimestamp += (float)(delta * AnimationSpeed * motion.PlaybackSpeed);
             AnimationTimestamp %= motion.Frames - 1;
 
-            NJObject[] models = Model.GetObjects();
+            ObjectNode[] models = Model.GetObjects();
             for (int i = 0; i < models.Length; i++)
             {
                 if (motion.Keyframes.ContainsKey(i))
                 {
-                    NJObject mdl = models[i];
+                    ObjectNode mdl = models[i];
                     if (!mdl.Animate)
                         continue;
                     Frame frame = motion.Keyframes[i].GetFrameAt(AnimationTimestamp);
