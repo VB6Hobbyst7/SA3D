@@ -53,17 +53,50 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
         }
 
-        private readonly struct ChunkResult
+        private readonly struct ChunkResult : IOffsetableAttachResult
         {
-            public readonly int vertexCount;
-            public readonly int[] attachIndices;
-            public readonly ChunkAttach[] attaches;
+            public int VertexCount { get; }
+            public int[] AttachIndices { get; }
+            public ChunkAttach[] Attaches { get; }
+
+            Attach[] IOffsetableAttachResult.Attaches => Attaches;
 
             public ChunkResult(int vertexCount, int[] attachIndices, ChunkAttach[] attaches)
             {
-                this.vertexCount = vertexCount;
-                this.attachIndices = attachIndices;
-                this.attaches = attaches;
+                VertexCount = vertexCount;
+                AttachIndices = attachIndices;
+                Attaches = attaches;
+            }
+
+            public void ModifyVertexOffset(int offset)
+            {
+                foreach (ChunkAttach attach in Attaches)
+                {
+                    if (attach.VertexChunks != null)
+                    {
+                        foreach (VertexChunk vtx in attach.VertexChunks)
+                        {
+                            vtx.IndexOffset = (ushort)(vtx.IndexOffset + offset);
+                        }
+                    }
+
+                    if (attach.PolyChunks != null)
+                    {
+                        foreach (PolyChunk poly in attach.PolyChunks)
+                        {
+                            if (poly is not PolyChunkStrip stripChunk)
+                                continue;
+
+                            foreach (var strip in stripChunk.Strips)
+                            {
+                                for (int i = 0; i < strip.Corners.Length; i++)
+                                {
+                                    strip.Corners[i].Index = (ushort)(strip.Corners[i].Index + offset);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -117,7 +150,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 chunkResults.Add(results);
             }
 
-            PlanVertexOffsets(chunkResults);
+            IOffsetableAttachResult.PlanVertexOffsets(chunkResults.ToArray());
 
             NJObject[] nodes = model.GetObjects();
             List<ChunkAttach>[] nodeChunks = new List<ChunkAttach>[nodes.Length];
@@ -126,9 +159,9 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             foreach(ChunkResult cr in chunkResults)
             {
-                for(int i = 0; i < cr.attachIndices.Length; i++)
+                for(int i = 0; i < cr.AttachIndices.Length; i++)
                 {
-                    nodeChunks[cr.attachIndices[i]].Add(cr.attaches[i]);
+                    nodeChunks[cr.AttachIndices[i]].Add(cr.Attaches[i]);
                 }
             }
 
@@ -213,9 +246,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                         };
 
                         var vertex = wba.Vertices[bc.VertexIndex];
-                        Vector3 position = new(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
-
-                        colorVertices.Add(new(position, bc.Color, Color.White));
+                        colorVertices.Add(new(vertex.Position, bc.Color, Color.White));
                     }
                     cornerSets[i] = corners;
                 }
@@ -324,7 +355,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             for(int i = 0; i < sortedVertices.Length; i++)
             {
                 var vert = sortedVertices[i];
-                if(vert.index != currentNodeIndex)
+                if(vert.vert.nodeIndex != currentNodeIndex)
                 {
                     if(chunkVertices.Count > 0)
                     {
@@ -337,7 +368,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                     currentVertexOffset = (ushort)i;
                     chunkVertices.Clear();
-                    currentNodeIndex = vert.index;
+                    currentNodeIndex = vert.vert.nodeIndex;
                 }
 
                 chunkVertices.Add(new(vert.vert.position, vert.vert.color, Color.White));
@@ -557,7 +588,20 @@ namespace SATools.SAModel.ModelData.CHUNK
         private static PolyChunk[] CreateStripChunk(PolyChunkStrip.Strip.Corner[] corners, BufferMaterial material)
         {
             (PolyChunkStrip.Strip.Corner[] distinct, int[] map) = corners.CreateDistinctMap();
-            int[][] stripMaps = Strippifier.Strip(map);
+
+            int[][] stripMaps;
+            if(map == null)
+            {
+                stripMaps = new int[distinct.Length / 3][];
+                for (int i = 0; i < distinct.Length; i += 3)
+                {
+                    stripMaps[i] = new[] { i, i + 1, i + 2 };
+                }
+            }
+            else
+            {
+                stripMaps = Strippifier.Strip(map);
+            }
 
             PolyChunkStrip stripchunk = new((ushort)(corners.Length / 3), 0)
             {
@@ -622,102 +666,6 @@ namespace SATools.SAModel.ModelData.CHUNK
             };
         }
 
-        /// <summary>
-        /// Checks for any vertex overlaps in the models and sets their vertex offset accordingly
-        /// </summary>
-        /// <param name="attaches"></param>
-        private static void PlanVertexOffsets(List<ChunkResult> attaches)
-        {
-            int nodeCount = attaches.Max(x => x.attachIndices.Max()) + 1;
-            List<(int start, int end)>[] ranges = new List<(int start, int end)>[nodeCount];
-            for (int i = 0; i < nodeCount; i++)
-                ranges[i] = new();
-
-            foreach (ChunkResult cr in attaches)
-            {
-                int startNode = cr.attachIndices.Min();
-                int endNode = cr.attachIndices.Max();
-                HashSet<(int start, int end)> blocked = new();
-
-                for (int i = startNode; i <= endNode; i++)
-                {
-                    foreach (var r in ranges[i])
-                        blocked.Add(r);
-                }
-
-                int lowestAvailableStart = 0xFFFF;
-
-                if (blocked.Count == 0)
-                {
-                    lowestAvailableStart = 0;
-                }
-                else
-                {
-                    foreach (var (blockedStart, blockedEnd) in blocked)
-                    {
-                        if (blockedEnd >= lowestAvailableStart)
-                            continue;
-
-                        int checkStart = blockedEnd;
-                        int checkEnd = checkStart + cr.vertexCount;
-                        bool fits = true;
-                        foreach (var checkrange in blocked)
-                        {
-                            if (!(checkrange.start > checkEnd || checkrange.end < checkStart))
-                            {
-                                fits = false;
-                                break;
-                            }
-                        }
-
-                        if (fits)
-                        {
-                            lowestAvailableStart = blockedEnd;
-                        }
-                    }
-                }
-
-                int lowestAvailableEnd = lowestAvailableStart + cr.vertexCount;
-
-
-                for (int i = startNode; i <= endNode; i++)
-                {
-                    ranges[i].Add((lowestAvailableStart, lowestAvailableEnd));
-                }
-
-                if(lowestAvailableStart > 0)
-                {
-                    foreach(ChunkAttach attach in cr.attaches)
-                    {
-                        if(attach.VertexChunks != null)
-                        {
-                            foreach(VertexChunk vtx in attach.VertexChunks)
-                            {
-                                vtx.IndexOffset = (ushort)(vtx.IndexOffset + lowestAvailableStart);
-                            }
-                        }
-
-                        if(attach.PolyChunks != null)
-                        {
-                            foreach(PolyChunk poly in attach.PolyChunks)
-                            {
-                                if (poly is not PolyChunkStrip stripChunk)
-                                    continue;
-
-                                foreach(var strip in stripChunk.Strips)
-                                {
-                                    for(int i = 0; i < strip.Corners.Length; i++)
-                                    {
-                                        strip.Corners[i].Index = (ushort)(strip.Corners[i].Index + lowestAvailableStart);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
 
         public static void ConvertModelFromChunk(NJObject model, bool optimize = true)
         {

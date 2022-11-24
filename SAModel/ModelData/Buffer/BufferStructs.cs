@@ -10,7 +10,7 @@ namespace SATools.SAModel.ModelData.Buffer
     /// <summary>
     /// A point in space with normal direction and weight
     /// </summary>
-    public struct BufferVertex
+    public struct BufferVertex : IEquatable<BufferVertex>
     {
         /// <summary>
         /// Position of the vertex
@@ -104,6 +104,22 @@ namespace SATools.SAModel.ModelData.Buffer
         {
             return Weight != 1 ? $"{Index}: \t{Position}; \t{Normal}" : $"{Index}: \t{Position}; \t{Normal}; \t{Weight}";
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BufferVertex vertex &&
+                   Position.Equals(vertex.Position) &&
+                   Normal.Equals(vertex.Normal) &&
+                   Index == vertex.Index &&
+                   Weight == vertex.Weight;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Position, Normal, Index, Weight);
+        }
+
+        bool IEquatable<BufferVertex>.Equals(BufferVertex other) => Equals(other);
 
         public static BufferVertex operator +(BufferVertex l, BufferVertex r)
         {

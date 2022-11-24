@@ -1,5 +1,4 @@
 ﻿using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ModelData.GC;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
@@ -15,13 +14,13 @@ namespace SATools.SAModel.ModelData
     /// </summary>
     public struct WeightedVertex : IComparable<WeightedVertex>, IEquatable<WeightedVertex>
     {
-        public Vector4 Position { get; set; }
+        public Vector3 Position { get; set; }
 
         public Vector3 Normal { get; set; }
 
         public SortedDictionary<int, float> Weights { get; set; }
 
-        public WeightedVertex(Vector4 position, Vector3 normal)
+        public WeightedVertex(Vector3 position, Vector3 normal)
         {
             Position = position;
             Normal = normal;
@@ -89,18 +88,123 @@ namespace SATools.SAModel.ModelData
         }
     }
 
+    public interface IOffsetableAttachResult
+    {
+        public int VertexCount { get; }
+        public int[] AttachIndices { get; }
+        public Attach[] Attaches { get; }
+
+        public void ModifyVertexOffset(int offset);
+
+        /// <summary>
+        /// Checks for any vertex overlaps in the models and sets their vertex offset accordingly
+        /// </summary>
+        public static void PlanVertexOffsets<T>(T[] attaches) where T : IOffsetableAttachResult
+        {
+            int nodeCount = attaches.Max(x => x.AttachIndices.Max()) + 1;
+            List<(int start, int end)>[] ranges = new List<(int start, int end)>[nodeCount];
+            for (int i = 0; i < nodeCount; i++)
+                ranges[i] = new();
+
+            foreach (IOffsetableAttachResult cr in attaches)
+            {
+                int startNode = cr.AttachIndices.Min();
+                int endNode = cr.AttachIndices.Max();
+                HashSet<(int start, int end)> blocked = new();
+
+                for (int i = startNode; i <= endNode; i++)
+                {
+                    foreach (var r in ranges[i])
+                        blocked.Add(r);
+                }
+
+                int lowestAvailableStart = 0xFFFF;
+
+                if (blocked.Count == 0)
+                {
+                    lowestAvailableStart = 0;
+                }
+                else
+                {
+                    foreach (var (blockedStart, blockedEnd) in blocked)
+                    {
+                        if (blockedEnd >= lowestAvailableStart)
+                            continue;
+
+                        int checkStart = blockedEnd;
+                        int checkEnd = checkStart + cr.VertexCount;
+                        bool fits = true;
+                        foreach (var checkrange in blocked)
+                        {
+                            if (!(checkrange.start > checkEnd || checkrange.end < checkStart))
+                            {
+                                fits = false;
+                                break;
+                            }
+                        }
+
+                        if (fits)
+                        {
+                            lowestAvailableStart = blockedEnd;
+                        }
+                    }
+                }
+
+                int lowestAvailableEnd = lowestAvailableStart + cr.VertexCount;
+
+
+                for (int i = startNode; i <= endNode; i++)
+                {
+                    ranges[i].Add((lowestAvailableStart, lowestAvailableEnd));
+                }
+
+                if (lowestAvailableStart > 0)
+                {
+                    cr.ModifyVertexOffset(lowestAvailableStart);
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Helper methods for generating attaches
     /// </summary>
     public class WeightedBufferAttach
     {
+        private readonly struct BufferResult : IOffsetableAttachResult
+        {
+            public int VertexCount { get; }
+
+            public int[] AttachIndices { get; }
+
+            public Attach[] Attaches { get; }
+
+            public BufferResult(int vertexCount, int[] attachIndices, Attach[] attaches)
+            {
+                VertexCount = vertexCount;
+                AttachIndices = attachIndices;
+                Attaches = attaches;
+            }
+
+
+            public void ModifyVertexOffset(int offset)
+            {
+                foreach(Attach atc in this.Attaches)
+                {
+                    foreach(BufferMesh bm in atc.MeshData)
+                    {
+                        bm.VertexWriteOffset = (ushort)(bm.VertexWriteOffset + offset);
+                        bm.VertexReadOffset = (ushort)(bm.VertexReadOffset + offset);
+                    }
+                }
+            }
+        }
+
         public WeightedVertex[] Vertices { get; }
         public BufferCorner[][] Corners { get; }
         public BufferMaterial[] Materials { get; }
         public HashSet<int> DependingNodeIndices { get; }
         public int DependencyRootIndex { get; }
-
-        public int VertexOffset { get; private set; }
 
         private WeightedBufferAttach(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, HashSet<int> dependingNodes, int dependencyRoot)
         {
@@ -109,7 +213,6 @@ namespace SATools.SAModel.ModelData
             Materials = materials;
             DependingNodeIndices = dependingNodes;
             DependencyRootIndex = dependencyRoot;
-            VertexOffset = 0;
         }
 
         public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, NJObject[] nodes)
@@ -215,7 +318,7 @@ namespace SATools.SAModel.ModelData
                                 continue;
                             }
 
-                            Vector4 pos = Vector4.Transform(vtx.Position, worldMatrix) * vtx.Weight;
+                            Vector3 pos = Vector3.Transform(vtx.Position, worldMatrix) * vtx.Weight;
                             Vector3 nrm = Vector3.TransformNormal(vtx.Normal, normalMtx) * vtx.Weight;
 
 
@@ -333,191 +436,214 @@ namespace SATools.SAModel.ModelData
             return result.ToArray();
         }
 
-        /// <summary>
-        /// Takes (simplified) mesh data and convertes it to working mesh data. <br/>
-        /// Attaches it to the "bones" afterwards. <br/>
-        /// WARNING: May take some time, as it optimizes all data!
-        /// </summary>
-        /// <param name="nodes">All bones sorted by index. [0] has to be the root! bones need to be in hierarchy order</param>
-        /// <param name="vertices">Vertex data</param>
-        /// <param name="displayMeshes">Polygon info</param>
-        public static void FromWeightedBuffer(NJObject[] nodes, Matrix4x4 meshMatrix, WeightedVertex[] vertices, BufferMesh[] displayMeshes)
+
+        public static void FromWeightedBuffer(NJObject model, WeightedBufferAttach[] meshData, bool optimize)
         {
-            // lets optimize our data size a bit;
-            // First, we remove any duplicates
-            WeightedVertex[] distinctVerts = vertices.GetDistinct();
+            List<BufferResult> bufferResults = new();
 
-            // then we sort the vertices; the comparer interface compares
-            // them based on their weight definitions, as this is important
-            Array.Sort(distinctVerts);
-
-            // gotta get the index map to translates the indices on polygons
-            int[] vertexIndexMap = CreateIndexMap(vertices, distinctVerts);
-
-            // now we optimize the display meshes
-            BufferMesh[] optimizedDisplayMeshes = new BufferMesh[displayMeshes.Length + 1];
-            for (int i = 0; i < displayMeshes.Length; i++)
-                optimizedDisplayMeshes[i + 1] = OptimizePolygons(displayMeshes[i], vertexIndexMap);
-
-            // last thing to do: create the buffer meshes
-            // first we gotta get the matrices
-            (Matrix4x4 pos, Matrix4x4 nrm, List<BufferVertex> verts)[] matrices = new (Matrix4x4 pos, Matrix4x4 nrm, List<BufferVertex> verts)[nodes.Length];
-
-            Dictionary<NJObject, Matrix4x4> worldMatrices = new();
-            for (int i = 0; i < nodes.Length; i++)
+            foreach (WeightedBufferAttach wba in meshData)
             {
-                Matrix4x4 nodeMatrix = GetWorldMatrix(nodes[i], worldMatrices);
-                Matrix4x4.Invert(nodeMatrix, out Matrix4x4 NodeMatrixI);
-                Matrix4x4 posMatrix = NodeMatrixI * meshMatrix;
+                BufferResult result;
 
-                Matrix4x4.Invert(posMatrix, out Matrix4x4 posMatrixI);
-                Matrix4x4 nrm = Matrix4x4.Transpose(posMatrixI);
-
-                matrices[i] = (posMatrix, nrm, new());
-            }
-
-            // Now we create the corrected vertex data for each bone
-            ushort vIndex = 0;
-            foreach (var v in distinctVerts)
-            {
-                if (v.Weights.Count == 0)
+                if (wba.DependingNodeIndices.Count > 0)
                 {
-                    (var posmtx, var nrmmtx, var list) = matrices[0];
-                    var pos = Vector3.Transform(new(v.Position.X, v.Position.Y, v.Position.Z), posmtx);
-                    var nrm = Vector3.TransformNormal(v.Normal, nrmmtx);
-
-                    list.Add(new BufferVertex(pos, nrm, vIndex));
+                    result = ConvertWeighted(wba);
                 }
                 else
                 {
-                    foreach ((int index, float weight) in v.Weights)
-                    {
-                        (var posmtx, var nrmmtx, var list) = matrices[index];
-                        var pos = Vector3.Transform(new(v.Position.X, v.Position.Y, v.Position.Z), posmtx);
-                        var nrm = Vector3.TransformNormal(v.Normal, nrmmtx);
-
-                        list.Add(new BufferVertex(pos, nrm, vIndex, weight));
-                    }
+                    result = ConvertWeightless(wba, optimize);
                 }
-                vIndex++;
+
+                bufferResults.Add(result);
             }
 
-            // lastly we create the attaches (and correct
-            // the bone info a bit for optimal meshes)
-            bool initializerDone = false;
-            for (int i = 0; i < nodes.Length; i++)
+            IOffsetableAttachResult.PlanVertexOffsets(bufferResults.ToArray());
+
+            NJObject[] nodes = model.GetObjects();
+            List<Attach>[] nodeAttaches = new List<Attach>[nodes.Length];
+            for (int i = 0; i < nodeAttaches.Length; i++)
+                nodeAttaches[i] = new();
+
+            foreach (BufferResult br in bufferResults)
             {
-                if (matrices[i].verts.Count == 0)
+                for (int i = 0; i < br.AttachIndices.Length; i++)
+                {
+                    nodeAttaches[br.AttachIndices[i]].Add(br.Attaches[i]);
+                }
+            }
+
+            for (int i = 0; i < nodeAttaches.Length; i++)
+            {
+                List<Attach> attaches = nodeAttaches[i];
+                NJObject node = nodes[i];
+                if (attaches.Count == 0)
+                {
+                    node._attach = null;
                     continue;
-
-                var verts = matrices[i].verts;
-                BufferVertex[] vertsArray = null;
-
-                bool isInitializer = initializerDone;
-                if (!initializerDone)
+                }
+                else if (attaches.Count == 1)
                 {
-                    List<BufferVertex> clearVerts = new();
-                    int j = 0;
-                    foreach (var vert in distinctVerts)
+                    node._attach = attaches[0];
+                }
+                else
+                {
+                    List<BufferMesh> meshes = new();
+
+                    foreach (Attach atc in attaches)
                     {
-                        clearVerts.Add(new(default, default, (ushort)j, 0));
-                        j++;
+                        meshes.AddRange(atc.MeshData);
                     }
 
-                    clearVerts.RemoveAll(x => verts.Any(y => y.Index == x.Index));
-                    verts.AddRange(clearVerts);
-                    vertsArray = verts.OrderBy(x => x.Index).ToArray();
-                    initializerDone = true;
+                    node._attach = new Attach(meshes.ToArray());
                 }
-                else
-                    vertsArray = verts.ToArray();
 
-                ushort offset = vertsArray[0].Index;
-                if (offset > 0)
-                    for (int j = 0; j < vertsArray.Length; j++)
-                        vertsArray[j].Index -= offset;
+                // transforming vertices to the nodes local space
 
-                BufferMesh mesh = new(vertsArray, isInitializer, offset);
+                Matrix4x4 worldMatrix = node.GetWorldMatrix();
+                Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
 
-                BufferMesh[] meshes;
-                if (i == nodes.Length - 1)
+                foreach (BufferMesh mesh in node.Attach.MeshData)
                 {
-                    optimizedDisplayMeshes[0] = mesh;
-                    meshes = optimizedDisplayMeshes;
-                }
-                else
-                    meshes = new BufferMesh[] { mesh };
+                    if (mesh.Vertices == null)
+                        continue;
 
-                nodes[i].Attach = new(meshes);
+                    for (int j = 0; j < mesh.Vertices.Length; j++)
+                    {
+                        BufferVertex vert = mesh.Vertices[j];
+                        mesh.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
+                        mesh.Vertices[j].Normal = Vector3.TransformNormal(vert.Normal, invertedWorldMatrix);
+                    }
+
+                }
             }
         }
 
-        /// <summary>
-        /// Optimizes a display mesh
-        /// </summary>
-        /// <param name="original">The original display mesh (will not be altered)</param>
-        /// <param name="vertexIndexMap">A vetex index map, if one exists</param>
-        /// <returns></returns>
-        private static BufferMesh OptimizePolygons(BufferMesh original, int[] vertexIndexMap)
+        private static BufferResult ConvertWeighted(WeightedBufferAttach wba)
         {
-            // First we optimize the corners
-            BufferCorner[] corners;
-            ushort newReadOffset = original.VertexReadOffset;
-
-            // we start by replacing the vertex indices if an index map was passed
-            if (vertexIndexMap != null)
+            List<(int nodeIndex, BufferMesh[])> meshSets = new();
+            foreach (int nodeIndex in wba.DependingNodeIndices.OrderBy(x => x))
             {
-                newReadOffset = (ushort)original.Corners.Min(x => vertexIndexMap[x.VertexIndex]);
-                corners = new BufferCorner[original.Corners.Length];
-                for (int i = 0; i < original.Corners.Length; i++)
+                List<BufferVertex> initVerts = new();
+                List<BufferVertex> continueVerts = new();
+
+                for(int i = 0; i < wba.Vertices.Length; i++)
                 {
-                    BufferCorner corner = original.Corners[i];
-                    corner.VertexIndex = (ushort)(vertexIndexMap[corner.VertexIndex + original.VertexReadOffset] - newReadOffset);
-                    corners[i] = corner;
+                    WeightedVertex wVert = wba.Vertices[i];
+
+                    if (!wVert.Weights.TryGetValue(nodeIndex, out float weight))
+                        continue;
+
+                    BufferVertex vert = new(wVert.Position, wVert.Normal, (ushort)i, weight);
+
+                    if (wVert.Weights.Min(x => x.Key) == nodeIndex)
+                    {
+                        initVerts.Add(vert);
+                    }
+                    else
+                    {
+                        continueVerts.Add(vert);
+                    }
                 }
+
+                List<BufferMesh> vertexMeshes = new();
+
+                if (initVerts.Count > 0)
+                {
+                    vertexMeshes.Add(
+                        new(initVerts.ToArray(),
+                            false,
+                            0));
+                }
+
+                if (continueVerts.Count > 0)
+                {
+                    vertexMeshes.Add(
+                        new(continueVerts.ToArray(),
+                            true,
+                            0));
+                }
+
+                meshSets.Add((nodeIndex, vertexMeshes.ToArray()));
             }
-            else
-                corners = original.Corners;
 
-            // next we remove all duplicates
-            (BufferCorner[] distinctCorners, int[] cornerIndexMap) = corners.CreateDistinctMap();
+            BufferMesh[] polyMeshes = GetPolygonMeshes(wba);
 
-            uint[] triangleVertices = null;
-            if (cornerIndexMap != null)
+            int[] nodeIndices = new int[meshSets.Count];
+            Attach[] attaches = new Attach[meshSets.Count];
+
+            for(int i = 0; i < meshSets.Count - 1; i++)
             {
-                if (original.TriangleList == null)
-                {
-                    triangleVertices = new uint[original.Corners.Length];
-                    for (int i = 0; i < triangleVertices.Length; i++)
-                        triangleVertices[i] = (uint)cornerIndexMap[i];
-                }
-                else
-                {
-                    triangleVertices = new uint[original.TriangleList.Length];
-                    for (int i = 0; i < triangleVertices.Length; i++)
-                        triangleVertices[i] = (uint)cornerIndexMap[original.TriangleList[i]];
-                }
+                (int nodeIndex, BufferMesh[] vertexMeshes) = meshSets[i];
+                nodeIndices[i] = nodeIndex;
+                attaches[i] = new(vertexMeshes);
             }
-            else
-                triangleVertices = original.TriangleList;
 
-            return new(distinctCorners, triangleVertices, original.Material.Clone(), newReadOffset);
+            int lastIndex = meshSets.Count - 1;
+            (int lastNodeIndex, BufferMesh[] lastMeshes) = meshSets[lastIndex];
+            nodeIndices[lastIndex] = lastNodeIndex;
+
+            List<BufferMesh> meshes = new();
+            meshes.AddRange(lastMeshes);
+            meshes.AddRange(polyMeshes);
+            attaches[lastIndex] = new(meshes.ToArray());
+
+            return new(
+                wba.Vertices.Length,
+                nodeIndices,
+                attaches);
         }
 
-        private static Matrix4x4 GetWorldMatrix(NJObject njobject, Dictionary<NJObject, Matrix4x4> worldMatrices)
+        private static BufferResult ConvertWeightless(WeightedBufferAttach wba, bool optimize)
         {
-            if (worldMatrices.TryGetValue(njobject, out Matrix4x4 local))
-                return local;
+            List<BufferMesh> meshes = new();
 
-            local = njobject.LocalMatrix;
+            BufferVertex[] vertices = new BufferVertex[wba.Vertices.Length];
 
-            if (njobject.Parent != null)
-                local *= GetWorldMatrix(njobject.Parent, worldMatrices);
+            for(int i = 0; i < vertices.Length; i++)
+            {
+                WeightedVertex wVert = wba.Vertices[i];
+                vertices[i] = new(wVert.Position, wVert.Normal, (ushort)i);
+            }
 
-            worldMatrices.Add(njobject, local);
+            BufferMesh[] polygonMeshes = GetPolygonMeshes(wba);
 
-            return local;
+            if (optimize)
+            {
+                var (distinctVerts, vertMap) = vertices.CreateDistinctMap();
+                vertices = distinctVerts;
+
+                foreach(BufferMesh polyMesh in polygonMeshes)
+                {
+                    for(int i = 0; i < polyMesh.Corners.Length; i++)
+                    {
+                        polyMesh.Corners[i].VertexIndex = (ushort)vertMap[polyMesh.Corners[i].VertexIndex];
+                    }
+                }
+            }
+
+            meshes.Add(new(vertices, false, 0));
+
+            meshes.AddRange(polygonMeshes);
+
+            return new(
+                vertices.Length, 
+                new int[] { wba.DependencyRootIndex }, 
+                new Attach[] { new(meshes.ToArray()) });
         }
+
+        private static BufferMesh[] GetPolygonMeshes(WeightedBufferAttach wba)
+        {
+            List<BufferMesh> result = new();
+
+            for (int i = 0; i < wba.Corners.Length; i++)
+            {
+                var (distinctCorners, cornerMap) = wba.Corners[i].CreateDistinctMap();
+                result.Add(new(distinctCorners, (uint[])(object)cornerMap, wba.Materials[i], 0));
+            }
+
+            return result.ToArray();
+        }
+
 
         private static int GetCommonNodeIndex(NJObject[] nodes, HashSet<int> indices)
         {
@@ -550,71 +676,5 @@ namespace SATools.SAModel.ModelData
             return 0;
         }
 
-        /// <summary>
-        /// Checks for any vertex overlaps in the models and sets their vertex offset accordingly
-        /// </summary>
-        /// <param name="attaches"></param>
-        public static void PlanVertexOffsets(WeightedBufferAttach[] attaches)
-        {
-            int nodeCount = attaches.Max(x => x.DependingNodeIndices.Max()) + 1;
-            List<(int start, int end)>[] ranges = new List<(int start, int end)>[nodeCount];
-            for (int i = 0; i < nodeCount; i++)
-                ranges[i] = new();
-
-            foreach(WeightedBufferAttach wba in attaches)
-            {
-                int startNode = wba.DependingNodeIndices.Min();
-                int endNode = wba.DependingNodeIndices.Max();
-                HashSet<(int start, int end)> blocked = new();
-
-                for(int i = startNode; i <= endNode; i++)
-                {
-                    foreach (var r in ranges[i])
-                        blocked.Add(r);
-                }
-
-                int lowestAvailableStart = 0xFFFF;
-
-                if(blocked.Count == 0)
-                {
-                    lowestAvailableStart = 0;
-                }
-                else
-                {
-                    foreach(var (blockedStart, blockedEnd) in blocked)
-                    {
-                        if (blockedEnd >= lowestAvailableStart)
-                            continue;
-
-                        int checkStart = blockedEnd;
-                        int checkEnd = checkStart + wba.Vertices.Length;
-                        bool fits = true;
-                        foreach(var cr in blocked)
-                        {
-                            if(!(cr.start > checkEnd || cr.end < checkStart))
-                            {
-                                fits = false;
-                                break;
-                            }
-                        }
-
-                        if(fits)
-                        {
-                            lowestAvailableStart = blockedEnd;
-                        }
-                    }
-                }
-
-                int lowestAvailableEnd = lowestAvailableStart + wba.Vertices.Length;
-
-
-                for (int i = startNode; i <= endNode; i++)
-                {
-                    ranges[i].Add((lowestAvailableStart, lowestAvailableEnd));
-                }
-
-                wba.VertexOffset = lowestAvailableStart;
-            }
-        }
     }
 }

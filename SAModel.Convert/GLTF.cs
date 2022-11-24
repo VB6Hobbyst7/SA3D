@@ -13,6 +13,9 @@ using SharpGLTF.Schema2;
 using SharpGLTF.Memory;
 using System.IO;
 using Colourful;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using SATools.SAModel.ModelData.CHUNK;
+using SATools.SACommon;
 
 namespace SATools.SAModel.Convert
 {
@@ -96,9 +99,10 @@ namespace SATools.SAModel.Convert
                 root = roots[0];
             }
 
-            Dictionary<Mesh, Attach> nonWeightAttaches = new();
-
             NJObject[] objects = root.GetObjects();
+            
+            //Note: not supporting reused meshes
+            List<WeightedBufferAttach> weightedAttaches = new();
 
             foreach(NJObject njo in objects)
             {
@@ -110,32 +114,28 @@ namespace SATools.SAModel.Convert
                 if(node.Mesh == null)
                     continue;
 
-                if(node.Skin == null)
+                int[] skinMap;
+                Matrix4x4 meshMatrix = node.GetWorldMatrix(null, 0);
+
+                if (node.Skin != null)
                 {
-                    if(!nonWeightAttaches.TryGetValue(node.Mesh, out Attach atc))
+                    Skin skin = node.Skin;
+                    skinMap = new int[skin.JointsCount];
+                    for (int i = 0; i < skin.JointsCount; i++)
                     {
-                        atc = FromNoWeight(node.Mesh);
-                        nonWeightAttaches.Add(node.Mesh, atc);
+                        (Node bone, _) = skin.GetJoint(i);
+                        skinMap[i] = Array.IndexOf(objects, objectsPairs[bone]);
                     }
-                    njo.Attach = atc;
                 }
                 else
                 {
-                    Skin skin = node.Skin;
-
-                    NJObject[] bones = new NJObject[skin.JointsCount];
-
-                    for(int i = 0; i < skin.JointsCount; i++)
-                    {
-                        (Node bone, _) = skin.GetJoint(i);
-                        bones[i] = objectsPairs[bone];
-                    }
-
-                    var (vertices, polydata) = FromWeight(node.Mesh);
-                    Matrix4x4 meshMatrix = node.GetWorldMatrix(null, 0);
-                    WeightedBufferAttach.FromWeightedBuffer(bones, meshMatrix, vertices, polydata);
+                    skinMap = new int[] { Array.IndexOf(objects, njo) };
                 }
+
+                weightedAttaches.Add(FromMesh(node.Mesh, skinMap, meshMatrix, objects));
             }
+
+            WeightedBufferAttach.FromWeightedBuffer(root, weightedAttaches.ToArray(), true);
 
             // lastly, we load the animations
             Motion[] animations;
@@ -175,149 +175,101 @@ namespace SATools.SAModel.Convert
             return result;
         }
 
-        private static Attach FromNoWeight(Mesh mesh)
-        {
-            List<BufferMesh> result = new(mesh.Primitives.Count);
-
-            foreach(var primitive in mesh.Primitives)
-            {
-                // read vertices
-                primitive.VertexAccessors.TryGetValue("POSITION", out Accessor positions);
-                primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor normals);
-
-                var positionArray = positions.AsVector3Array();
-                var normalArray = normals?.AsVector3Array();
-
-                BufferVertex[] vertices = new BufferVertex[positionArray.Count];
-                for(int i = 0; i < vertices.Length; i++)
-                {
-                    var pos = positionArray[i];
-                    var nrm = normalArray?[i] ?? Vector3.UnitY;
-                    vertices[i] = new(pos, nrm, (ushort)i);
-                }
-
-                // read corners
-                primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor uvs);
-                primitive.VertexAccessors.TryGetValue("COLOR_0", out Accessor colors);
-
-                var uvArray = uvs?.AsVector2Array();
-                var colorArray = colors?.AsColorArray();
-
-                BufferCorner[] corners = new BufferCorner[vertices.Length];
-                for(int i = 0; i < corners.Length; i++)
-                {
-                    Vector2 uv = uvArray?[i] ?? default;
-                    Vector4 col = colorArray?[i] ?? Vector4.UnitW;
-
-                    var linearCol = converter.Convert(new(col.X, col.Y, col.Z));
-
-                    corners[i] = new((ushort)i, new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
-                }
-
-                // Read indices
-                uint[] indices = GetIndices(primitive.IndexAccessor, positions.Count, primitive.DrawPrimitiveType);
-
-                // convert material
-                result.Add(new(vertices, false, corners, indices, GetMaterial(primitive.Material)));
-            }
-
-            Attach atc = new(result.ToArray());
-            atc.Name = mesh.Name;
-            return atc;
-        }
-
-        private static (WeightedVertex[] vertices, BufferMesh[] polydata) FromWeight(Mesh mesh)
+        private static WeightedBufferAttach FromMesh(Mesh mesh, int[] skinMap, Matrix4x4 meshMatrix, NJObject[] nodes)
         {
             List<WeightedVertex> vertices = new();
+            List<BufferCorner[]> corners = new();
+            List<BufferMaterial> materials = new();
 
-            List<int> offsets = new();
-            int offset = 0;
-
-            foreach(var primitive in mesh.Primitives)
+            foreach (var primitive in mesh.Primitives)
             {
-                // read vertices
-                primitive.VertexAccessors.TryGetValue("POSITION", out Accessor positions);
-                primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor normals);
-                primitive.VertexAccessors.TryGetValue("WEIGHTS_0", out Accessor weights);
-                primitive.VertexAccessors.TryGetValue("JOINTS_0", out Accessor joints);
+                // Vertices
+                primitive.VertexAccessors.TryGetValue("POSITION", /****/ out Accessor positions);
+                primitive.VertexAccessors.TryGetValue("NORMAL", /******/ out Accessor normals);
+                primitive.VertexAccessors.TryGetValue("WEIGHTS_0", /***/ out Accessor weights);
+                primitive.VertexAccessors.TryGetValue("JOINTS_0", /****/ out Accessor joints);
 
                 var positionArray = positions.AsVector3Array();
                 var normalArray = normals?.AsVector3Array();
-                var weightsArray = weights.AsVector4Array();
-                var jointsArray = joints.AsVector4Array();
+                var weightsArray = weights?.AsVector4Array();
+                var jointsArray = joints?.AsVector4Array();
 
                 int vertCount = positionArray.Count;
+                WeightedVertex[] vertexSet = new WeightedVertex[vertCount]; 
 
-                for(int i = 0; i < vertCount; i++)
+                for (int i = 0; i < vertCount; i++)
                 {
                     // position
-                    var pos = positionArray[i];
+                    var pos = Vector3.Transform(positionArray[i], meshMatrix);
+                    var nrm = normalArray != null ? Vector3.TransformNormal(normalArray[i], meshMatrix) : Vector3.UnitY;
 
-                    // normal (may be null)
-                    var nrm = normalArray?[i] ?? Vector3.UnitY;
+                    WeightedVertex vert = new(pos, nrm);
 
-                    WeightedVertex vert = new(new(pos, 1f), nrm);
+                    if(weightsArray != null)
+                    {
+                        var joint = jointsArray[i];
+                        var weight = weightsArray[i];
 
-                    var joint = jointsArray[i];
-                    var weight = weightsArray[i];
+                        if (weight.X > 0)
+                            vert.Weights.Add(skinMap[(int)joint.X], weight.X);
 
-                    List<(int, float)> skinning = new();
+                        if (weight.Y > 0)
+                            vert.Weights.Add(skinMap[(int)joint.Y], weight.Y);
 
-                    if (weight.X > 0)
-                        vert.Weights.Add((int)joint.X, weight.X);
+                        if (weight.Z > 0)
+                            vert.Weights.Add(skinMap[(int)joint.Z], weight.Z);
 
-                    if(weight.Y > 0)
-                        vert.Weights.Add((int)joint.Y, weight.Y);
+                        if (weight.W > 0)
+                            vert.Weights.Add(skinMap[(int)joint.W], weight.W);
+                    }
+                    else
+                    {
+                        vert.Weights.Add(skinMap[0], 1);
+                    }
 
-                    if (weight.Z > 0)
-                        vert.Weights.Add((int)joint.Z, weight.Z);
-
-                    if (weight.W > 0)
-                        vert.Weights.Add((int)joint.W, weight.W);
-
-                    vertices.Add(vert);
+                    vertexSet[i] = vert;
                 }
 
-                offsets.Add(offset);
-                offset += positionArray.Count;
-            }
+                var (vertsDistinct, vertMap) = vertexSet.CreateDistinctMap();
 
-            // first, lets put the poly meshes together
-            BufferMesh[] polyMeshes = new BufferMesh[mesh.Primitives.Count];
-
-            int offsetIndex = 0;
-            foreach(var primitive in mesh.Primitives)
-            {
-                // getting positions again to get corner count
-                var positions = primitive.VertexAccessors["POSITION"];
-
-                // read corners
-                primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor uvs);
-                primitive.VertexAccessors.TryGetValue("COLOR_0", out Accessor colors);
+                // Polygon corners
+                primitive.VertexAccessors.TryGetValue("TEXCOORD_0", /**/ out Accessor uvs);
+                primitive.VertexAccessors.TryGetValue("COLOR_0", /*****/ out Accessor colors);
 
                 var uvArray = uvs?.AsVector2Array();
                 var colorArray = colors?.AsColorArray();
+                int vertOffset = vertices.Count;
 
-                BufferCorner[] corners = new BufferCorner[positions.Count];
-
-                for(int i = 0; i < corners.Length; i++)
+                BufferCorner[] meshCorners = new BufferCorner[vertCount];
+                for (int i = 0; i < meshCorners.Length; i++)
                 {
                     Vector2 uv = uvArray?[i] ?? default;
                     Vector4 col = colorArray?[i] ?? Vector4.UnitW;
 
                     var linearCol = converter.Convert(new(col.X, col.Y, col.Z));
-                    corners[i] = new((ushort)i, new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
+
+                    meshCorners[i] = new((ushort)((vertMap != null ? vertMap[i] : i) + vertOffset), new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
                 }
 
                 // Read indices
-                uint[] indices = GetIndices(primitive.IndexAccessor, positions.Count, primitive.DrawPrimitiveType);
+                uint[] indices = GetIndices(primitive.IndexAccessor, meshCorners.Length, primitive.DrawPrimitiveType);
 
-                ushort vertexReadOffset = (ushort)offsets[offsetIndex];
-                polyMeshes[offsetIndex] = new(corners, indices, GetMaterial(primitive.Material), vertexReadOffset);
-                offsetIndex++;
+                if(indices != null)
+                {
+                    BufferCorner[] unwrappedCorners = new BufferCorner[indices.Length];
+                    for(int i = 0; i < indices.Length; i++)
+                    {
+                        unwrappedCorners[i] = meshCorners[indices[i]];
+                    }
+                    meshCorners = unwrappedCorners;
+                }
+
+                vertices.AddRange(vertsDistinct);
+                corners.Add(meshCorners);
+                materials.Add(GetMaterial(primitive.Material));
             }
 
-            return (vertices.ToArray(), polyMeshes);
+            return WeightedBufferAttach.Create(vertices.ToArray(), corners.ToArray(), materials.ToArray(), nodes);
         }
 
         private static uint[] GetIndices(Accessor indices, int vertexCount, PrimitiveType type)
