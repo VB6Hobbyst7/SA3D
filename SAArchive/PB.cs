@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VrSharp.PvrTexture;
 
 namespace SATools.SAArchive
@@ -13,9 +10,9 @@ namespace SATools.SAArchive
     {
         public override void CreateIndexFile(string path)
         {
-            using(TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
+            using (TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
             {
-                for(int u = 0; u < Entries.Count; u++)
+                for (int u = 0; u < Entries.Count; u++)
                 {
                     texList.WriteLine(u.ToString("D3") + ".pvr");
                 }
@@ -28,16 +25,16 @@ namespace SATools.SAArchive
         {
             Entries = new List<ArchiveEntry>();
             int numtextures = pbdata[4];
-            for(int u = 0; u < numtextures; u++)
+            for (int u = 0; u < numtextures; u++)
             {
                 Entries.Add(new PBEntry(pbdata, 8 + 16 * u, u.ToString("D3") + ".pvr"));
                 //Console.WriteLine("Added header {0}: offset {1}, pixel format {2}, data format {3}, GBIX {4}, width {5}, height {6}", u, hdr.Offset, hdr.PixelFormat, hdr.DataFormat, hdr.GBIX, hdr.Width, hdr.Height);
             }
-            for(int u = 0; u < numtextures; u++)
+            for (int u = 0; u < numtextures; u++)
             {
                 PBEntry pbentry = (PBEntry)Entries[u];
                 int chunksize;
-                if(u == numtextures - 1)
+                if (u == numtextures - 1)
                     chunksize = pbdata.Length - pbentry.Offset;
                 else
                 {
@@ -61,9 +58,9 @@ namespace SATools.SAArchive
         public int GetCurrentOffset(int index, int total)
         {
             int offset_base = 8 + 16 * total;
-            if(index == 0)
+            if (index == 0)
                 return offset_base;
-            for(int u = 0; u < index; u++)
+            for (int u = 0; u < index; u++)
             {
                 PBEntry entry = (PBEntry)Entries[u];
                 offset_base += entry.GetHeaderless().Length;
@@ -80,12 +77,12 @@ namespace SATools.SAArchive
             result.Add(0x42); // V
             result.Add(0x02); // Version ID
             result.AddRange(BitConverter.GetBytes((uint)Entries.Count));
-            for(int u = 0; u < Entries.Count; u++)
+            for (int u = 0; u < Entries.Count; u++)
             {
                 PBEntry entry = (PBEntry)Entries[u];
                 result.AddRange(entry.GetHeader());
             }
-            for(int u = 0; u < Entries.Count; u++)
+            for (int u = 0; u < Entries.Count; u++)
             {
                 PBEntry entry = (PBEntry)Entries[u];
                 result.AddRange(entry.GetHeaderless());
@@ -169,13 +166,13 @@ namespace SATools.SAArchive
                 List<byte> result = new List<byte>();
                 int chunksize_file = data.Length;
                 // Make chunk size divisible by 16 because it crashes otherwise
-                if(chunksize_file % 16 != 0)
+                if (chunksize_file % 16 != 0)
                 {
                     do
                     {
                         chunksize_file++;
                     }
-                    while(chunksize_file % 16 != 0);
+                    while (chunksize_file % 16 != 0);
                 }
                 byte[] gbixheader = { 0x47, 0x42, 0x49, 0x58 };
                 byte[] pvrtheader = { 0x50, 0x56, 0x52, 0x54 };
@@ -195,14 +192,14 @@ namespace SATools.SAArchive
                 result.AddRange(data);
                 int pd = 0;
                 // Make file size divisible by 16 because it crashes otherwise
-                if(result.Count % 16 != 0)
+                if (result.Count % 16 != 0)
                 {
                     do
                     {
                         result.Add(0);
                         pd++;
                     }
-                    while(result.Count % 16 != 0);
+                    while (result.Count % 16 != 0);
                 }
                 return result.ToArray();
             }

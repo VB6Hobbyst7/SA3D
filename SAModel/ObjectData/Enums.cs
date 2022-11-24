@@ -219,27 +219,27 @@ namespace SATools.SAModel.ObjData
         {
             SurfaceAttributes result = 0;
 
-            if(flags.HasFlag(SA1SurfaceAttributes.Solid))
+            if (flags.HasFlag(SA1SurfaceAttributes.Solid))
                 result |= SurfaceAttributes.Solid;
-            if(flags.HasFlag(SA1SurfaceAttributes.Water))
+            if (flags.HasFlag(SA1SurfaceAttributes.Water))
                 result |= SurfaceAttributes.Water;
-            if(flags.HasFlag(SA1SurfaceAttributes.NoFriction))
+            if (flags.HasFlag(SA1SurfaceAttributes.NoFriction))
                 result |= SurfaceAttributes.NoFriction;
-            if(flags.HasFlag(SA1SurfaceAttributes.NoAcceleration))
+            if (flags.HasFlag(SA1SurfaceAttributes.NoAcceleration))
                 result |= SurfaceAttributes.NoAcceleration;
-            if(flags.HasFlag(SA1SurfaceAttributes.CannotLand))
+            if (flags.HasFlag(SA1SurfaceAttributes.CannotLand))
                 result |= SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SA1SurfaceAttributes.IncreasedAcceleration))
+            if (flags.HasFlag(SA1SurfaceAttributes.IncreasedAcceleration))
                 result |= SurfaceAttributes.IncreasedAcceleration;
-            if(flags.HasFlag(SA1SurfaceAttributes.Diggable))
+            if (flags.HasFlag(SA1SurfaceAttributes.Diggable))
                 result |= SurfaceAttributes.Diggable;
-            if(flags.HasFlag(SA1SurfaceAttributes.NotClimbable))
+            if (flags.HasFlag(SA1SurfaceAttributes.NotClimbable))
                 result |= SurfaceAttributes.NotClimbable;
-            if(flags.HasFlag(SA1SurfaceAttributes.Hurt))
+            if (flags.HasFlag(SA1SurfaceAttributes.Hurt))
                 result |= SurfaceAttributes.Hurt;
-            if(flags.HasFlag(SA1SurfaceAttributes.Footprints))
+            if (flags.HasFlag(SA1SurfaceAttributes.Footprints))
                 result |= SurfaceAttributes.Footprints;
-            if(flags.HasFlag(SA1SurfaceAttributes.Visible))
+            if (flags.HasFlag(SA1SurfaceAttributes.Visible))
                 result |= SurfaceAttributes.Visible;
 
             return result;
@@ -254,47 +254,47 @@ namespace SATools.SAModel.ObjData
         {
             SurfaceAttributes result = 0;
 
-            if(flags.HasFlag(SA2SurfaceAttributes.Solid))
+            if (flags.HasFlag(SA2SurfaceAttributes.Solid))
                 result |= SurfaceAttributes.Solid;
-            if(flags.HasFlag(SA2SurfaceAttributes.Water))
+            if (flags.HasFlag(SA2SurfaceAttributes.Water))
                 result |= SurfaceAttributes.Water;
-            if(flags.HasFlag(SA2SurfaceAttributes.NoFriction))
+            if (flags.HasFlag(SA2SurfaceAttributes.NoFriction))
                 result |= SurfaceAttributes.NoFriction;
-            if(flags.HasFlag(SA2SurfaceAttributes.NoAcceleration))
+            if (flags.HasFlag(SA2SurfaceAttributes.NoAcceleration))
                 result |= SurfaceAttributes.NoAcceleration;
-            if(flags.HasFlag(SA2SurfaceAttributes.LessAcceleration))
+            if (flags.HasFlag(SA2SurfaceAttributes.LessAcceleration))
                 result |= SurfaceAttributes.LessAcceleration;
-            if(flags.HasFlag(SA2SurfaceAttributes.Diggable))
+            if (flags.HasFlag(SA2SurfaceAttributes.Diggable))
                 result |= SurfaceAttributes.Diggable;
-            if(flags.HasFlag(SA2SurfaceAttributes.NotClimbable))
+            if (flags.HasFlag(SA2SurfaceAttributes.NotClimbable))
                 result |= SurfaceAttributes.NotClimbable;
-            if(flags.HasFlag(SA2SurfaceAttributes.IgnoreSlope))
+            if (flags.HasFlag(SA2SurfaceAttributes.IgnoreSlope))
                 result |= SurfaceAttributes.IgnoreSlope;
-            if(flags.HasFlag(SA2SurfaceAttributes.Hurt))
+            if (flags.HasFlag(SA2SurfaceAttributes.Hurt))
                 result |= SurfaceAttributes.Hurt;
-            if(flags.HasFlag(SA2SurfaceAttributes.Footprints))
+            if (flags.HasFlag(SA2SurfaceAttributes.Footprints))
                 result |= SurfaceAttributes.Footprints;
-            if(flags.HasFlag(SA2SurfaceAttributes.CannotLand))
+            if (flags.HasFlag(SA2SurfaceAttributes.CannotLand))
                 result |= SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SA2SurfaceAttributes.WaterNoAlpha))
+            if (flags.HasFlag(SA2SurfaceAttributes.WaterNoAlpha))
                 result |= SurfaceAttributes.WaterNoAlpha;
-            if(flags.HasFlag(SA2SurfaceAttributes.NoShadows))
+            if (flags.HasFlag(SA2SurfaceAttributes.NoShadows))
                 result |= SurfaceAttributes.NoShadows;
-            if(flags.HasFlag(SA2SurfaceAttributes.IncreasedAcceleration))
+            if (flags.HasFlag(SA2SurfaceAttributes.IncreasedAcceleration))
                 result |= SurfaceAttributes.IncreasedAcceleration;
-            if(flags.HasFlag(SA2SurfaceAttributes.NoFog))
+            if (flags.HasFlag(SA2SurfaceAttributes.NoFog))
                 result |= SurfaceAttributes.NoFog;
-            if(flags.HasFlag(SA2SurfaceAttributes.Unknown24))
+            if (flags.HasFlag(SA2SurfaceAttributes.Unknown24))
                 result |= SurfaceAttributes.Unknown24;
-            if(flags.HasFlag(SA2SurfaceAttributes.DynamicCollision))
+            if (flags.HasFlag(SA2SurfaceAttributes.DynamicCollision))
                 result |= SurfaceAttributes.DynamicCollision;
-            if(flags.HasFlag(SA2SurfaceAttributes.OffsetBoundsCenter))
+            if (flags.HasFlag(SA2SurfaceAttributes.OffsetBoundsCenter))
                 result |= SurfaceAttributes.OffsetBoundsCenter;
-            if(flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusSmall))
+            if (flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusSmall))
                 result |= SurfaceAttributes.BoundsRadiusSmall;
-            if(flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusTiny))
+            if (flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusTiny))
                 result |= SurfaceAttributes.BoundsRadiusTiny;
-            if(flags.HasFlag(SA2SurfaceAttributes.Visible))
+            if (flags.HasFlag(SA2SurfaceAttributes.Visible))
                 result |= SurfaceAttributes.Visible;
 
             return result;
@@ -309,27 +309,27 @@ namespace SATools.SAModel.ObjData
         {
             SA1SurfaceAttributes result = 0;
 
-            if(flags.HasFlag(SurfaceAttributes.Solid))
+            if (flags.HasFlag(SurfaceAttributes.Solid))
                 result |= SA1SurfaceAttributes.Solid;
-            if(flags.HasFlag(SurfaceAttributes.Water))
+            if (flags.HasFlag(SurfaceAttributes.Water))
                 result |= SA1SurfaceAttributes.Water;
-            if(flags.HasFlag(SurfaceAttributes.NoFriction))
+            if (flags.HasFlag(SurfaceAttributes.NoFriction))
                 result |= SA1SurfaceAttributes.NoFriction;
-            if(flags.HasFlag(SurfaceAttributes.NoAcceleration))
+            if (flags.HasFlag(SurfaceAttributes.NoAcceleration))
                 result |= SA1SurfaceAttributes.NoAcceleration;
-            if(flags.HasFlag(SurfaceAttributes.CannotLand))
+            if (flags.HasFlag(SurfaceAttributes.CannotLand))
                 result |= SA1SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
+            if (flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
                 result |= SA1SurfaceAttributes.IncreasedAcceleration;
-            if(flags.HasFlag(SurfaceAttributes.Diggable))
+            if (flags.HasFlag(SurfaceAttributes.Diggable))
                 result |= SA1SurfaceAttributes.Diggable;
-            if(flags.HasFlag(SurfaceAttributes.NotClimbable))
+            if (flags.HasFlag(SurfaceAttributes.NotClimbable))
                 result |= SA1SurfaceAttributes.NotClimbable;
-            if(flags.HasFlag(SurfaceAttributes.Hurt))
+            if (flags.HasFlag(SurfaceAttributes.Hurt))
                 result |= SA1SurfaceAttributes.Hurt;
-            if(flags.HasFlag(SurfaceAttributes.Footprints))
+            if (flags.HasFlag(SurfaceAttributes.Footprints))
                 result |= SA1SurfaceAttributes.Footprints;
-            if(flags.HasFlag(SurfaceAttributes.Visible))
+            if (flags.HasFlag(SurfaceAttributes.Visible))
                 result |= SA1SurfaceAttributes.Visible;
 
             return result;
@@ -344,47 +344,47 @@ namespace SATools.SAModel.ObjData
         {
             SA2SurfaceAttributes result = 0;
 
-            if(flags.HasFlag(SurfaceAttributes.Solid))
+            if (flags.HasFlag(SurfaceAttributes.Solid))
                 result |= SA2SurfaceAttributes.Solid;
-            if(flags.HasFlag(SurfaceAttributes.Water))
+            if (flags.HasFlag(SurfaceAttributes.Water))
                 result |= SA2SurfaceAttributes.Water;
-            if(flags.HasFlag(SurfaceAttributes.NoFriction))
+            if (flags.HasFlag(SurfaceAttributes.NoFriction))
                 result |= SA2SurfaceAttributes.NoFriction;
-            if(flags.HasFlag(SurfaceAttributes.NoAcceleration))
+            if (flags.HasFlag(SurfaceAttributes.NoAcceleration))
                 result |= SA2SurfaceAttributes.NoAcceleration;
-            if(flags.HasFlag(SurfaceAttributes.LessAcceleration))
+            if (flags.HasFlag(SurfaceAttributes.LessAcceleration))
                 result |= SA2SurfaceAttributes.LessAcceleration;
-            if(flags.HasFlag(SurfaceAttributes.Diggable))
+            if (flags.HasFlag(SurfaceAttributes.Diggable))
                 result |= SA2SurfaceAttributes.Diggable;
-            if(flags.HasFlag(SurfaceAttributes.NotClimbable))
+            if (flags.HasFlag(SurfaceAttributes.NotClimbable))
                 result |= SA2SurfaceAttributes.NotClimbable;
-            if(flags.HasFlag(SurfaceAttributes.IgnoreSlope))
+            if (flags.HasFlag(SurfaceAttributes.IgnoreSlope))
                 result |= SA2SurfaceAttributes.IgnoreSlope;
-            if(flags.HasFlag(SurfaceAttributes.Hurt))
+            if (flags.HasFlag(SurfaceAttributes.Hurt))
                 result |= SA2SurfaceAttributes.Hurt;
-            if(flags.HasFlag(SurfaceAttributes.Footprints))
+            if (flags.HasFlag(SurfaceAttributes.Footprints))
                 result |= SA2SurfaceAttributes.Footprints;
-            if(flags.HasFlag(SurfaceAttributes.CannotLand))
+            if (flags.HasFlag(SurfaceAttributes.CannotLand))
                 result |= SA2SurfaceAttributes.CannotLand;
-            if(flags.HasFlag(SurfaceAttributes.WaterNoAlpha))
+            if (flags.HasFlag(SurfaceAttributes.WaterNoAlpha))
                 result |= SA2SurfaceAttributes.WaterNoAlpha;
-            if(flags.HasFlag(SurfaceAttributes.NoShadows))
+            if (flags.HasFlag(SurfaceAttributes.NoShadows))
                 result |= SA2SurfaceAttributes.NoShadows;
-            if(flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
+            if (flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
                 result |= SA2SurfaceAttributes.IncreasedAcceleration;
-            if(flags.HasFlag(SurfaceAttributes.NoFog))
+            if (flags.HasFlag(SurfaceAttributes.NoFog))
                 result |= SA2SurfaceAttributes.NoFog;
-            if(flags.HasFlag(SurfaceAttributes.Unknown24))
+            if (flags.HasFlag(SurfaceAttributes.Unknown24))
                 result |= SA2SurfaceAttributes.Unknown24;
-            if(flags.HasFlag(SurfaceAttributes.DynamicCollision))
+            if (flags.HasFlag(SurfaceAttributes.DynamicCollision))
                 result |= SA2SurfaceAttributes.DynamicCollision;
-            if(flags.HasFlag(SurfaceAttributes.OffsetBoundsCenter))
+            if (flags.HasFlag(SurfaceAttributes.OffsetBoundsCenter))
                 result |= SA2SurfaceAttributes.OffsetBoundsCenter;
-            if(flags.HasFlag(SurfaceAttributes.BoundsRadiusSmall))
+            if (flags.HasFlag(SurfaceAttributes.BoundsRadiusSmall))
                 result |= SA2SurfaceAttributes.BoundsRadiusSmall;
-            if(flags.HasFlag(SurfaceAttributes.BoundsRadiusTiny))
+            if (flags.HasFlag(SurfaceAttributes.BoundsRadiusTiny))
                 result |= SA2SurfaceAttributes.BoundsRadiusTiny;
-            if(flags.HasFlag(SurfaceAttributes.Visible))
+            if (flags.HasFlag(SurfaceAttributes.Visible))
                 result |= SA2SurfaceAttributes.Visible;
 
             return result;
@@ -405,8 +405,8 @@ namespace SATools.SAModel.ObjData
         public static int ChannelCount(this AnimationAttributes flags)
         {
             int channels = 0;
-            foreach(AnimationAttributes f in Enum.GetValues(typeof(AnimationAttributes)))
-                if(flags.HasFlag(f))
+            foreach (AnimationAttributes f in Enum.GetValues(typeof(AnimationAttributes)))
+                if (flags.HasFlag(f))
                     channels++;
             return channels;
         }

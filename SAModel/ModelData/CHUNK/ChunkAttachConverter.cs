@@ -1,7 +1,7 @@
-﻿using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SACommon;
+using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
-using SATools.SACommon;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -157,15 +157,15 @@ namespace SATools.SAModel.ModelData.CHUNK
             for (int i = 0; i < nodeChunks.Length; i++)
                 nodeChunks[i] = new();
 
-            foreach(ChunkResult cr in chunkResults)
+            foreach (ChunkResult cr in chunkResults)
             {
-                for(int i = 0; i < cr.AttachIndices.Length; i++)
+                for (int i = 0; i < cr.AttachIndices.Length; i++)
                 {
                     nodeChunks[cr.AttachIndices[i]].Add(cr.Attaches[i]);
                 }
             }
 
-            for(int i = 0; i < nodeChunks.Length; i++)
+            for (int i = 0; i < nodeChunks.Length; i++)
             {
                 List<ChunkAttach> chunks = nodeChunks[i];
                 NJObject node = nodes[i];
@@ -174,7 +174,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     node._attach = null;
                     continue;
                 }
-                else if(chunks.Count == 1)
+                else if (chunks.Count == 1)
                 {
                     node._attach = chunks[0];
                 }
@@ -183,7 +183,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     List<VertexChunk> vertexChunks = new();
                     List<PolyChunk> polyChunks = new();
 
-                    foreach(ChunkAttach atc in chunks)
+                    foreach (ChunkAttach atc in chunks)
                     {
                         vertexChunks.AddRange(atc.VertexChunks);
                         polyChunks.AddRange(atc.PolyChunks);
@@ -197,11 +197,11 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
 
-                foreach(VertexChunk vtx in ((ChunkAttach)node.Attach).VertexChunks)
+                foreach (VertexChunk vtx in ((ChunkAttach)node.Attach).VertexChunks)
                 {
-                    if(vtx.Type.VertexHasNormal())
+                    if (vtx.Type.VertexHasNormal())
                     {
-                        for(int j = 0; j < vtx.Vertices.Length; j++)
+                        for (int j = 0; j < vtx.Vertices.Length; j++)
                         {
                             ChunkVertex vert = vtx.Vertices[j];
                             vtx.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
@@ -279,18 +279,18 @@ namespace SATools.SAModel.ModelData.CHUNK
             VertexChunk vtxChunk = new(type, WeightStatus.Start, 0, vertices);
 
             List<PolyChunk> polyChunks = new();
-            for(int i = 0; i < cornerSets.Length; i++)
+            for (int i = 0; i < cornerSets.Length; i++)
             {
                 polyChunks.AddRange(CreateStripChunk(cornerSets[i], wba.Materials[i]));
             }
 
             return new(
-                vertices.Length, 
-                new int[] { wba.DependencyRootIndex }, 
-                new[] { 
+                vertices.Length,
+                new int[] { wba.DependencyRootIndex },
+                new[] {
                     new ChunkAttach(
-                        new[] { vtxChunk }, 
-                        polyChunks.ToArray()) 
+                        new[] { vtxChunk },
+                        polyChunks.ToArray())
                 });
         }
 
@@ -316,9 +316,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                     var vertex = wba.Vertices[bc.VertexIndex];
                     int nodeIndex = 0;
                     float weight = 0;
-                    foreach(var weightPair in vertex.Weights)
+                    foreach (var weightPair in vertex.Weights)
                     {
-                        if(weightPair.Value > weight)
+                        if (weightPair.Value > weight)
                         {
                             weight = weightPair.Value;
                             nodeIndex = weightPair.Key;
@@ -338,7 +338,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             // now sort the vertices by node index
             (int index, BinaryWeightColorVertex vert)[] sortedVertices = new (int index, BinaryWeightColorVertex)[distinctVerts.Length];
-            for(int i = 0; i < sortedVertices.Length; i++)
+            for (int i = 0; i < sortedVertices.Length; i++)
             {
                 sortedVertices[i] = (i, distinctVerts[i]);
             }
@@ -352,17 +352,17 @@ namespace SATools.SAModel.ModelData.CHUNK
             List<ChunkVertex> chunkVertices = new();
             ushort currentVertexOffset = 0;
             int[] sortedVertMap = new int[sortedVertices.Length];
-            for(int i = 0; i < sortedVertices.Length; i++)
+            for (int i = 0; i < sortedVertices.Length; i++)
             {
                 var vert = sortedVertices[i];
-                if(vert.vert.nodeIndex != currentNodeIndex)
+                if (vert.vert.nodeIndex != currentNodeIndex)
                 {
-                    if(chunkVertices.Count > 0)
+                    if (chunkVertices.Count > 0)
                     {
                         vertexChunks.Add((currentNodeIndex, new(
-                            ChunkType.Vertex_VertexDiffuse8, 
-                            WeightStatus.Start, 
-                            currentVertexOffset, 
+                            ChunkType.Vertex_VertexDiffuse8,
+                            WeightStatus.Start,
+                            currentVertexOffset,
                             chunkVertices.ToArray())));
                     }
 
@@ -497,7 +497,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     {
                         initWeightsVerts.Add(chunkVert);
                     }
-                    else if(vert.Weights.Max(x => x.Key) == nodeIndex)
+                    else if (vert.Weights.Max(x => x.Key) == nodeIndex)
                     {
                         endWeightsVerts.Add(chunkVert);
                     }
@@ -590,7 +590,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             (PolyChunkStrip.Strip.Corner[] distinct, int[] map) = corners.CreateDistinctMap();
 
             int[][] stripMaps;
-            if(map == null)
+            if (map == null)
             {
                 stripMaps = new int[distinct.Length / 3][];
                 for (int i = 0; i < distinct.Length; i += 3)
@@ -615,9 +615,9 @@ namespace SATools.SAModel.ModelData.CHUNK
                 DoubleSide = !material.Culling
             };
 
-            for(int i = 0; i < corners.Length; i+= 3)
+            for (int i = 0; i < corners.Length; i += 3)
             {
-                stripchunk.Strips[i / 3] = new PolyChunkStrip.Strip(new[] { corners[i], corners[i+1], corners[i+2] }, false);
+                stripchunk.Strips[i / 3] = new PolyChunkStrip.Strip(new[] { corners[i], corners[i + 1], corners[i + 2] }, false);
             }
 
             /*for (int j = 0; j < stripMaps.Length; j++)
@@ -907,6 +907,6 @@ namespace SATools.SAModel.ModelData.CHUNK
                 atc.MeshData = meshes.ToArray();
             }
         }
-    
+
     }
 }

@@ -24,10 +24,10 @@ namespace SATools.SAWPF
             // getting the build date
             Assembly asm = Assembly.GetExecutingAssembly();
             string date = asm.Location;
-            if(string.IsNullOrWhiteSpace(asm.Location))
+            if (string.IsNullOrWhiteSpace(asm.Location))
                 date = $"{Programname}.exe";
             date = System.IO.Path.Combine(AppContext.BaseDirectory, date);
-            if(File.Exists(date))
+            if (File.Exists(date))
                 date = File.GetLastWriteTimeUtc(date).ToString(CultureInfo.InvariantCulture);
             else
                 date = "--/--/---- --:--:--";
@@ -83,20 +83,20 @@ namespace SATools.SAWPF
 
             try
             {
-                if(ex.InnerException != null && ex.GetType() == typeof(XamlParseException))
+                if (ex.InnerException != null && ex.GetType() == typeof(XamlParseException))
                     ex = ex.InnerException;
 
                 string errDesc
                     = $"{app} has crashed with the following error:\n  {ex.GetType().Name}.\n\n" +
                         "If you wish to report a bug, please include the following in your report:";
 
-                if(ex is ShaderException se && se.IntegratedGraphics)
+                if (ex is ShaderException se && se.IntegratedGraphics)
                     errDesc = "An error occured with your rendering hardware! Please do not use integrated graphics. \n\n" + errDesc;
 
-                if(new ErrorDialog(app, errDesc, ex.ToString()).ShowDialog() != true)
+                if (new ErrorDialog(app, errDesc, ex.ToString()).ShowDialog() != true)
                     Application.Current?.Shutdown();
             }
-            catch(Exception ex2)
+            catch (Exception ex2)
             {
                 MessageBox.Show(ex2.ToString(), "SA3D Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
 

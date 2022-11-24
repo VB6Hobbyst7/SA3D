@@ -1,7 +1,7 @@
-﻿using System;
+﻿using SATools.SAWPF;
+using System;
 using System.Windows;
 using System.Windows.Media;
-using SATools.SAWPF;
 
 namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 {
@@ -31,7 +31,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                     _manual = false;
 
                 }
-                catch(FormatException)
+                catch (FormatException)
                 {
                     _manual = false;
                     throw;
@@ -43,7 +43,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 
         protected override void ValuePropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if(!_manual)
+            if (!_manual)
                 HexColor = Value.Hex;
 
             var c = Value;
@@ -58,7 +58,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             var c = Value;
             Color col = Color.FromArgb(c.A, c.R, c.G, c.B);
 
-            if(!WndColorPicker.ShowAsDialog(ref col))
+            if (!WndColorPicker.ShowAsDialog(ref col))
                 return;
 
             Value = new(col.R, col.G, col.B, col.A);

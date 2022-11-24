@@ -19,7 +19,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             => Chunk.Attributes;
 
         [DisplayName("Weight Status")]
-        public WeightStatus WeightStatus 
+        public WeightStatus WeightStatus
             => Chunk.WeightStatus;
 
         [DisplayName("Index Offset")]

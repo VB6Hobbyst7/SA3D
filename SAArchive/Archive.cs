@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using static SATools.SACommon.ByteConverter;
@@ -46,13 +45,13 @@ namespace SATools.SAArchive
             ulong header8 = data.ToUInt64(0);
             string header16 = data.GetCString(0, System.Text.Encoding.ASCII, 16);
 
-            if(header4 == PAK.Header)
+            if (header4 == PAK.Header)
                 result = PAK.Read(data, Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant());
-            else if(header16.StartsWith("archive  V2."))
+            else if (header16.StartsWith("archive  V2."))
                 result = DAT.Read(data);
-            else if(header4 == Puyo.Header_GVM || header4 == Puyo.Header_PVM)
+            else if (header4 == Puyo.Header_GVM || header4 == Puyo.Header_PVM)
                 result = new Puyo(data);
-            else if(header4 == PVMX.Header)
+            else if (header4 == PVMX.Header)
                 result = new PVMX(data);
 
             PopEndian();
@@ -63,9 +62,9 @@ namespace SATools.SAArchive
         {
             TextureSet result = new();
 
-            foreach(var entry in Entries)
+            foreach (var entry in Entries)
             {
-                if(!entry.Name.EndsWith(".inf"))
+                if (!entry.Name.EndsWith(".inf"))
                     result.Textures.Add(new Texture(entry.Name, entry.GetBitmap()));
             }
 

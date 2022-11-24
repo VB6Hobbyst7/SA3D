@@ -1,5 +1,4 @@
 ﻿using Reloaded.Memory.Streams;
-using Reloaded.Memory.Streams.Writers;
 using SATools.SAArchive;
 using SATools.SACommon;
 using SATools.SAModel.Graphics.APIAccess;
@@ -36,7 +35,7 @@ namespace SATools.SAModel.Graphics
             get => _bufferMaterial;
             set
             {
-                if(value == null)
+                if (value == null)
                     return;
                 _bufferMaterial = value.Clone();
                 ReBuffer();
@@ -86,7 +85,7 @@ namespace SATools.SAModel.Graphics
             _bufferWriter.Write(BufferMaterial.SpecularExponent);
 
             var matFlags = BufferMaterial.MaterialAttributes;
-            if(BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
+            if (BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
                 matFlags &= ~MaterialAttributes.useTexture;
 
             int flags = (ushort)matFlags;

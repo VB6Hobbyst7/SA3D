@@ -30,11 +30,11 @@ namespace SATools.SA3D
 
             string path = "";
 
-            if(args.Length > 0)
+            if (args.Length > 0)
             {
-                if(args[0].StartsWith("-"))
+                if (args[0].StartsWith("-"))
                     args[0] = "?";
-                switch(args[0])
+                switch (args[0])
                 {
                     case "?":
                         string output = "";
@@ -64,7 +64,7 @@ namespace SATools.SA3D
                         return;
                     default:
                         path = Path.Combine(Environment.CurrentDirectory, args[0]);
-                        if(!File.Exists(path))
+                        if (!File.Exists(path))
                         {
                             Console.WriteLine("Path does not lead to a file! enter --help for more info");
                             return;
@@ -81,15 +81,15 @@ namespace SATools.SA3D
             int width = 1280;
             int height = 720;
 
-            for(int i = 1; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
-                switch(args[i].ToLower())
+                switch (args[i].ToLower())
                 {
                     case "-res":
                     case "--resolution":
                         i++;
                         string[] res = args[i].Split('x');
-                        if(!int.TryParse(res[0], out width) || !int.TryParse(res[1], out height))
+                        if (!int.TryParse(res[0], out width) || !int.TryParse(res[1], out height))
                         {
                             Console.WriteLine("Resolution not valid:\n -res [WIDTH]x[HEIGHT]\n  example: 1280x720");
                             return;
@@ -105,7 +105,7 @@ namespace SATools.SA3D
                         texturePath = args[i];
 
                         texturePath = Path.Combine(Environment.CurrentDirectory, texturePath);
-                        if(!File.Exists(path))
+                        if (!File.Exists(path))
                         {
                             Console.WriteLine("Texture filepath does not lead to a file!");
                             return;
@@ -117,7 +117,7 @@ namespace SATools.SA3D
                         motionPath = args[i];
 
                         motionPath = Path.Combine(Environment.CurrentDirectory, motionPath);
-                        if(!File.Exists(path))
+                        if (!File.Exists(path))
                         {
                             Console.WriteLine("Motion filepath does not lead to a file!");
                             return;
@@ -127,29 +127,29 @@ namespace SATools.SA3D
             }
 
             // loading the model file
-            if(path != null)
+            if (path != null)
             {
                 TextureSet textures = null;
 
-                if(texturePath != null)
+                if (texturePath != null)
                 {
                     textures = Archive.ReadFile(texturePath).ToTextureSet();
                 }
 
                 string ext = Path.GetExtension(path);
-                if(ext.EndsWith("lvl"))
+                if (ext.EndsWith("lvl"))
                 {
                     var ltbl = SAModel.ObjData.LandTable.ReadFile(path);
                     context.Scene.LoadLandtable(ltbl);
-                    if(textures != null)
+                    if (textures != null)
                         context.Scene.LandTextureSet = textures;
                 }
-                else if(ext.EndsWith("mdl") || ext.EndsWith("nj"))
+                else if (ext.EndsWith("mdl") || ext.EndsWith("nj"))
                 {
                     var file = SAModel.ObjData.ModelFile.Read(path);
                     DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
 
-                    if(motionPath != null)
+                    if (motionPath != null)
                     {
                         task.Motions.Add(Motion.ReadFile(motionPath, file.Model.CountAnimated()));
                     }
@@ -162,9 +162,9 @@ namespace SATools.SA3D
                 }
             }
 
-            if(standalone)
+            if (standalone)
             {
-                if(width > 0 && height > 0)
+                if (width > 0 && height > 0)
                     context.Resolution = new System.Drawing.Size(width, height);
 
                 AppDomain.CurrentDomain.UnhandledException +=

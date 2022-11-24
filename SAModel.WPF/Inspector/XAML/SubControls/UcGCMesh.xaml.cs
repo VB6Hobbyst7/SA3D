@@ -17,7 +17,8 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 nameof(Mesh),
                 typeof(Mesh),
                 typeof(UcGCMesh),
-                new(new((d, e) => {
+                new(new((d, e) =>
+                {
                     UcGCMesh uc = (UcGCMesh)d;
                     uc.ivm = new((Mesh)e.NewValue);
                     uc.OnPropertyChanged(nameof(Parameters));

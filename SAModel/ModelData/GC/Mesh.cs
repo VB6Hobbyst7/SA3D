@@ -56,7 +56,7 @@ namespace SATools.SAModel.ModelData.GC
 
             // reading the parameters
             List<IParameter> parameters = new();
-            for(int i = 0; i < parameters_count; i++)
+            for (int i = 0; i < parameters_count; i++)
             {
                 parameters.Add(ParameterExtensions.Read(source, parameters_addr));
                 parameters_addr += 8;
@@ -64,17 +64,17 @@ namespace SATools.SAModel.ModelData.GC
 
             // getting the index attribute parameter
             var p = parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
-            if(p != null)
+            if (p != null)
                 indexAttribs = ((IndexAttributeParameter)p).IndexAttributes;
 
             // reading the primitives
             List<Poly> primitives = new();
             uint end_pos = (uint)(primitives_addr + primitives_size);
 
-            while(primitives_addr < end_pos)
+            while (primitives_addr < end_pos)
             {
                 // if the primitive isnt valid
-                if(source[primitives_addr] == 0)
+                if (source[primitives_addr] == 0)
                     break;
                 primitives.Add(Poly.Read(source, ref primitives_addr, indexAttribs));
             }

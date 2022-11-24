@@ -154,7 +154,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <param name="vertices">Vertex data</param>
         public VertexChunk(ChunkType type, byte attribs, ushort indexOffset, ChunkVertex[] vertices)
         {
-            if(!type.IsVertex())
+            if (!type.IsVertex())
                 throw new ArgumentException($"Chunktype {type} not a valid vertex type");
             Type = type;
             Attributes = attribs;
@@ -187,23 +187,23 @@ namespace SATools.SAModel.ModelData.CHUNK
             address += 8;
 
             ChunkType type = (ChunkType)(header1 & 0xFF);
-            if(type == ChunkType.End)
+            if (type == ChunkType.End)
                 return null;
             byte attribs = (byte)((header1 >> 8) & 0xFF);
 
             ushort indexOffset = (ushort)(header2 & 0xFFFF);
             ChunkVertex[] vertices = new ChunkVertex[(ushort)(header2 >> 16)];
 
-            if(!type.IsVertex())
+            if (!type.IsVertex())
                 throw new NotSupportedException($"Chunktype {type} at {address.ToString("X8")} not a valid vertex type");
 
-            if(type == ChunkType.Vertex_VertexDiffuseSpecular16 || type > ChunkType.Vertex_VertexNormalDiffuseSpecular4)
+            if (type == ChunkType.Vertex_VertexDiffuseSpecular16 || type > ChunkType.Vertex_VertexNormalDiffuseSpecular4)
                 throw new NotSupportedException($"Unsupported chunk type {type} at {address.ToString("X8")}");
 
             bool hasNormal = type.VertexHasNormal();
             uint vec4 = type.VertexIsVec4() ? 4u : 0u;
 
-            for(int i = 0; i < vertices.Length; i++)
+            for (int i = 0; i < vertices.Length; i++)
             {
                 ChunkVertex vtx = new()
                 {
@@ -213,7 +213,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 };
                 address += vec4;
 
-                if(hasNormal)
+                if (hasNormal)
                 {
                     vtx.Normal = Vector3Extensions.Read(source, ref address, IOType.Float);
                     address += vec4;
@@ -221,7 +221,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 else
                     vtx.Normal = Vector3.UnitY;
 
-                switch(type)
+                switch (type)
                 {
                     case ChunkType.Vertex_VertexDiffuse8:
                     case ChunkType.Vertex_VertexNormalDiffuse8:
@@ -258,7 +258,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <param name="writer">Output stream</param>
         public void Write(EndianWriter writer)
         {
-            if(Vertices.Length > short.MaxValue)
+            if (Vertices.Length > short.MaxValue)
                 throw new InvalidOperationException($"Vertex count ({Vertices.Length}) exceeds maximum vertex count (32767)");
 
             ushort vertSize = Type.Size();
@@ -270,7 +270,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             bool hasNormal = Type.VertexHasNormal();
             bool vec4 = Type.VertexIsVec4();
 
-            while(remainingVerts.Count > 0)
+            while (remainingVerts.Count > 0)
             {
                 ushort vertCount = remainingVerts.Count > vertLimit ? vertLimit : (ushort)remainingVerts.Count;
                 ushort size = (ushort)(vertCount * vertSize + 1);
@@ -279,21 +279,21 @@ namespace SATools.SAModel.ModelData.CHUNK
                 writer.Write(offset | (uint)(vertCount << 16)); // header2
 
                 // writing the vertices
-                for(int i = 0; i < vertCount; i++)
+                for (int i = 0; i < vertCount; i++)
                 {
                     ChunkVertex vtx = remainingVerts[i];
                     vtx.Position.Write(writer, IOType.Float);
-                    if(vec4)
+                    if (vec4)
                         writer.Write(1.0f);
 
-                    if(hasNormal)
+                    if (hasNormal)
                     {
                         vtx.Normal.Write(writer, IOType.Float);
-                        if(vec4)
+                        if (vec4)
                             writer.Write(0.0f);
                     }
 
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Vertex_VertexDiffuse8:
                         case ChunkType.Vertex_VertexNormalDiffuse8:
@@ -319,10 +319,10 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
 
                 // writing the remaining vertices (if there are any)
-                if(vertCount == vertLimit)
+                if (vertCount == vertLimit)
                 {
                     remainingVerts = remainingVerts.Skip(vertCount).ToList();
-                    if(Type != ChunkType.Vertex_VertexNinjaAttributes && Type != ChunkType.Vertex_VertexNormalNinjaAttributes)
+                    if (Type != ChunkType.Vertex_VertexNinjaAttributes && Type != ChunkType.Vertex_VertexNormalNinjaAttributes)
                         offset += vertCount;
                 }
                 else

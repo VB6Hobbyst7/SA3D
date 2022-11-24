@@ -1,7 +1,6 @@
-﻿using System.IO;
+﻿using SATools.SACommon;
+using System.IO;
 using System.Numerics;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
@@ -73,10 +72,10 @@ namespace SATools.SAModel.Structs
         {
             Vector3 position = Vector3Extensions.Center(points);
             float radius = 0;
-            foreach(Vector3 p in points)
+            foreach (Vector3 p in points)
             {
                 float distance = Vector3.Distance(position, p);
-                if(distance > radius)
+                if (distance > radius)
                     radius = distance;
             }
             return new Bounds(position, radius);

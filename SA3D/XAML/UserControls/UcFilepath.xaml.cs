@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -54,13 +53,13 @@ namespace SATools.SA3D.XAML.UserControls
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if(Dialog.ShowDialog() != true)
+            if (Dialog.ShowDialog() != true)
                 return;
 
             FilePath = Dialog.FileName;
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
             => OnTextChanged?.Invoke(sender, e);
     }
 }

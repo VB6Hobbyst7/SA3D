@@ -3,8 +3,8 @@ using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Linq;
+using System.Numerics;
 
 namespace SATools.SAModel.ModelData.BASIC
 {
@@ -175,17 +175,17 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="optimize">Whether the buffer model should be optimized</param>
         public static void ConvertModelFromBasic(NJObject model, bool optimize = true)
         {
-            if(model.Parent != null)
+            if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<BasicAttach> attaches = new();
             NJObject[] models = model.GetObjects();
 
-            foreach(NJObject obj in models)
+            foreach (NJObject obj in models)
             {
-                if(obj.Attach == null)
+                if (obj.Attach == null)
                     continue;
-                if(obj.Attach.Format != AttachFormat.BASIC)
+                if (obj.Attach.Format != AttachFormat.BASIC)
                     throw new FormatException("Not all Attaches inside the model are a BASIC attaches! Cannot convert");
 
                 BasicAttach atc = (BasicAttach)obj.Attach;
@@ -193,19 +193,19 @@ namespace SATools.SAModel.ModelData.BASIC
                 attaches.Add(atc);
             }
 
-            foreach(BasicAttach atc in attaches)
+            foreach (BasicAttach atc in attaches)
             {
                 // get the vertices
                 BufferVertex[] verts = new BufferVertex[atc.Positions.Length];
-                for(ushort i = 0; i < verts.Length; i++)
+                for (ushort i = 0; i < verts.Length; i++)
                     verts[i] = new BufferVertex(atc.Positions[i], atc.Normals?[i] ?? Vector3.UnitY, i);
 
                 List<BufferMesh> meshes = new();
-                foreach(Mesh mesh in atc.Meshes)
+                foreach (Mesh mesh in atc.Meshes)
                 {
                     // creating the material
                     BufferMaterial bMat;
-                    if(atc.Materials != null && mesh.MaterialID < atc.Materials.Length)
+                    if (atc.Materials != null && mesh.MaterialID < atc.Materials.Length)
                     {
                         Material mat = atc.Materials[mesh.MaterialID];
                         bMat = new BufferMaterial()
@@ -245,10 +245,10 @@ namespace SATools.SAModel.ModelData.BASIC
                     List<uint> triangles = new();
                     int polyIndex = 0;
 
-                    foreach(IPoly p in mesh.Polys)
+                    foreach (IPoly p in mesh.Polys)
                     {
                         uint l = (uint)corners.Count;
-                        switch(mesh.PolyType)
+                        switch (mesh.PolyType)
                         {
                             case BASICPolyType.Triangles:
                                 triangles.AddRange(new uint[] { l, l + 1, l + 2 });
@@ -260,10 +260,10 @@ namespace SATools.SAModel.ModelData.BASIC
                             case BASICPolyType.Strips:
                                 Strip s = (Strip)p;
                                 bool rev = s.Reversed;
-                                for(uint i = 2; i < s.Indices.Length; i++)
+                                for (uint i = 2; i < s.Indices.Length; i++)
                                 {
                                     uint li = l + i;
-                                    if(!rev)
+                                    if (!rev)
                                         triangles.AddRange(new uint[] { li - 2, li - 1, li });
                                     else
                                         triangles.AddRange(new uint[] { li - 1, li - 2, li });
@@ -274,22 +274,22 @@ namespace SATools.SAModel.ModelData.BASIC
                                 break;
                         }
 
-                        for(int i = 0; i < p.Indices.Length; i++)
+                        for (int i = 0; i < p.Indices.Length; i++)
                         {
                             corners.Add(new BufferCorner(p.Indices[i], mesh.Colors?[polyIndex] ?? Color.White, mesh.Texcoords?[polyIndex] ?? Vector2.Zero));
                             polyIndex++;
                         }
                     }
 
-                    if(meshes.Count == 0)
+                    if (meshes.Count == 0)
                         meshes.Add(new BufferMesh(verts, false, corners.ToArray(), triangles.ToArray(), bMat));
                     else
                         meshes.Add(new BufferMesh(corners.ToArray(), triangles.ToArray(), bMat));
                 }
 
-                if(optimize)
+                if (optimize)
                 {
-                    for(int i = 0; i < meshes.Count; i++)
+                    for (int i = 0; i < meshes.Count; i++)
                         meshes[i].Optimize();
                 }
 

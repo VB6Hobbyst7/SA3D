@@ -1,10 +1,9 @@
-﻿using System;
+﻿using SATools.SACommon;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 
@@ -71,17 +70,17 @@ namespace SATools.SAModel.ObjData
 
             uint tmpAddr = source.ToUInt32(0xC);
             Dictionary<uint, string> labels = new();
-            switch(version)
+            switch (version)
             {
                 case 0:
-                    if(!mdl)
+                    if (!mdl)
                         goto case 1;
 
                     // reading animation locations
-                    if(tmpAddr != 0)
+                    if (tmpAddr != 0)
                     {
                         uint pathAddr = source.ToUInt32(tmpAddr);
-                        while(pathAddr != uint.MaxValue)
+                        while (pathAddr != uint.MaxValue)
                         {
                             result.AnimFiles.Add(source.GetCString(pathAddr));
                             tmpAddr += 4;
@@ -90,10 +89,10 @@ namespace SATools.SAModel.ObjData
                     }
 
                     tmpAddr = source.ToUInt32(0x10);
-                    if(tmpAddr != 0)
+                    if (tmpAddr != 0)
                     {
                         uint pathAddr = source.ToUInt32(tmpAddr);
-                        while(pathAddr != uint.MaxValue)
+                        while (pathAddr != uint.MaxValue)
                         {
                             result.MorphFiles.Add(source.GetCString(pathAddr));
                             tmpAddr += 4;
@@ -103,14 +102,14 @@ namespace SATools.SAModel.ObjData
 
                     goto case 1;
                 case 1:
-                    if(mdl)
+                    if (mdl)
                         tmpAddr = source.ToUInt32(0x14);
-                    if(tmpAddr == 0)
+                    if (tmpAddr == 0)
                         break;
 
                     // version 1 added labels
                     uint addr = source.ToUInt32(tmpAddr);
-                    while(addr != uint.MaxValue)
+                    while (addr != uint.MaxValue)
                     {
                         labels.Add(addr, source.GetCString(source.ToUInt32(tmpAddr + 4)));
                         tmpAddr += 8;
@@ -123,24 +122,24 @@ namespace SATools.SAModel.ObjData
                     // where version 3 refined the concept to make 
                     // a block use local addresses to that block
 
-                    if(tmpAddr == 0)
+                    if (tmpAddr == 0)
                         break;
                     MetaType type = (MetaType)source.ToUInt32(tmpAddr);
 
-                    while(type != MetaType.End)
+                    while (type != MetaType.End)
                     {
                         uint blockSize = source.ToUInt32(tmpAddr + 4);
                         tmpAddr += 8;
                         uint nextMetaBlock = tmpAddr + blockSize;
                         uint pathAddr;
 
-                        if(version == 2)
+                        if (version == 2)
                         {
 
-                            switch(type)
+                            switch (type)
                             {
                                 case MetaType.Label:
-                                    while(source.ToInt64(tmpAddr) != -1)
+                                    while (source.ToInt64(tmpAddr) != -1)
                                     {
                                         labels.Add(source.ToUInt32(tmpAddr), source.GetCString(source.ToUInt32(tmpAddr + 4)));
                                         tmpAddr += 8;
@@ -148,7 +147,7 @@ namespace SATools.SAModel.ObjData
                                     break;
                                 case MetaType.Animation:
                                     pathAddr = source.ToUInt32(tmpAddr);
-                                    while(pathAddr != uint.MaxValue)
+                                    while (pathAddr != uint.MaxValue)
                                     {
                                         result.AnimFiles.Add(source.GetCString(pathAddr));
                                         tmpAddr += 4;
@@ -157,7 +156,7 @@ namespace SATools.SAModel.ObjData
                                     break;
                                 case MetaType.Morph:
                                     pathAddr = source.ToUInt32(tmpAddr);
-                                    while(pathAddr != uint.MaxValue)
+                                    while (pathAddr != uint.MaxValue)
                                     {
                                         result.MorphFiles.Add(source.GetCString(pathAddr));
                                         tmpAddr += 4;
@@ -177,10 +176,10 @@ namespace SATools.SAModel.ObjData
                             byte[] block = new byte[blockSize];
                             Array.Copy(source, tmpAddr, block, 0, blockSize);
                             uint blockAddr = 0;
-                            switch(type)
+                            switch (type)
                             {
                                 case MetaType.Label:
-                                    while(block.ToInt64(blockAddr) != -1)
+                                    while (block.ToInt64(blockAddr) != -1)
                                     {
                                         labels.Add(block.ToUInt32(blockAddr),
                                             block.GetCString(block.ToUInt32(blockAddr + 4)));
@@ -189,7 +188,7 @@ namespace SATools.SAModel.ObjData
                                     break;
                                 case MetaType.Animation:
                                     pathAddr = block.ToUInt32(blockAddr);
-                                    while(pathAddr != uint.MaxValue)
+                                    while (pathAddr != uint.MaxValue)
                                     {
                                         result.AnimFiles.Add(block.GetCString(pathAddr));
                                         blockAddr += 4;
@@ -198,7 +197,7 @@ namespace SATools.SAModel.ObjData
                                     break;
                                 case MetaType.Morph:
                                     pathAddr = block.ToUInt32(blockAddr);
-                                    while(pathAddr != uint.MaxValue)
+                                    while (pathAddr != uint.MaxValue)
                                     {
                                         result.MorphFiles.Add(block.GetCString(pathAddr));
                                         blockAddr += 4;
@@ -248,12 +247,12 @@ namespace SATools.SAModel.ObjData
             }
 
             // labels
-            if(labels.Count > 0)
+            if (labels.Count > 0)
             {
                 List<byte> meta = new((labels.Count * 8) + 8);
                 int straddr = (labels.Count * 8) + 8;
                 List<byte> strbytes = new();
-                foreach(KeyValuePair<string, uint> label in labels)
+                foreach (KeyValuePair<string, uint> label in labels)
                 {
                     meta.AddRange((label.Value).GetBytes());
                     meta.AddRange((straddr + strbytes.Count).GetBytes());
@@ -267,12 +266,12 @@ namespace SATools.SAModel.ObjData
             }
 
             // animation files
-            if(AnimFiles != null && AnimFiles.Count > 0)
+            if (AnimFiles != null && AnimFiles.Count > 0)
             {
                 List<byte> meta = new((AnimFiles.Count + 1) * 4);
                 int straddr = (AnimFiles.Count + 1) * 4;
                 List<byte> strbytes = new();
-                for(int i = 0; i < AnimFiles.Count; i++)
+                for (int i = 0; i < AnimFiles.Count; i++)
                 {
                     meta.AddRange((straddr + strbytes.Count).GetBytes());
                     strbytes.AddRange(Encoding.UTF8.GetBytes(AnimFiles[i]));
@@ -285,12 +284,12 @@ namespace SATools.SAModel.ObjData
             }
 
             // morph files
-            if(MorphFiles != null && MorphFiles.Count > 0)
+            if (MorphFiles != null && MorphFiles.Count > 0)
             {
                 List<byte> meta = new((MorphFiles.Count + 1) * 4);
                 int straddr = (MorphFiles.Count + 1) * 4;
                 List<byte> strbytes = new();
-                for(int i = 0; i < MorphFiles.Count; i++)
+                for (int i = 0; i < MorphFiles.Count; i++)
                 {
                     meta.AddRange((straddr + strbytes.Count).GetBytes());
                     strbytes.AddRange(Encoding.UTF8.GetBytes(MorphFiles[i]));
@@ -303,7 +302,7 @@ namespace SATools.SAModel.ObjData
             }
 
             // author
-            if(!string.IsNullOrEmpty(Author))
+            if (!string.IsNullOrEmpty(Author))
             {
                 List<byte> meta = new(Author.Length + 1);
                 meta.AddRange(Encoding.UTF8.GetBytes(Author));
@@ -313,7 +312,7 @@ namespace SATools.SAModel.ObjData
             }
 
             // description
-            if(!string.IsNullOrEmpty(Description))
+            if (!string.IsNullOrEmpty(Description))
             {
                 List<byte> meta = new(Description.Length + 1);
                 meta.AddRange(Encoding.UTF8.GetBytes(Description));
@@ -323,7 +322,7 @@ namespace SATools.SAModel.ObjData
             }
 
             // other metadata
-            foreach(var item in Other)
+            foreach (var item in Other)
             {
                 writer.WriteUInt32(item.Key);
                 writer.WriteUInt32((uint)item.Value.Length);

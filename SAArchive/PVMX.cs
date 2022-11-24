@@ -12,15 +12,15 @@ namespace SATools.SAArchive
 
         public override void CreateIndexFile(string path)
         {
-            using(TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
+            using (TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
             {
-                for(int u = 0; u < Entries.Count; u++)
+                for (int u = 0; u < Entries.Count; u++)
                 {
                     byte[] tdata = Entries[u].Data;
                     string entry;
                     PVMXEntry pvmxentry = (PVMXEntry)Entries[u];
                     string dimensions = string.Join("x", pvmxentry.Width.ToString(), pvmxentry.Height.ToString());
-                    if(pvmxentry.HasDimensions())
+                    if (pvmxentry.HasDimensions())
                         entry = string.Join(",", pvmxentry.GBIX.ToString(), pvmxentry.Name, dimensions);
                     else
                         entry = string.Join(",", pvmxentry.GBIX.ToString(), pvmxentry.Name);
@@ -34,21 +34,21 @@ namespace SATools.SAArchive
         public PVMX(byte[] pvmxdata)
         {
             Entries = new List<ArchiveEntry>();
-            if(!(pvmxdata.Length > 4 && BitConverter.ToInt32(pvmxdata, 0) == 0x584D5650))
+            if (!(pvmxdata.Length > 4 && BitConverter.ToInt32(pvmxdata, 0) == 0x584D5650))
                 throw new FormatException("File is not a PVMX archive.");
-            if(pvmxdata[4] != 1)
+            if (pvmxdata[4] != 1)
                 throw new FormatException("Incorrect PVMX archive version.");
             int off = 5;
             dictionary_field type;
-            for(type = (dictionary_field)pvmxdata[off++]; type != dictionary_field.none; type = (dictionary_field)pvmxdata[off++])
+            for (type = (dictionary_field)pvmxdata[off++]; type != dictionary_field.none; type = (dictionary_field)pvmxdata[off++])
             {
                 string name = "";
                 uint gbix = 0;
                 int width = 0;
                 int height = 0;
-                while(type != dictionary_field.none)
+                while (type != dictionary_field.none)
                 {
-                    switch(type)
+                    switch (type)
                     {
                         case dictionary_field.global_index:
                             gbix = BitConverter.ToUInt32(pvmxdata, off);
@@ -57,7 +57,7 @@ namespace SATools.SAArchive
 
                         case dictionary_field.name:
                             int count = 0;
-                            while(pvmxdata[off + count] != 0)
+                            while (pvmxdata[off + count] != 0)
                                 count++;
                             name = System.Text.Encoding.UTF8.GetString(pvmxdata, off, count);
                             off += count + 1;
@@ -102,14 +102,14 @@ namespace SATools.SAArchive
             bw.Write(Header);
             bw.Write(Version);
             List<OffData> texdata = new List<OffData>();
-            foreach(PVMXEntry tex in Entries)
+            foreach (PVMXEntry tex in Entries)
             {
                 bw.Write((byte)dictionary_field.global_index);
                 bw.Write(tex.GBIX);
                 bw.Write((byte)dictionary_field.name);
                 bw.Write(tex.Name.ToCharArray());
                 bw.Write((byte)0);
-                if(tex.HasDimensions())
+                if (tex.HasDimensions())
                 {
                     bw.Write((byte)dictionary_field.dimensions);
                     bw.Write(tex.Width);
@@ -117,7 +117,7 @@ namespace SATools.SAArchive
                 }
                 bw.Write((byte)dictionary_field.none);
                 long size;
-                using(MemoryStream ms = new MemoryStream(tex.Data))
+                using (MemoryStream ms = new MemoryStream(tex.Data))
                 {
                     texdata.Add(new OffData(str.Position, ms.ToArray()));
                     size = ms.Length;
@@ -126,7 +126,7 @@ namespace SATools.SAArchive
                 bw.Write(size);
             }
             bw.Write((byte)dictionary_field.none);
-            foreach(OffData od in texdata)
+            foreach (OffData od in texdata)
             {
                 long pos = str.Position;
                 str.Position = od.off;
@@ -141,7 +141,7 @@ namespace SATools.SAArchive
         {
             TextureSet result = new();
 
-            foreach(PVMXEntry entry in Entries)
+            foreach (PVMXEntry entry in Entries)
             {
                 result.Textures.Add(new Texture(entry.Name, entry.GetBitmap(), new(entry.Width, entry.Height)));
             }
@@ -168,7 +168,7 @@ namespace SATools.SAArchive
 
             public bool HasDimensions()
             {
-                if(Width != 0 || Height != 0)
+                if (Width != 0 || Height != 0)
                     return true;
                 else
                     return false;

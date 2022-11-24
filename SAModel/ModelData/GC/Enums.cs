@@ -337,7 +337,7 @@ namespace SATools.SAModel.ModelData.GC
 
         public static IOType ToStructType(this DataType typ)
         {
-            switch(typ)
+            switch (typ)
             {
                 case DataType.Signed16:
                     return IOType.Short;
@@ -355,7 +355,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             uint num_components = 1;
 
-            switch(structType)
+            switch (structType)
             {
                 case StructType.PositionXY:
                 case StructType.TexCoordST:
@@ -367,7 +367,7 @@ namespace SATools.SAModel.ModelData.GC
                     break;
             }
 
-            switch(dataType)
+            switch (dataType)
             {
                 case DataType.Unsigned8:
                 case DataType.Signed8:

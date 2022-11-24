@@ -1,13 +1,11 @@
-﻿using System;
+﻿using SATools.SACommon;
+using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.Structs;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
-using SATools.SAModel.Structs;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
@@ -139,7 +137,7 @@ namespace SATools.SAModel.ModelData
             uint meshAddr = source.ToUInt32(address + 4) - imageBase;
 
             uint[] meshAddresses = new uint[meshCount];
-            for(int i = 0; i < meshCount; i++)
+            for (int i = 0; i < meshCount; i++)
             {
                 meshAddresses[i] = source.ToUInt32(meshAddr) - imageBase;
                 meshAddr += 4;
@@ -147,7 +145,7 @@ namespace SATools.SAModel.ModelData
 
             BufferMesh[] meshes = new BufferMesh[meshCount];
 
-            for(int i = 0; i < meshCount; i++)
+            for (int i = 0; i < meshCount; i++)
             {
                 meshes[i] = BufferMesh.Read(source, meshAddresses[i], imageBase);
             }
@@ -172,14 +170,14 @@ namespace SATools.SAModel.ModelData
         {
             // write the meshes first
             uint[] meshAddresses = new uint[MeshData.Length];
-            for(int i = 0; i < MeshData.Length; i++)
+            for (int i = 0; i < MeshData.Length; i++)
             {
                 meshAddresses[i] = MeshData[i].Write(writer, imageBase);
             }
 
             // write the pointer array
             uint arrayAddr = writer.Position + imageBase;
-            for(int i = 0; i < MeshData.Length; i++)
+            for (int i = 0; i < MeshData.Length; i++)
             {
                 writer.WriteUInt32(meshAddresses[i]);
             }
@@ -209,15 +207,15 @@ namespace SATools.SAModel.ModelData
             int opaqueCount = 0;
             int transparentCount = result.Length - 1;
 
-            for(int i = 0; i < result.Length; i++)
+            for (int i = 0; i < result.Length; i++)
             {
                 bool? useAlpha = MeshData[i].Material?.UseAlpha;
-                if(useAlpha == true)
+                if (useAlpha == true)
                 {
                     result[transparentCount] = MeshData[i];
                     transparentCount--;
                 }
-                else if(useAlpha == false)
+                else if (useAlpha == false)
                 {
                     result[opaqueCount] = MeshData[i];
                     opaqueCount++;
@@ -226,7 +224,7 @@ namespace SATools.SAModel.ModelData
             transparentCount++;
 
             BufferMesh[] transparent = new BufferMesh[result.Length - transparentCount];
-            if(transparent.Length > 0)
+            if (transparent.Length > 0)
                 Array.Copy(result, transparentCount, transparent, 0, transparent.Length);
             Array.Resize(ref result, opaqueCount);
 

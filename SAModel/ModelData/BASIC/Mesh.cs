@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -68,7 +67,7 @@ namespace SATools.SAModel.ModelData.BASIC
             get => _normals;
             set
             {
-                if(value != null && value.Length != PolygonCornerCount)
+                if (value != null && value.Length != PolygonCornerCount)
                     throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
                 _normals = value;
             }
@@ -87,7 +86,7 @@ namespace SATools.SAModel.ModelData.BASIC
             get => _colors;
             set
             {
-                if(value != null && value.Length != PolygonCornerCount)
+                if (value != null && value.Length != PolygonCornerCount)
                     throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
                 _colors = value;
             }
@@ -106,7 +105,7 @@ namespace SATools.SAModel.ModelData.BASIC
             get => _texcoords;
             set
             {
-                if(value != null && value.Length != PolygonCornerCount)
+                if (value != null && value.Length != PolygonCornerCount)
                     throw new ArgumentException($"New array has a length of {value.Length}, while {PolygonCornerCount} is expected");
                 _texcoords = value;
             }
@@ -138,23 +137,23 @@ namespace SATools.SAModel.ModelData.BASIC
             string identifier = GenerateIdentifier();
 
             int cornerCount = 0;
-            foreach(IPoly p in polys)
+            foreach (IPoly p in polys)
                 cornerCount += p.Indices.Length;
             PolygonCornerCount = cornerCount;
 
             PolyName = "poly_" + identifier;
 
-            if(hasNormal)
+            if (hasNormal)
             {
                 Normals = new Vector3[cornerCount];
                 NormalName = "polynormal_" + identifier;
             }
-            if(hasColor)
+            if (hasColor)
             {
                 Colors = new Color[cornerCount];
                 ColorName = "vcolor_" + identifier;
             }
-            if(hasTexcoords)
+            if (hasTexcoords)
             {
                 Texcoords = new Vector2[cornerCount];
                 TexcoordName = "uv_" + identifier;
@@ -216,10 +215,10 @@ namespace SATools.SAModel.ModelData.BASIC
 
             // reading polygons
             IPoly[] polys = Array.Empty<IPoly>();
-            if(polyAddr > 0)
+            if (polyAddr > 0)
             {
                 polys = new IPoly[polyCount];
-                for(int i = 0; i < polyCount; i++)
+                for (int i = 0; i < polyCount; i++)
                     polys[i] = IPoly.Read(polyType, source, ref polyAddr);
             }
 
@@ -232,18 +231,18 @@ namespace SATools.SAModel.ModelData.BASIC
 
             // reading the remaining data
             // reading additional normals
-            if(normalAddr != 0)
-                for(int i = 0; i < result.Normals.Length; i++)
+            if (normalAddr != 0)
+                for (int i = 0; i < result.Normals.Length; i++)
                     result.Normals[i] = Vector3Extensions.Read(source, ref normalAddr, IOType.Float);
 
             // reading colors
-            if(colorAddr != 0)
-                for(int i = 0; i < result.Colors.Length; i++)
+            if (colorAddr != 0)
+                for (int i = 0; i < result.Colors.Length; i++)
                     result.Colors[i] = Color.Read(source, ref colorAddr, IOType.ARGB8_32);
 
             // reading texcoords
-            if(texcoordAddr != 0)
-                for(int i = 0; i < result.Texcoords.Length; i++)
+            if (texcoordAddr != 0)
+                for (int i = 0; i < result.Texcoords.Length; i++)
                     result.Texcoords[i] = Vector2Extensions.Read(source, ref texcoordAddr, IOType.Short) / 256f;
 
             address += 24;
@@ -259,7 +258,7 @@ namespace SATools.SAModel.ModelData.BASIC
         public void WriteDataNJA(TextWriter writer, List<string> labels)
         {
             // writing polygons
-            if(!labels.Contains(PolyName) && Polys != null)
+            if (!labels.Contains(PolyName) && Polys != null)
             {
                 writer.Write("POLYGON ");
                 writer.Write(PolyName);
@@ -268,7 +267,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(IPoly p in Polys)
+                foreach (IPoly p in Polys)
                 {
                     writer.Write("\t");
                     p.WriteNJA(writer);
@@ -281,7 +280,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(PolyName);
             }
 
-            if(!labels.Contains(NormalName) && Normals != null)
+            if (!labels.Contains(NormalName) && Normals != null)
             {
                 writer.Write("POLYNORMAL ");
                 writer.Write(NormalName);
@@ -290,7 +289,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Vector3 n in Normals)
+                foreach (Vector3 n in Normals)
                 {
                     writer.Write("\tPNORM ");
                     n.WriteNJA(writer, IOType.Float);
@@ -303,7 +302,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(NormalName);
             }
 
-            if(!labels.Contains(ColorName) && Colors != null)
+            if (!labels.Contains(ColorName) && Colors != null)
             {
                 writer.Write("VERTCOLOR ");
                 writer.Write(ColorName);
@@ -311,7 +310,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
                 writer.WriteLine("START");
 
-                foreach(Color c in Colors)
+                foreach (Color c in Colors)
                 {
                     writer.Write("\tARGB");
                     c.WriteNJA(writer, IOType.ARGB8_32);
@@ -324,7 +323,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(ColorName);
             }
 
-            if(!labels.Contains(TexcoordName) && Texcoords != null)
+            if (!labels.Contains(TexcoordName) && Texcoords != null)
             {
                 writer.Write("VERTUV ");
                 writer.Write(TexcoordName);
@@ -333,7 +332,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Vector2 texcoord in Texcoords)
+                foreach (Vector2 texcoord in Texcoords)
                 {
                     writer.Write("\tUV ");
                     (texcoord * 256).WriteNJA(writer, IOType.Short);
@@ -356,31 +355,31 @@ namespace SATools.SAModel.ModelData.BASIC
         public void WriteData(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
 
-            if(!labels.ContainsKey(PolyName))
+            if (!labels.ContainsKey(PolyName))
             {
                 labels.AddLabel(PolyName, writer.Position + imageBase);
-                foreach(IPoly p in Polys)
+                foreach (IPoly p in Polys)
                     p.Write(writer);
             }
 
-            if(Normals != null && !labels.ContainsKey(NormalName))
+            if (Normals != null && !labels.ContainsKey(NormalName))
             {
                 labels.AddLabel(NormalName, writer.Position + imageBase);
-                foreach(Vector3 n in Normals)
+                foreach (Vector3 n in Normals)
                     n.Write(writer, IOType.Float);
             }
 
-            if(Colors != null && !labels.ContainsKey(ColorName))
+            if (Colors != null && !labels.ContainsKey(ColorName))
             {
                 labels.AddLabel(ColorName, writer.Position + imageBase);
-                foreach(Color c in Colors)
+                foreach (Color c in Colors)
                     c.Write(writer, IOType.ARGB8_32);
             }
 
-            if(Texcoords != null && !labels.ContainsKey(TexcoordName))
+            if (Texcoords != null && !labels.ContainsKey(TexcoordName))
             {
                 labels.AddLabel(TexcoordName, writer.Position + imageBase);
-                foreach(Vector2 texcoord in Texcoords)
+                foreach (Vector2 texcoord in Texcoords)
                     (texcoord * 256f).Write(writer, IOType.Short);
             }
         }
@@ -421,7 +420,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.Write("VertUV \t\t");
             writer.Write(Texcoords != null ? TexcoordName : "NULL");
 
-            if(DX)
+            if (DX)
             {
                 writer.WriteLine(",");
                 writer.WriteLine("NULL");
@@ -438,7 +437,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="DX">Whether the mesh should be written for SADX</param>
         public void WriteMeshset(EndianWriter writer, bool DX, Dictionary<string, uint> labels)
         {
-            if(!labels.ContainsKey(PolyName))
+            if (!labels.ContainsKey(PolyName))
                 throw new NullReferenceException("Data has not been written yet");
 
             ushort header = MaterialID;
@@ -450,7 +449,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt32(Normals == null ? 0 : labels[NormalName]);
             writer.WriteUInt32(Colors == null ? 0 : labels[ColorName]);
             writer.WriteUInt32(Texcoords == null ? 0 : labels[TexcoordName]);
-            if(DX)
+            if (DX)
                 writer.WriteUInt32(0);
         }
 

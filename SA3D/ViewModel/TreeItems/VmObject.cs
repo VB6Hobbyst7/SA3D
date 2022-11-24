@@ -1,12 +1,7 @@
 ﻿using SATools.SA3D.ViewModel.Base;
 using SATools.SAModel.Graphics;
 using SATools.SAModel.ObjData;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {
@@ -27,12 +22,12 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public List<ITreeItemData> Expand()
         {
             List<ITreeItemData> result = new();
-            if(TaskData is DisplayTask dtsk)
+            if (TaskData is DisplayTask dtsk)
             {
                 result.Add(new VmModelHead(dtsk.Model));
                 result.Add(new VmTextureHead(dtsk.TextureSet));
 
-                if(TaskData is DebugTask dbtsk)
+                if (TaskData is DebugTask dbtsk)
                     result.Add(new VmAnimHead(dbtsk.Motions));
             }
             return result;

@@ -1,8 +1,5 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -54,9 +51,9 @@ namespace SATools.SAModel.ModelData.CHUNK
         private void Initialize()
         {
             List<Vector3> pos = new();
-            if(VertexChunks != null)
-                foreach(VertexChunk cnk in VertexChunks)
-                    foreach(ChunkVertex vtx in cnk.Vertices)
+            if (VertexChunks != null)
+                foreach (VertexChunk cnk in VertexChunks)
+                    foreach (ChunkVertex vtx in cnk.Vertices)
                         pos.Add(vtx.Position);
             MeshBounds = Bounds.FromPoints(pos.ToArray());
             UpdateWeight();
@@ -72,16 +69,16 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// </summary>
         public void UpdateWeight()
         {
-            if(PolyChunks == null || !PolyChunks.Any(a => a is PolyChunkStrip))
+            if (PolyChunks == null || !PolyChunks.Any(a => a is PolyChunkStrip))
             {
                 hasWeight = VertexChunks != null && VertexChunks.Any(a => a.HasWeight);
                 return;
             }
             List<int> ids = new();
-            if(VertexChunks != null)
-                foreach(var vc in VertexChunks)
+            if (VertexChunks != null)
+                foreach (var vc in VertexChunks)
                 {
-                    if(vc.HasWeight)
+                    if (vc.HasWeight)
                     {
                         hasWeight = true;
                         return;
@@ -107,14 +104,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             uint vertexAddress = source.ToUInt32(address);
             string vertexName = "vertex_" + identifier;
             VertexChunk[] vertexChunks = null;
-            if(vertexAddress != 0)
+            if (vertexAddress != 0)
             {
                 vertexAddress -= imagebase;
                 vertexName = labels.ContainsKey(vertexAddress) ? labels[vertexAddress] : "vertex_" + vertexAddress.ToString("X8");
 
                 List<VertexChunk> chunks = new();
                 VertexChunk cnk = VertexChunk.Read(source, ref vertexAddress);
-                while(cnk != null)
+                while (cnk != null)
                 {
                     chunks.Add(cnk);
                     cnk = VertexChunk.Read(source, ref vertexAddress);
@@ -125,14 +122,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             uint polyAddress = source.ToUInt32(address += 4);
             string polyName = "poly_" + identifier;
             PolyChunk[] polyChunks = null;
-            if(polyAddress != 0)
+            if (polyAddress != 0)
             {
                 polyAddress -= imagebase;
                 polyName = labels.ContainsKey(polyAddress) ? labels[polyAddress] : "poly_" + polyAddress.ToString("X8");
 
                 List<PolyChunk> chunks = new();
                 PolyChunk cnk = PolyChunk.Read(source, ref polyAddress);
-                while(cnk != null && cnk.Type != ChunkType.End)
+                while (cnk != null && cnk.Type != ChunkType.End)
                 {
                     chunks.Add(cnk);
                     cnk = PolyChunk.Read(source, ref polyAddress);
@@ -154,14 +151,14 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             // writing vertices
             uint vertexAddress = 0;
-            if(VertexChunks != null && VertexChunks.Length > 0)
+            if (VertexChunks != null && VertexChunks.Length > 0)
             {
-                if(labels.ContainsKey(VertexName))
+                if (labels.ContainsKey(VertexName))
                     vertexAddress = labels[VertexName];
                 else
                 {
                     vertexAddress = writer.Position + imageBase;
-                    foreach(VertexChunk cnk in VertexChunks)
+                    foreach (VertexChunk cnk in VertexChunks)
                     {
                         cnk.Write(writer);
                     }
@@ -172,14 +169,14 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
             }
             uint polyAddress = 0;
-            if(PolyChunks != null && PolyChunks.Length > 0)
+            if (PolyChunks != null && PolyChunks.Length > 0)
             {
-                if(labels.ContainsKey(PolyName))
+                if (labels.ContainsKey(PolyName))
                     polyAddress = labels[PolyName];
                 else
                 {
                     polyAddress = writer.Position + imageBase;
-                    foreach(PolyChunk cnk in PolyChunks)
+                    foreach (PolyChunk cnk in PolyChunks)
                     {
                         cnk.Write(writer);
                     }

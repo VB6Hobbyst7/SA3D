@@ -50,7 +50,7 @@ namespace SATools.SAWPF.BaseViewModel
         /// <param name="parameter"></param>
         public void Execute(object parameter)
         {
-            if(typeof(TParameterType) == null || parameter.GetType() == typeof(TParameterType))
+            if (typeof(TParameterType) == null || parameter.GetType() == typeof(TParameterType))
                 _mAction((TParameterType)parameter);
             else
                 throw new ArgumentException("Parameter of type " + parameter.GetType() + ", but it should be " + typeof(TParameterType), nameof(parameter));

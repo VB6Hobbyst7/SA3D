@@ -1,8 +1,8 @@
-﻿using System;
-using System.Numerics;
-using SATools.SACommon;
-using static SATools.SACommon.MathHelper;
+﻿using SATools.SACommon;
+using System;
 using System.IO;
+using System.Numerics;
+using static SATools.SACommon.MathHelper;
 
 namespace SATools.SAModel.Structs
 {
@@ -22,7 +22,7 @@ namespace SATools.SAModel.Structs
         public static Vector3 Read(byte[] source, ref uint address, IOType type)
         {
             Vector3 result;
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     result = new Vector3()
@@ -73,7 +73,7 @@ namespace SATools.SAModel.Structs
         /// <param name="type">Datatype to write object as</param>
         public static void Write(this Vector3 vector, EndianWriter writer, IOType type)
         {
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     writer.WriteInt16((short)vector.X);
@@ -108,7 +108,7 @@ namespace SATools.SAModel.Structs
         public static void WriteNJA(this Vector3 vector, TextWriter writer, IOType type)
         {
             writer.Write("( ");
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     writer.Write((short)vector.X);
@@ -153,9 +153,9 @@ namespace SATools.SAModel.Structs
         public static float GreatestValue(this Vector3 vector)
         {
             float r = vector.X;
-            if(vector.Y > r)
+            if (vector.Y > r)
                 r = vector.Y;
-            if(vector.Z > r)
+            if (vector.Z > r)
                 r = vector.Z;
             return r;
         }
@@ -182,10 +182,10 @@ namespace SATools.SAModel.Structs
         {
             Vector3 center = new();
 
-            if(points == null || points.Length == 0)
+            if (points == null || points.Length == 0)
                 return center;
 
-            foreach(Vector3 p in points)
+            foreach (Vector3 p in points)
                 center += p;
 
             return center / points.Length;
@@ -198,7 +198,7 @@ namespace SATools.SAModel.Structs
         /// <returns></returns>
         public static Vector3 Center(Vector3[] points)
         {
-            if(points == null || points.Length == 0)
+            if (points == null || points.Length == 0)
                 return new Vector3();
 
             Vector3 Positive = points[0];
@@ -206,13 +206,13 @@ namespace SATools.SAModel.Structs
 
             static void boundsCheck(float i, ref float p, ref float n)
             {
-                if(i > p)
+                if (i > p)
                     p = i;
-                else if(i < n)
+                else if (i < n)
                     n = i;
             }
 
-            foreach(Vector3 p in points)
+            foreach (Vector3 p in points)
             {
                 boundsCheck(p.X, ref Positive.X, ref Negative.X);
                 boundsCheck(p.Y, ref Positive.Y, ref Negative.Y);
@@ -248,7 +248,7 @@ namespace SATools.SAModel.Structs
             float cZ = MathF.Cos(radZ);
 
 
-            if(ZYX)
+            if (ZYX)
             {
                 // Well, in sa2 it rotates in ZXY order, so thats what we do here. dont ask me...
                 // equal to matZ * matX * matY

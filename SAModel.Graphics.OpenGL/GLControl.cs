@@ -1,7 +1,6 @@
 ﻿using OpenTK.Windowing.Common;
 using OpenTK.Wpf;
 using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.Structs;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Input;
@@ -35,7 +34,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             _inputBridge.OnSetCursorPosition += (o, v2) =>
             {
-                if(!_mouseLocked)
+                if (!_mouseLocked)
                 {
                     var p = ToScreenPos(v2);
                     NativeMethods.SetCursorPos((int)p.X, (int)p.Y);
@@ -60,13 +59,13 @@ namespace SATools.SAModel.Graphics.OpenGL
 
             Render += (time) =>
             {
-                if(_context.IsFocused && !IsFocused)
+                if (_context.IsFocused && !IsFocused)
                     inputBridge.ClearInputs();
 
                 _context.IsFocused = IsFocused;
                 _context.Update(time.TotalSeconds);
 
-                if(_mouseLocked && IsFocused)
+                if (_mouseLocked && IsFocused)
                 {
                     var p = ToScreenPos(_center);
                     NativeMethods.SetCursorPos((int)p.X, (int)p.Y);
@@ -114,7 +113,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             base.OnMouseMove(e);
             var pos = e.GetPosition(this);
             Vector2 posV2 = new((float)pos.X, (float)pos.Y);
-            if(_mouseLocked)
+            if (_mouseLocked)
                 _inputBridge.UpdateCursorPos(posV2, _center);
             else
                 _inputBridge.UpdateCursorPos(posV2, null);
@@ -136,7 +135,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         protected override void OnMouseDown(System.Windows.Input.MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            if(!IsFocused)
+            if (!IsFocused)
                 Focus();
 
             _inputBridge.MouseButtonPressed(e.ChangedButton);

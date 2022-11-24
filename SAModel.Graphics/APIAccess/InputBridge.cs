@@ -62,20 +62,20 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// </summary>
         internal void PreUpdate()
         {
-            if(_releasedKeys.Count > 0)
+            if (_releasedKeys.Count > 0)
             {
                 var keyWasPressed = inputHandler._keyPressed;
-                foreach(var k in _releasedKeys)
-                    if(keyWasPressed.Contains(k))
+                foreach (var k in _releasedKeys)
+                    if (keyWasPressed.Contains(k))
                         PressedKeys.Remove(k);
                 _releasedKeys.RemoveWhere(x => !PressedKeys.Contains(x));
             }
 
-            if(_releasedButtons.Count > 0)
+            if (_releasedButtons.Count > 0)
             {
                 var mouseWasPressed = inputHandler._mousePressed;
-                foreach(var b in _releasedButtons)
-                    if(mouseWasPressed.Contains(b))
+                foreach (var b in _releasedButtons)
+                    if (mouseWasPressed.Contains(b))
                         PressedButtons.Remove(b);
                 _releasedButtons.RemoveWhere(x => !PressedButtons.Contains(x));
             }
@@ -135,21 +135,21 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// <param name="recenter">Recentering position; null if mouse isnt locked to center</param>
         public void UpdateCursorPos(Vector2? pos, Vector2? recenter)
         {
-            if(!pos.HasValue)
+            if (!pos.HasValue)
             {
                 hadLoc = false;
                 CursorDelta = default;
                 return;
             }
 
-            if(recenter.HasValue)
+            if (recenter.HasValue)
             {
-                if(recenter != pos.Value)
+                if (recenter != pos.Value)
                     CursorDelta = pos.Value - recenter.Value;
                 CursorLocation = recenter.Value;
                 return;
             }
-            else if(hadLoc)
+            else if (hadLoc)
                 CursorDelta += pos.Value - CursorLocation;
             else
                 CursorDelta = default;

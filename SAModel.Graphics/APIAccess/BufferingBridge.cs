@@ -41,7 +41,7 @@ namespace SATools.SAModel.Graphics.APIAccess
         public virtual void Initialize()
         {
             initialized = true;
-            foreach(var ts in _textureSetUsages)
+            foreach (var ts in _textureSetUsages)
                 BufferTextureSet(ts.Key);
         }
 
@@ -151,17 +151,17 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// <param name="active"></param>
         public void LoadToCache(BufferMesh[] meshData, Matrix4x4? weightWorldMatrix, bool active)
         {
-            if(meshData.Length == 0)
+            if (meshData.Length == 0)
                 return;
 
             Matrix4x4 normalMtx = default;
-            if(weightWorldMatrix.HasValue)
+            if (weightWorldMatrix.HasValue)
             {
                 Matrix4x4.Invert(weightWorldMatrix.Value, out normalMtx);
                 normalMtx = Matrix4x4.Transpose(normalMtx);
             }
 
-            foreach(BufferMesh mesh in meshData)
+            foreach (BufferMesh mesh in meshData)
             {
                 LoadToCache(mesh, weightWorldMatrix, normalMtx, active);
             }
@@ -169,23 +169,23 @@ namespace SATools.SAModel.Graphics.APIAccess
 
         public void LoadToCache(BufferMesh mesh, Matrix4x4? weightworld = null, Matrix4x4 weightnormal = default, bool active = false)
         {
-            if(mesh.Vertices != null)
+            if (mesh.Vertices != null)
             {
-                if(weightworld == null)
+                if (weightworld == null)
                 {
-                    foreach(BufferVertex vtx in mesh.Vertices)
+                    foreach (BufferVertex vtx in mesh.Vertices)
                         Vertices[vtx.Index + mesh.VertexWriteOffset] = new(vtx);
                 }
                 else
                 {
-                    foreach(BufferVertex vtx in mesh.Vertices)
+                    foreach (BufferVertex vtx in mesh.Vertices)
                     {
                         Vector4 pos = Vector4.Transform(vtx.Position, weightworld.Value) * vtx.Weight;
                         Vector3 nrm = Vector3.TransformNormal(vtx.Normal, weightnormal) * vtx.Weight;
 
                         int index = vtx.Index + mesh.VertexWriteOffset;
 
-                        if(mesh.ContinueWeight)
+                        if (mesh.ContinueWeight)
                         {
                             Vertices[index].position += pos;
                             Vertices[index].normal += nrm;
@@ -195,7 +195,7 @@ namespace SATools.SAModel.Graphics.APIAccess
                             Vertices[index] = new(pos, nrm);
                         }
 
-                        if(active)
+                        if (active)
                         {
                             Vertices[index].weightColor = vtx.Weight;
                         }
@@ -203,11 +203,11 @@ namespace SATools.SAModel.Graphics.APIAccess
                 }
             }
 
-            if(mesh.Corners != null)
+            if (mesh.Corners != null)
             {
                 CacheBuffer[] toBuffer = new CacheBuffer[mesh.Corners.Length];
 
-                for(int i = 0; i < toBuffer.Length; i++)
+                for (int i = 0; i < toBuffer.Length; i++)
                 {
                     BufferCorner corner = mesh.Corners[i];
                     int vOffset = corner.VertexIndex + mesh.VertexReadOffset;
@@ -253,10 +253,10 @@ namespace SATools.SAModel.Graphics.APIAccess
 
         internal void InternalBufferTextureSet(TextureSet set)
         {
-            if(!_textureSetUsages.TryGetValue(set, out _))
+            if (!_textureSetUsages.TryGetValue(set, out _))
             {
                 _textureSetUsages.Add(set, 1);
-                if(initialized)
+                if (initialized)
                     BufferTextureSet(set);
             }
             _textureSetUsages[set]++;
@@ -264,10 +264,10 @@ namespace SATools.SAModel.Graphics.APIAccess
 
         internal void InternalDebufferTextureSet(TextureSet set)
         {
-            if(_textureSetUsages[set] == 1)
+            if (_textureSetUsages[set] == 1)
             {
                 _textureSetUsages.Remove(set);
-                if(initialized)
+                if (initialized)
                     DebufferTextureSet(set);
                 return;
             }

@@ -1,9 +1,7 @@
 ﻿using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.Structs;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Windows.Input;
-using Point = System.Drawing.Point;
 
 namespace SATools.SAModel.Graphics
 {
@@ -59,7 +57,7 @@ namespace SATools.SAModel.Graphics
             get => _lockCursor;
             set
             {
-                if(value == _lockCursor)
+                if (value == _lockCursor)
                     return;
                 _lockCursor = value;
                 _bridge.OnSetMouselock(null, value);
@@ -96,7 +94,7 @@ namespace SATools.SAModel.Graphics
             _mousePressed.Clear();
 
 
-            if(focused)
+            if (focused)
             {
                 _keyPressed.UnionWith(_bridge.PressedKeys);
                 _mousePressed.UnionWith(_bridge.PressedButtons);

@@ -1,6 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -77,7 +75,7 @@ namespace SATools.SAModel.ModelData.BASIC
             Meshes = meshes;
             Materials = materials;
 
-            if(normals != null && positions.Length != normals.Length)
+            if (normals != null && positions.Length != normals.Length)
                 throw new ArgumentException("Position and Normal count doesnt match!");
 
             MeshBounds = Bounds.FromPoints(positions);
@@ -87,7 +85,7 @@ namespace SATools.SAModel.ModelData.BASIC
             MaterialName = "matlist_" + identifier;
             MeshName = "meshlist_" + identifier;
             PositionName = "vertex_" + identifier;
-            if(normals != null)
+            if (normals != null)
                 NormalName = "normal_" + identifier;
         }
 
@@ -108,7 +106,7 @@ namespace SATools.SAModel.ModelData.BASIC
         public static BasicAttach Read(byte[] source, uint address, uint imageBase, bool DX, Dictionary<uint, string> labels)
         {
             string name;
-            if(labels.ContainsKey(address))
+            if (labels.ContainsKey(address))
                 name = labels[address];
             else
                 name = "attach_" + address.ToString("X8");
@@ -123,11 +121,11 @@ namespace SATools.SAModel.ModelData.BASIC
             // reading positions
             uint posAddr = source.ToUInt32(address);
             string posName;
-            if(posAddr != 0)
+            if (posAddr != 0)
             {
                 posAddr -= imageBase;
                 posName = labels.ContainsKey(posAddr) ? labels[posAddr] : "vertex_" + posAddr.ToString("X8");
-                for(int i = 0; i < positions.Length; i++)
+                for (int i = 0; i < positions.Length; i++)
                     positions[i] = Vector3Extensions.Read(source, ref posAddr, IOType.Float);
             }
             else
@@ -136,12 +134,12 @@ namespace SATools.SAModel.ModelData.BASIC
             // reading normals
             uint nrmAddr = source.ToUInt32(address + 4);
             string nrmName = null;
-            if(nrmAddr != 0)
+            if (nrmAddr != 0)
             {
                 normals = new Vector3[positions.Length];
                 nrmAddr -= imageBase;
                 nrmName = labels.ContainsKey(nrmAddr) ? labels[nrmAddr] : "normal_" + nrmAddr.ToString("X8");
-                for(int i = 0; i < normals.Length; i++)
+                for (int i = 0; i < normals.Length; i++)
                     normals[i] = Vector3Extensions.Read(source, ref nrmAddr, IOType.Float);
             }
             else
@@ -153,15 +151,15 @@ namespace SATools.SAModel.ModelData.BASIC
             uint maxMat = 0;
             uint meshAddr = source.ToUInt32(address + 0xC);
             string meshName;
-            if(meshAddr != 0)
+            if (meshAddr != 0)
             {
                 meshAddr -= imageBase;
                 meshName = labels.ContainsKey(meshAddr) ? labels[meshAddr] : "meshlist_" + meshAddr.ToString("X8");
 
-                for(int i = 0; i < meshes.Length; i++)
+                for (int i = 0; i < meshes.Length; i++)
                 {
                     meshes[i] = Mesh.Read(source, ref meshAddr, imageBase, labels);
-                    if(DX)
+                    if (DX)
                         meshAddr += 4;
                     maxMat = Math.Max(maxMat, meshes[i].MaterialID);
                 }
@@ -174,11 +172,11 @@ namespace SATools.SAModel.ModelData.BASIC
             Material[] materials = new Material[Math.Max(source.ToUInt16(address + 22), maxMat + 1)];
             uint matAddr = source.ToUInt32(address + 16);
             string matName;
-            if(matAddr != 0)
+            if (matAddr != 0)
             {
                 matAddr -= imageBase;
                 matName = labels.ContainsKey(matAddr) ? labels[matAddr] : "matlist_" + matAddr.ToString("X8");
-                for(int i = 0; i < materials.Length; i++)
+                for (int i = 0; i < materials.Length; i++)
                     materials[i] = Material.Read(source, ref matAddr);
             }
             else
@@ -202,56 +200,56 @@ namespace SATools.SAModel.ModelData.BASIC
         {
             // writing positions
             uint posAddress;
-            if(labels.ContainsKey(PositionName))
+            if (labels.ContainsKey(PositionName))
                 posAddress = labels[PositionName];
             else
             {
                 posAddress = writer.Position + imageBase;
                 labels.AddLabel(PositionName, posAddress);
-                foreach(Vector3 p in Positions)
+                foreach (Vector3 p in Positions)
                     p.Write(writer, IOType.Float);
             }
 
             // writing normals
             uint nrmAddress = 0;
-            if(Normals != null)
+            if (Normals != null)
             {
-                if(labels.ContainsKey(NormalName))
+                if (labels.ContainsKey(NormalName))
                     nrmAddress = labels[NormalName];
                 else
                 {
                     nrmAddress = writer.Position + imageBase;
                     labels.AddLabel(NormalName, nrmAddress);
-                    foreach(Vector3 p in Normals)
+                    foreach (Vector3 p in Normals)
                         p.Write(writer, IOType.Float);
                 }
             }
 
             // writing meshsets
             uint meshAddress;
-            if(labels.ContainsKey(MeshName))
+            if (labels.ContainsKey(MeshName))
                 meshAddress = labels[MeshName];
             else
             {
                 // writing meshset data
-                foreach(Mesh m in Meshes)
+                foreach (Mesh m in Meshes)
                     m.WriteData(writer, imageBase, labels);
 
                 meshAddress = writer.Position + imageBase;
                 labels.AddLabel(MeshName, meshAddress);
-                foreach(Mesh m in Meshes)
+                foreach (Mesh m in Meshes)
                     m.WriteMeshset(writer, DX, labels);
             }
 
             // writing materials
             uint materialAddress;
-            if(labels.ContainsKey(MaterialName))
+            if (labels.ContainsKey(MaterialName))
                 materialAddress = labels[MaterialName];
             else
             {
                 materialAddress = writer.Position + imageBase;
                 labels.AddLabel(MaterialName, materialAddress);
-                foreach(Material m in Materials)
+                foreach (Material m in Materials)
                     m.Write(writer);
             }
 
@@ -268,7 +266,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt16((ushort)Meshes.Length);
             writer.WriteUInt16((ushort)Materials.Length);
             MeshBounds.Write(writer);
-            if(DX)
+            if (DX)
                 writer.WriteUInt32(0);
 
             return outAddress;
@@ -277,7 +275,7 @@ namespace SATools.SAModel.ModelData.BASIC
         public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[] textures)
         {
             // write position data
-            if(!labels.Contains(PositionName))
+            if (!labels.Contains(PositionName))
             {
                 writer.Write("POINT ");
                 writer.Write(PositionName);
@@ -286,7 +284,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Vector3 p in Positions)
+                foreach (Vector3 p in Positions)
                 {
                     writer.Write("\tVERT ");
                     p.WriteNJA(writer, IOType.Float);
@@ -300,7 +298,7 @@ namespace SATools.SAModel.ModelData.BASIC
             }
 
             // write normal data
-            if(!labels.Contains(NormalName))
+            if (!labels.Contains(NormalName))
             {
                 writer.Write("NORMAL ");
                 writer.Write(NormalName);
@@ -309,7 +307,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Vector3 p in Normals)
+                foreach (Vector3 p in Normals)
                 {
                     writer.Write("\tNORM ");
                     p.WriteNJA(writer, IOType.Float);
@@ -323,11 +321,11 @@ namespace SATools.SAModel.ModelData.BASIC
             }
 
             // writing meshset data
-            foreach(Mesh m in Meshes)
+            foreach (Mesh m in Meshes)
                 m.WriteDataNJA(writer, labels);
 
             // write meshsets
-            if(!labels.Contains(MeshName))
+            if (!labels.Contains(MeshName))
             {
                 writer.Write(DX ? "MESHSET " : "MESHSET_SADX ");
                 writer.Write(MeshName);
@@ -336,7 +334,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Mesh m in Meshes)
+                foreach (Mesh m in Meshes)
                 {
                     m.WriteMeshsetNJA(writer, DX);
                     writer.WriteLine();
@@ -349,7 +347,7 @@ namespace SATools.SAModel.ModelData.BASIC
             }
 
             // write materials
-            if(!labels.Contains(MaterialName))
+            if (!labels.Contains(MaterialName))
             {
                 writer.Write("MATERIAL ");
                 writer.Write(MaterialName);
@@ -358,7 +356,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 writer.WriteLine("START");
                 writer.WriteLine();
 
-                foreach(Material m in Materials)
+                foreach (Material m in Materials)
                 {
                     m.WriteNJA(writer, textures);
                     writer.WriteLine();

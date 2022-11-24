@@ -140,7 +140,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                 address += 2;
 
-                for(int i = 0; i < corners.Length; i++)
+                for (int i = 0; i < corners.Length; i++)
                 {
                     Corner c = new()
                     {
@@ -149,22 +149,22 @@ namespace SATools.SAModel.ModelData.CHUNK
                     };
                     address += 2;
 
-                    if(hasUV)
+                    if (hasUV)
                         c.Texcoord = Vector2Extensions.Read(source, ref address, IOType.Short) * multiplier;
-                    if(hasNormal)
+                    if (hasNormal)
                         c.Normal = Vector3Extensions.Read(source, ref address, IOType.Float);
-                    else if(hasColor)
+                    else if (hasColor)
                         c.Color = Color.Read(source, ref address, IOType.ARGB8_16);
 
-                    if(flag1 && i > 1)
+                    if (flag1 && i > 1)
                     {
                         c.UserFlag1 = source.ToUInt16(address);
                         address += 2;
-                        if(flag2)
+                        if (flag2)
                         {
                             c.UserFlag2 = source.ToUInt16(address);
                             address += 2;
-                            if(flag3)
+                            if (flag3)
                             {
                                 c.UserFlag3 = source.ToUInt16(address);
                                 address += 2;
@@ -197,25 +197,25 @@ namespace SATools.SAModel.ModelData.CHUNK
                 bool flag3 = userAttribs > 2;
                 float multiplier = HDUV ? 1024 : 256;
 
-                for(int i = 0; i < length; i++)
+                for (int i = 0; i < length; i++)
                 {
                     Corner c = Corners[i];
                     writer.WriteUInt16(c.Index);
-                    if(hasUV)
+                    if (hasUV)
                         (c.Texcoord * multiplier).Write(writer, IOType.Short);
-                    if(hasNormal)
+                    if (hasNormal)
                         c.Normal.Write(writer, IOType.Float);
-                    else if(hasColor)
+                    else if (hasColor)
                         c.Color.Write(writer, IOType.ARGB8_16);
 
 
-                    if(flag1 && i > 1)
+                    if (flag1 && i > 1)
                     {
                         writer.WriteUInt16(c.UserFlag1);
-                        if(flag2)
+                        if (flag2)
                         {
                             writer.WriteUInt16(c.UserFlag2);
-                            if(flag3)
+                            if (flag3)
                             {
                                 writer.WriteUInt16(c.UserFlag3);
                             }
@@ -251,9 +251,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
             set
             {
-                if(value)
+                if (value)
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_Strip:
                             Type = ChunkType.Strip_StripUVN;
@@ -271,7 +271,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
                 else
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_StripUVN:
                         case ChunkType.Strip_StripUVH:
@@ -308,11 +308,11 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
             set
             {
-                if(!HasUV)
+                if (!HasUV)
                     return;
-                if(value)
+                if (value)
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_StripUVN:
                             Type = ChunkType.Strip_StripUVH;
@@ -330,7 +330,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
                 else
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_StripUVH:
                             Type = ChunkType.Strip_StripUVN;
@@ -362,9 +362,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
             set
             {
-                if(value)
+                if (value)
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_Strip:
                         case ChunkType.Strip_StripColor:
@@ -385,7 +385,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
                 else
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_StripNormal:
                             Type = ChunkType.Strip_Strip;
@@ -414,9 +414,9 @@ namespace SATools.SAModel.ModelData.CHUNK
             }
             set
             {
-                if(value)
+                if (value)
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_Strip:
                         case ChunkType.Strip_StripNormal:
@@ -437,7 +437,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
                 else
                 {
-                    switch(Type)
+                    switch (Type)
                     {
                         case ChunkType.Strip_StripColor:
                             Type = ChunkType.Strip_Strip;
@@ -552,7 +552,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             ushort polyCount = (ushort)(Header2 & 0x3FFFu);
             byte userAttribs = (byte)(Header2 >> 14);
 
-            if(type >= ChunkType.Strip_Strip2)
+            if (type >= ChunkType.Strip_Strip2)
                 throw new NotImplementedException("Param2 types for strips not supported");
 
             PolyChunkStrip cnk = new(polyCount, userAttribs)
@@ -569,7 +569,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             bool hasNormal = cnk.HasNormal;
             bool hasColor = cnk.HasColor;
 
-            for(int i = 0; i < polyCount; i++)
+            for (int i = 0; i < polyCount; i++)
             {
                 cnk.Strips[i] = Strip.Read(source, ref address, userAttribs, hasUV, UVHD, hasNormal, hasColor);
             }
@@ -586,22 +586,22 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             // recalculating the size
             uint size = 2;
-            foreach(Strip str in Strips)
+            foreach (Strip str in Strips)
                 size += str.Size(UserAttributes, hasUV, hasNormal, hasColor);
             size /= 2;
 
-            if(size > ushort.MaxValue)
+            if (size > ushort.MaxValue)
                 throw new InvalidOperationException($"Strip chunk size ({size}) exceeds maximum ({ushort.MaxValue})");
             Size = (ushort)size;
 
             base.Write(writer);
 
-            if(Strips.Length > 0x3FFF)
+            if (Strips.Length > 0x3FFF)
                 throw new InvalidOperationException($"Strip count ({Strips.Length}) exceeds maximum ({0x3FFF})");
 
             writer.WriteUInt16((ushort)(Math.Min(Strips.Length, 0x3FFFu) | (ushort)(UserAttributes << 14)));
 
-            foreach(Strip s in Strips)
+            foreach (Strip s in Strips)
                 s.Write(writer, UserAttributes, hasUV, uvhd, hasNormal, hasColor);
         }
 

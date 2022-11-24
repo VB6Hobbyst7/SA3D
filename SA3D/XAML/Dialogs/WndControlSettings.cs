@@ -1,5 +1,4 @@
-﻿using SATools.SAModel.Graphics;
-using SATools.SAModel.Graphics.Properties;
+﻿using SATools.SAModel.Graphics.Properties;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +18,7 @@ namespace SATools.SA3D.XAML.UserControls
             get => _recording;
             set
             {
-                if(_recording != null)
+                if (_recording != null)
                     _recording.FinishRecording();
 
                 _recording = value;
@@ -47,17 +46,17 @@ namespace SATools.SA3D.XAML.UserControls
             UcSettingsCategory panel = null;
 
             var props = typeof(DebugSettings).GetTypeInfo().GetProperties();
-            foreach(var field in props)
+            foreach (var field in props)
             {
                 SettingsKeyCategoryAttribute titleAttr = field.GetCustomAttribute<SettingsKeyCategoryAttribute>();
-                if(titleAttr != null)
+                if (titleAttr != null)
                 {
                     panel = new(titleAttr.Title);
                     container.Children.Add(panel);
                 }
 
                 SettingsKeyAttribute attr = field.GetCustomAttribute<SettingsKeyAttribute>();
-                if(attr != null)
+                if (attr != null)
                 {
                     panel.Container.Children.Add(new UcControlSetting(this, field));
                 }
@@ -68,7 +67,7 @@ namespace SATools.SA3D.XAML.UserControls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            if(_recording != null && _recording.UsesKey)
+            if (_recording != null && _recording.UsesKey)
             {
                 Recording.KeySelection.SelectedItem = e.Key;
                 Recording = null;

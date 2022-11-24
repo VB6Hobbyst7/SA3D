@@ -42,13 +42,13 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             _templates = new();
             _hexTemplates = new();
 
-            foreach(string k in Resources.Keys)
+            foreach (string k in Resources.Keys)
             {
-                if(Resources[k] is not DataTemplate t || t.DataType == null)
+                if (Resources[k] is not DataTemplate t || t.DataType == null)
                     continue;
 
                 Type type = (Type)t.DataType;
-                if(k.StartsWith("Hex:"))
+                if (k.StartsWith("Hex:"))
                     _hexTemplates.Add(type, t);
                 else
                     _templates.Add(type, t);
@@ -57,13 +57,13 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            if(item == null)
+            if (item == null)
                 return Empty;
 
             IInspectorInfo info = (IInspectorInfo)item;
 
             Type type = info.ValueType;
-            if(!_templates.ContainsKey(type)
+            if (!_templates.ContainsKey(type)
                 && ((type.IsClass && type != typeof(string))
                     || (type.IsValueType && !type.IsEnum && !type.IsPrimitive)))
             {
@@ -71,16 +71,16 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             }
 
             string containerName = ((FrameworkElement)container).Name;
-            if(info.Hexadecimal != HexadecimalMode.NoHex
+            if (info.Hexadecimal != HexadecimalMode.NoHex
                 && containerName != "NoHex")
             {
-                if(containerName == "Hex")
+                if (containerName == "Hex")
                     return _hexTemplates[type];
 
-                if(info.Hexadecimal == HexadecimalMode.HybridHex)
+                if (info.Hexadecimal == HexadecimalMode.HybridHex)
                     return HybridHex;
 
-                if(info.Hexadecimal == HexadecimalMode.OnlyHex)
+                if (info.Hexadecimal == HexadecimalMode.OnlyHex)
                     return Hex;
             }
 
@@ -95,9 +95,9 @@ namespace SATools.SAModel.WPF.Inspector.XAML
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             string templateName = "GridTemplate";
-            if(item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>))
+            if (item != null && item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(ListInspectorViewModel<>))
             {
-                bool smoothScroll =  (bool)item.GetType().GetProperty("SmoothScroll").GetValue(item);
+                bool smoothScroll = (bool)item.GetType().GetProperty("SmoothScroll").GetValue(item);
                 templateName = smoothScroll ? "SmoothListTemplate" : "ListTemplate";
             }
 
@@ -123,23 +123,23 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
         private static void UpdatePropName(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if(e.NewValue == null)
+            if (e.NewValue == null)
                 return;
 
             DependencyProperty dp = null;
-            for(Type t = d.GetType(); dp == null; t = t.BaseType)
+            for (Type t = d.GetType(); dp == null; t = t.BaseType)
             {
                 FieldInfo field = t.GetField((string)e.NewValue + "Property");
                 dp = (DependencyProperty)field?.GetValue(d);
             }
 
             Binding binding = new();
-            if(((FrameworkElement)d).DataContext is not IInspectorInfo element)
+            if (((FrameworkElement)d).DataContext is not IInspectorInfo element)
                 return;
 
             binding.Path = new(element.BindingPath);
             binding.Mode = element.IsReadOnly ? BindingMode.OneWay : BindingMode.TwoWay;
-            if(!element.IsReadOnly)
+            if (!element.IsReadOnly)
                 binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
 
             BindingOperations.SetBinding(d, dp, binding);
@@ -149,36 +149,36 @@ namespace SATools.SAModel.WPF.Inspector.XAML
     internal static class InputBindingsManager
     {
 
-        public static readonly DependencyProperty UpdatePropertySourceWhenEnterPressedProperty 
+        public static readonly DependencyProperty UpdatePropertySourceWhenEnterPressedProperty
             = DependencyProperty.RegisterAttached(
-                "UpdatePropertySourceWhenEnterPressed", 
-                typeof(DependencyProperty), 
-                typeof(InputBindingsManager), 
+                "UpdatePropertySourceWhenEnterPressed",
+                typeof(DependencyProperty),
+                typeof(InputBindingsManager),
                 new(null, OnUpdatePropertySourceWhenEnterPressedPropertyChanged));
 
         static InputBindingsManager() { }
 
-        public static void SetUpdatePropertySourceWhenEnterPressed(DependencyObject dp, DependencyProperty value) 
+        public static void SetUpdatePropertySourceWhenEnterPressed(DependencyObject dp, DependencyProperty value)
             => dp.SetValue(UpdatePropertySourceWhenEnterPressedProperty, value);
 
-        public static DependencyProperty GetUpdatePropertySourceWhenEnterPressed(DependencyObject dp) 
+        public static DependencyProperty GetUpdatePropertySourceWhenEnterPressed(DependencyObject dp)
             => (DependencyProperty)dp.GetValue(UpdatePropertySourceWhenEnterPressedProperty);
 
         private static void OnUpdatePropertySourceWhenEnterPressedPropertyChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
         {
-            if(dp is not UIElement element)
+            if (dp is not UIElement element)
                 return;
 
-            if(e.OldValue != null)
+            if (e.OldValue != null)
                 element.PreviewKeyDown -= HandlePreviewKeyDown;
 
-            if(e.NewValue != null)
+            if (e.NewValue != null)
                 element.PreviewKeyDown += new KeyEventHandler(HandlePreviewKeyDown);
         }
 
         static void HandlePreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Enter)
+            if (e.Key == Key.Enter)
                 DoUpdateSource(e.Source);
         }
 
@@ -187,7 +187,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             DependencyProperty property =
                 GetUpdatePropertySourceWhenEnterPressed(source as DependencyObject);
 
-            if(property == null || source is not UIElement element)
+            if (property == null || source is not UIElement element)
                 return;
 
             BindingOperations.GetBindingExpression(element, property)?.UpdateSource();

@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using System.IO;
@@ -282,7 +281,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.Write("AttrTexId \t( ");
             writer.Write(((StructEnums.NJD_CALLBACK)callback).ToString().Replace(", ", " | "));
             writer.Write(", ");
-            if(textures == null || texid >= textures.Length)
+            if (textures == null || texid >= textures.Length)
                 writer.Write(texid);
             else
                 writer.Write(textures[texid].MakeIdentifier());
@@ -291,7 +290,7 @@ namespace SATools.SAModel.ModelData.BASIC
             // writing attributes
             writer.Write("AttrFlags \t( ");
             writer.Write(((StructEnums.MaterialAttributes)(Attributes & ~0x7F)).ToString().Replace(", ", " | "));
-            if(UserAttributes != 0)
+            if (UserAttributes != 0)
                 writer.Write(" | 0x" + UserAttributes.ToString("X"));
             writer.WriteLine(")");
 
@@ -332,7 +331,7 @@ namespace SATools.SAModel.ModelData.BASIC
         public static bool operator ==(Material left, Material right)
             => left.Equals(right);
 
-        public static bool operator !=(Material left, Material right) 
+        public static bool operator !=(Material left, Material right)
             => !(left == right);
     }
 }

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.Structs;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
@@ -41,7 +41,7 @@ namespace SATools.SAModel.ObjData
             get => _model.Attach;
             set
             {
-                if(value == null)
+                if (value == null)
                     throw new NullReferenceException("Attach cant be null!");
                 ModelBounds = new Bounds(value.MeshBounds.Position + Position, value.MeshBounds.Radius * Scale.GreatestValue());
                 _model.Attach = value;
@@ -108,7 +108,7 @@ namespace SATools.SAModel.ObjData
         /// Whether the euler order is "inverted"
         /// </summary>
         public bool RotateZYX => _model.RotateZYX;
-        
+
         /// <summary>
         /// Block mapping bits
         /// </summary>
@@ -125,7 +125,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="attach">Mesh info to use</param>
         public LandEntry(Attach attach)
         {
-            if(attach == null)
+            if (attach == null)
                 throw new ArgumentNullException(nameof(attach), "Attach cant be null!");
             _model = new NJObject()
             {
@@ -160,7 +160,7 @@ namespace SATools.SAModel.ObjData
         /// !!! NOTE !!! The bounds will get automatically recalculated once any of its transforms change!
         /// </summary>
         /// <param name="bounds"></param>
-        public void UpdateBounds(Bounds bounds) 
+        public void UpdateBounds(Bounds bounds)
             => ModelBounds = bounds;
 
         /// <summary>
@@ -185,11 +185,11 @@ namespace SATools.SAModel.ObjData
         public static LandEntry Read(byte[] source, uint address, uint imageBase, AttachFormat format, LandtableFormat ltblFormat, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             Bounds bounds = Bounds.Read(source, ref address);
-            if(ltblFormat < LandtableFormat.SA2)
+            if (ltblFormat < LandtableFormat.SA2)
                 address += 8; //sa1 has unused radius y and radius z values
 
             uint modelAddr = source.ToUInt32(address);
-            if(modelAddr == 0)
+            if (modelAddr == 0)
                 throw new InvalidOperationException("Landentry model address is null!");
             NJObject model = NJObject.Read(source, modelAddr - imageBase, imageBase, format, ltblFormat == LandtableFormat.SADX, labels, attaches);
 
@@ -197,13 +197,13 @@ namespace SATools.SAModel.ObjData
             uint blockBit;
 
             SurfaceAttributes attribs;
-            if(ltblFormat == LandtableFormat.Buffer)
+            if (ltblFormat == LandtableFormat.Buffer)
             {
                 unknown = source.ToUInt32(address + 4);
                 blockBit = source.ToUInt32(address + 8);
                 attribs = (SurfaceAttributes)source.ToUInt32(address + 12);
             }
-            else if(ltblFormat >= LandtableFormat.SA2)
+            else if (ltblFormat >= LandtableFormat.SA2)
             {
                 unknown = source.ToUInt32(address + 4);
                 blockBit = source.ToUInt32(address + 8);
@@ -226,7 +226,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels">Already written labels</param>
         public void WriteModel(EndianWriter writer, uint imagebase, Dictionary<string, uint> labels)
         {
-            if(labels.ContainsKey(_model.Name))
+            if (labels.ContainsKey(_model.Name))
                 return;
             _model.Write(writer, imagebase, labels);
         }
@@ -239,22 +239,22 @@ namespace SATools.SAModel.ObjData
         /// <param name="format">Landtable format</param>
         public void Write(EndianWriter writer, LandtableFormat format, Dictionary<string, uint> labels)
         {
-            if(!labels.ContainsKey(_model.Name))
+            if (!labels.ContainsKey(_model.Name))
                 throw new InvalidOperationException("Model has not been written!");
 
             ModelBounds.Write(writer);
-            if(format < LandtableFormat.SA2)
+            if (format < LandtableFormat.SA2)
                 writer.Write(new byte[8]); //sa1 has unused radius y and radius z values
 
             writer.Write(labels[_model.Name]);
 
-            if(format == LandtableFormat.Buffer)
+            if (format == LandtableFormat.Buffer)
             {
                 writer.WriteUInt32(Unknown);
                 writer.WriteUInt32(BlockBit);
                 writer.WriteUInt32((uint)SurfaceAttributes);
             }
-            else if(format >= LandtableFormat.SA2)
+            else if (format >= LandtableFormat.SA2)
             {
                 writer.WriteUInt32(Unknown);
                 writer.WriteUInt32(BlockBit);
@@ -275,7 +275,7 @@ namespace SATools.SAModel.ObjData
             // this works because the model doesn't (shouldn't) have a parent or children anyway
             new(_model.Duplicate(), SurfaceAttributes, BlockBit, Unknown, ModelBounds);
 
-        public override string ToString() 
+        public override string ToString()
             => $"{Name} : {Attach} ";
     }
 }

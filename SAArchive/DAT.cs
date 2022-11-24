@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAArchive
@@ -22,7 +19,7 @@ namespace SATools.SAArchive
             using TextWriter tw = File.CreateText(Path.Combine(path, "index.txt"));
 
             Entries.Sort((f1, f2) => StringComparer.OrdinalIgnoreCase.Compare(f1.Name, f2.Name));
-            for(int i = 0; i < Entries.Count; i++)
+            for (int i = 0; i < Entries.Count; i++)
             {
                 tw.WriteLine(Entries[i].Name);
             }
@@ -53,7 +50,7 @@ namespace SATools.SAArchive
 
             int count = source.ToInt32(0x10);
 
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 result.Entries.Add(DATEntry.Read(source, (uint)(0x14 + (i * 0xC))));
             }
@@ -92,18 +89,18 @@ namespace SATools.SAArchive
             fsize += Entries.Count * 0xC;
             int tloc = fsize;
 
-            foreach(DATEntry item in Entries)
+            foreach (DATEntry item in Entries)
                 fsize += item.Name.Length + 1;
 
             int floc = fsize;
-            foreach(DATEntry item in Entries)
+            foreach (DATEntry item in Entries)
                 fsize += item.Data.Length;
 
             byte[] file = new byte[fsize];
 
             Encoding.ASCII.GetBytes(Steam ? "archive  V2.DMZ" : "archive  V2.2").CopyTo(file, 0);
             BitConverter.GetBytes(Entries.Count).CopyTo(file, 0x10);
-            foreach(DATEntry item in Entries)
+            foreach (DATEntry item in Entries)
             {
                 BitConverter.GetBytes(tloc).CopyTo(file, hloc);
                 hloc += 4;
@@ -145,7 +142,7 @@ namespace SATools.SAArchive
 
                 unsafe
                 {
-                    fixed(byte* ptr = data)
+                    fixed (byte* ptr = data)
                     {
                         Marshal.Copy(source, (int)dataOffset, (IntPtr)ptr, data.Length);
 
@@ -248,10 +245,10 @@ namespace SATools.SAArchive
                 // Current chunk header
                 ChunkHeader chunkHeader = new ChunkHeader();
 
-                while(decompBufPtr < decompBuf.Length)
+                while (decompBufPtr < decompBuf.Length)
                 {
                     // At the start of each chunk...
-                    if(!chunkHeader.ReadFlag(out bool flag))
+                    if (!chunkHeader.ReadFlag(out bool flag))
                     {
                         // Load the chunk header
                         chunkHeader = new ChunkHeader(compBuf[compBufPtr++]);
@@ -261,7 +258,7 @@ namespace SATools.SAArchive
                     // Each chunk header is a byte and is a collection of 8 flags
 
                     // If the flag is set, load a character
-                    if(flag)
+                    if (flag)
                     {
                         // Copy the character
                         byte rawByte = compBuf[compBufPtr++];
@@ -285,12 +282,12 @@ namespace SATools.SAArchive
                         // Get the length from the offset/length pair
                         int length = olPair.Length;
 
-                        for(int i = 0; i < length; i++)
+                        for (int i = 0; i < length; i++)
                         {
                             byte rawByte = slidingDict[(offset + i) & SLIDING_MASK];
                             decompBuf[decompBufPtr++] = rawByte;
 
-                            if(decompBufPtr >= decompBuf.Length)
+                            if (decompBufPtr >= decompBuf.Length)
                                 return;
 
                             // Add the character to the dictionary, and slide the dictionary
@@ -308,7 +305,7 @@ namespace SATools.SAArchive
 
             public static byte[] ProcessBuffer(byte[] CompressedBuffer)
             {
-                if(isFileCompressed(CompressedBuffer))
+                if (isFileCompressed(CompressedBuffer))
                 {
                     uint DecompressedSize = BitConverter.ToUInt32(CompressedBuffer, 16);
                     byte[] DecompressedBuffer = new byte[DecompressedSize];
@@ -316,7 +313,7 @@ namespace SATools.SAArchive
                     byte XorEncryptionValue = CompressedBuffer[15];
 
                     byte[] CompBuf = new byte[CompressedBuffer.Length - 20];
-                    for(int i = 20; i < CompressedBuffer.Length; i++)
+                    for (int i = 20; i < CompressedBuffer.Length; i++)
                     {
                         CompBuf[i - 20] = (byte)(CompressedBuffer[i] ^ XorEncryptionValue);
                     }

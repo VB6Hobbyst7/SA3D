@@ -30,11 +30,11 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         public ushort UV0Index { get; set; }
 
-        public override bool Equals(object obj) 
-            => obj is Corner corner 
-            && PositionIndex == corner.PositionIndex 
-            && NormalIndex == corner.NormalIndex 
-            && Color0Index == corner.Color0Index 
+        public override bool Equals(object obj)
+            => obj is Corner corner
+            && PositionIndex == corner.PositionIndex
+            && NormalIndex == corner.NormalIndex
+            && Color0Index == corner.Color0Index
             && UV0Index == corner.UV0Index;
 
         public override int GetHashCode() => HashCode.Combine(PositionIndex, NormalIndex, Color0Index, UV0Index);
@@ -42,10 +42,10 @@ namespace SATools.SAModel.ModelData.GC
 
         bool IEquatable<Corner>.Equals(Corner other) => Equals(other);
 
-        public static bool operator ==(Corner left, Corner right) 
+        public static bool operator ==(Corner left, Corner right)
             => left.Equals(right);
 
-        public static bool operator !=(Corner left, Corner right) 
+        public static bool operator !=(Corner left, Corner right)
             => !(left == right);
     }
 
@@ -105,12 +105,12 @@ namespace SATools.SAModel.ModelData.GC
 
             List<Corner> corners = new();
 
-            for(ushort i = 0; i < vtxCount; i++)
+            for (ushort i = 0; i < vtxCount; i++)
             {
                 Corner l = new();
 
                 // reading position, which should always exist
-                if(shortPos)
+                if (shortPos)
                 {
                     l.PositionIndex = source.ToUInt16(address);
                     address += 2;
@@ -122,9 +122,9 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // reading normals
-                if(hasNrm)
+                if (hasNrm)
                 {
-                    if(shortNrm)
+                    if (shortNrm)
                     {
                         l.NormalIndex = source.ToUInt16(address);
                         address += 2;
@@ -137,9 +137,9 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // reading colors
-                if(hasCol)
+                if (hasCol)
                 {
-                    if(shortCol)
+                    if (shortCol)
                     {
                         l.Color0Index = source.ToUInt16(address);
                         address += 2;
@@ -152,9 +152,9 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // reading uvs
-                if(hasUV)
+                if (hasUV)
                 {
-                    if(shortUV)
+                    if (shortUV)
                     {
                         l.UV0Index = source.ToUInt16(address);
                         address += 2;
@@ -198,28 +198,28 @@ namespace SATools.SAModel.ModelData.GC
             bool shortNrm = hasFlag(IndexAttributes.Normal16BitIndex);
             bool shortUV = hasFlag(IndexAttributes.UV16BitIndex);
 
-            foreach(Corner v in Corners)
+            foreach (Corner v in Corners)
             {
                 // Position should always exist
-                if(shortPos)
+                if (shortPos)
                     writer.Write(v.PositionIndex);
                 else
                     writer.Write((byte)v.PositionIndex);
 
-                if(hasNrm)
-                    if(shortNrm)
+                if (hasNrm)
+                    if (shortNrm)
                         writer.Write(v.NormalIndex);
                     else
                         writer.Write((byte)v.NormalIndex);
 
-                if(hasCol)
-                    if(shortCol)
+                if (hasCol)
+                    if (shortCol)
                         writer.Write(v.Color0Index);
                     else
                         writer.Write((byte)v.Color0Index);
 
-                if(hasUV)
-                    if(shortUV)
+                if (hasUV)
+                    if (shortUV)
                         writer.Write(v.UV0Index);
                     else
                         writer.Write((byte)v.UV0Index);

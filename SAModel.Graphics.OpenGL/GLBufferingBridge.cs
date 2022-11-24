@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Numerics;
 
 namespace SATools.SAModel.Graphics.OpenGL
 {
@@ -99,7 +97,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public BufferMeshHandle GetHandle(BufferMesh mesh)
         {
-            if(!MeshHandles.TryGetValue(mesh, out var handle))
+            if (!MeshHandles.TryGetValue(mesh, out var handle))
                 throw new InvalidOperationException("Mesh was not buffered!");
             return handle;
         }
@@ -113,7 +111,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override unsafe void BufferVertexCache(BufferMesh mesh, CacheBuffer[] cache)
         {
-            if(MeshHandles.TryGetValue(mesh, out var meshHandle))
+            if (MeshHandles.TryGetValue(mesh, out var meshHandle))
             {
                 GL.BindBuffer(BufferTarget.ArrayBuffer, meshHandle.vbo);
 
@@ -134,7 +132,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.BufferData(BufferTarget.ArrayBuffer, cache.Length * sizeof(CacheBuffer), cache, BufferUsageHint.StaticDraw);
 
 
-            if(mesh.TriangleList != null)
+            if (mesh.TriangleList != null)
             {
                 eao = GL.GenBuffer();
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, eao);
@@ -173,22 +171,22 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void DebufferVertexCache(BufferMesh mesh)
         {
-            if(!MeshHandles.TryGetValue(mesh, out var handle))
+            if (!MeshHandles.TryGetValue(mesh, out var handle))
                 throw new InvalidOperationException("Mesh was not buffered");
 
             GL.DeleteVertexArray(handle.vao);
             GL.DeleteBuffer(handle.vbo);
-            if(handle.eao != 0)
+            if (handle.eao != 0)
                 GL.DeleteBuffer(handle.eao);
             MeshHandles.Remove(mesh);
         }
 
-        public override bool IsBuffered(BufferMesh mesh) 
+        public override bool IsBuffered(BufferMesh mesh)
             => MeshHandles.ContainsKey(mesh);
 
         public override unsafe void BufferMaterial(Material material)
         {
-            if(material.BufferMaterial.MaterialAttributes.HasFlag(MaterialAttributes.useTexture) && material.BufferTextureSet != null)
+            if (material.BufferMaterial.MaterialAttributes.HasFlag(MaterialAttributes.useTexture) && material.BufferTextureSet != null)
             {
                 int textureIndex = (int)material.BufferMaterial.TextureIndex;
                 GL.BindTexture(TextureTarget.Texture2D, TextureHandles[material.BufferTextureSet][textureIndex]);
@@ -202,18 +200,18 @@ namespace SATools.SAModel.Graphics.OpenGL
             }
 
             // if the texture uses alpha, update the blend modes
-            if(material.BufferMaterial.UseAlpha)
+            if (material.BufferMaterial.UseAlpha)
                 GL.BlendFunc(material.BufferMaterial.SourceBlendMode.ToGLBlend(), material.BufferMaterial.DestinationBlendmode.ToGLBlend());
 
             // update the cull mode
-            if(material.BufferMaterial.Culling)// && RenderMode != RenderMode.CullSide)
+            if (material.BufferMaterial.Culling)// && RenderMode != RenderMode.CullSide)
                 GL.Enable(EnableCap.CullFace);
             else
                 GL.Disable(EnableCap.CullFace);
 
             // update the material data buffer
             GL.BindBuffer(BufferTarget.UniformBuffer, MaterialHandle);
-            fixed(byte* ptr = material.Buffer)
+            fixed (byte* ptr = material.Buffer)
             {
                 GL.BufferData(BufferTarget.UniformBuffer, material.Buffer.Length, (IntPtr)ptr, BufferUsageHint.StreamDraw);
             }
@@ -222,12 +220,12 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         protected override void BufferTextureSet(TextureSet textures)
         {
-            if(textures == null || TextureHandles.ContainsKey(textures))
+            if (textures == null || TextureHandles.ContainsKey(textures))
                 return;
 
             int[] handles = new int[textures.Textures.Count];
 
-            for(int i = 0; i < textures.Textures.Count; i++)
+            for (int i = 0; i < textures.Textures.Count; i++)
             {
                 int handle = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, handle);
@@ -248,10 +246,10 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         protected override void DebufferTextureSet(TextureSet textures)
         {
-            if(textures == null)
+            if (textures == null)
                 return;
 
-            if(!TextureHandles.TryGetValue(textures, out int[] handles))
+            if (!TextureHandles.TryGetValue(textures, out int[] handles))
                 throw new InvalidOperationException("TextureSet was not buffered!");
 
             GL.DeleteBuffers(handles.Length, handles);
@@ -265,9 +263,9 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// <returns></returns>
         public bool GetUIBuffer(Guid id, out UIBuffer buffer)
         {
-            if(!UIBuffers.TryGetValue(id, out buffer))
+            if (!UIBuffers.TryGetValue(id, out buffer))
             {
-                if(UIReuse.Count == 0)
+                if (UIReuse.Count == 0)
                 {
                     buffer = GenUIBuffer();
                     UIBuffers.Add(id, buffer);

@@ -45,16 +45,16 @@ namespace SATools.SAModel.Structs
 
             // this will have a magnitude of 0.5 or greater if and only if this is a singularity case
             Vector3 v = new();
-            if(RotateZYX)
+            if (RotateZYX)
             {
                 float test = (w * x) - (y * z); // -M32 / 2
 
-                if(test > 0.4995f) // singularity at north pole
+                if (test > 0.4995f) // singularity at north pole
                 {
                     v.Z = 2f * MathF.Atan2(z, x);
                     v.X = Pi * 0.5f;
                 }
-                else if(test < -0.4995f) // singularity at south pole
+                else if (test < -0.4995f) // singularity at south pole
                 {
                     v.Z = -2f * MathF.Atan2(z, x);
                     v.X = -Pi * 0.5f;
@@ -75,12 +75,12 @@ namespace SATools.SAModel.Structs
             {
                 float test = (w * y) - (x * z); // -M13 / 2
 
-                if(test > 0.4995f) // singularity at north pole
+                if (test > 0.4995f) // singularity at north pole
                 {
                     v.X = 2f * MathF.Atan2(x, y);
                     v.Y = Pi * 0.5f;
                 }
-                else if(test < -0.4995f) // singularity at south pole
+                else if (test < -0.4995f) // singularity at south pole
                 {
                     v.X = -2f * MathF.Atan2(x, y);
                     v.Y = -Pi * 0.5f;
@@ -101,9 +101,9 @@ namespace SATools.SAModel.Structs
             static void bamsNormalize(ref float t)
             {
                 t %= 360;
-                if(t < -180)
+                if (t < -180)
                     t += 360;
-                else if(t > 180)
+                else if (t > 180)
                     t -= 360;
             }
 

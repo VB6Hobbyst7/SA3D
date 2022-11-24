@@ -36,13 +36,13 @@ namespace SATools.SAModel.Graphics.UI
             float premHeight = height * 0.5f;
 
             bool forceTransformUpdate = _oldWidth != width || _oldHeight != height;
-            if(forceTransformUpdate)
+            if (forceTransformUpdate)
             {
                 _oldWidth = width;
                 _oldHeight = height;
             }
 
-            while(_renderQueue.Count > 0)
+            while (_renderQueue.Count > 0)
             {
                 UIElement element = _renderQueue.Dequeue();
                 _renderingBridge.CanvasDrawUIElement(element, premWidth, premHeight, forceTransformUpdate);

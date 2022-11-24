@@ -1,21 +1,19 @@
-﻿using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData.Animation;
+﻿using Colourful;
 using SATools.SAArchive;
+using SATools.SACommon;
+using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
-using Color = SATools.SAModel.Structs.Color;
+using SATools.SAModel.ObjData.Animation;
+using SharpGLTF.Memory;
+using SharpGLTF.Schema2;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Drawing;
-using SharpGLTF.Schema2;
-using SharpGLTF.Memory;
-using System.IO;
-using Colourful;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using SATools.SAModel.ModelData.CHUNK;
-using SATools.SACommon;
+using Color = SATools.SAModel.Structs.Color;
 
 namespace SATools.SAModel.Convert
 {
@@ -51,10 +49,10 @@ namespace SATools.SAModel.Convert
         {
             // First we'll get the textures, by far the easiest part
             TextureSet textures = null;
-            if(importTextures && gltfModel.LogicalTextures.Count > 0)
+            if (importTextures && gltfModel.LogicalTextures.Count > 0)
             {
                 textures = new();
-                foreach(var t in gltfModel.LogicalTextures)
+                foreach (var t in gltfModel.LogicalTextures)
                 {
                     string name = t.Name ?? $"Tex_{t}";
                     textures.Textures.Add(new SAArchive.Texture(name, GetBitmap(t.PrimaryImage.Content)));
@@ -66,15 +64,15 @@ namespace SATools.SAModel.Convert
             Dictionary<NJObject, Node> invertedObjectsPairs = new();
 
             List<NJObject> roots = new();
-            foreach(var n in gltfModel.LogicalNodes)
+            foreach (var n in gltfModel.LogicalNodes)
             {
-                if(n.VisualParent == null)
+                if (n.VisualParent == null)
                 {
                     roots.Add(FromNode(n, objectsPairs));
                 }
             }
 
-            foreach(var n in objectsPairs)
+            foreach (var n in objectsPairs)
             {
                 invertedObjectsPairs.Add(n.Value, n.Key);
             }
@@ -84,7 +82,7 @@ namespace SATools.SAModel.Convert
 
             NJObject root;
             bool extraRoot = false;
-            if(roots.Count > 1)
+            if (roots.Count > 1)
             {
                 extraRoot = true;
                 root = new NJObject()
@@ -100,18 +98,18 @@ namespace SATools.SAModel.Convert
             }
 
             NJObject[] objects = root.GetObjects();
-            
+
             //Note: not supporting reused meshes
             List<WeightedBufferAttach> weightedAttaches = new();
 
-            foreach(NJObject njo in objects)
+            foreach (NJObject njo in objects)
             {
                 if (extraRoot && njo == root)
                     continue;
 
                 Node node = invertedObjectsPairs[njo];
 
-                if(node.Mesh == null)
+                if (node.Mesh == null)
                     continue;
 
                 int[] skinMap;
@@ -139,11 +137,11 @@ namespace SATools.SAModel.Convert
 
             // lastly, we load the animations
             Motion[] animations;
-            if(animationFPS.HasValue)
+            if (animationFPS.HasValue)
             {
                 animations = new Motion[gltfModel.LogicalAnimations.Count];
 
-                for(int i = 0; i < animations.Length; i++)
+                for (int i = 0; i < animations.Length; i++)
                 {
                     animations[i] = GetAnimation(gltfModel.LogicalAnimations[i], gltfModel.LogicalNodes.Count, animationFPS.Value);
                 }
@@ -157,7 +155,7 @@ namespace SATools.SAModel.Convert
         private static NJObject FromNode(Node node, Dictionary<Node, NJObject> objects)
         {
             NJObject result = new();
-            if(string.IsNullOrWhiteSpace(node.Name))
+            if (string.IsNullOrWhiteSpace(node.Name))
                 result.Name = "Node_" + node.LogicalIndex;
             else
                 result.Name = node.Name;
@@ -166,7 +164,7 @@ namespace SATools.SAModel.Convert
             result.QuaternionRotation = node.LocalTransform.Rotation;
             result.Scale = node.LocalTransform.Scale;
 
-            foreach(var c in node.VisualChildren)
+            foreach (var c in node.VisualChildren)
             {
                 result.AddChild(FromNode(c, objects));
             }
@@ -195,7 +193,7 @@ namespace SATools.SAModel.Convert
                 var jointsArray = joints?.AsVector4Array();
 
                 int vertCount = positionArray.Count;
-                WeightedVertex[] vertexSet = new WeightedVertex[vertCount]; 
+                WeightedVertex[] vertexSet = new WeightedVertex[vertCount];
 
                 for (int i = 0; i < vertCount; i++)
                 {
@@ -205,7 +203,7 @@ namespace SATools.SAModel.Convert
 
                     WeightedVertex vert = new(pos, nrm);
 
-                    if(weightsArray != null)
+                    if (weightsArray != null)
                     {
                         var joint = jointsArray[i];
                         var weight = weightsArray[i];
@@ -254,10 +252,10 @@ namespace SATools.SAModel.Convert
                 // Read indices
                 uint[] indices = GetIndices(primitive.IndexAccessor, meshCorners.Length, primitive.DrawPrimitiveType);
 
-                if(indices != null)
+                if (indices != null)
                 {
                     BufferCorner[] unwrappedCorners = new BufferCorner[indices.Length];
-                    for(int i = 0; i < indices.Length; i++)
+                    for (int i = 0; i < indices.Length; i++)
                     {
                         unwrappedCorners[i] = meshCorners[indices[i]];
                     }
@@ -275,23 +273,23 @@ namespace SATools.SAModel.Convert
         private static uint[] GetIndices(Accessor indices, int vertexCount, PrimitiveType type)
         {
             uint[] result = null;
-            if(indices != null)
+            if (indices != null)
             {
                 var indexArray = indices.AsIndicesArray();
                 result = new uint[indexArray.Count];
                 indexArray.CopyTo(result, 0);
             }
 
-            if(type == PrimitiveType.TRIANGLE_STRIP)
+            if (type == PrimitiveType.TRIANGLE_STRIP)
             {
                 bool rev = false;
                 uint index = 0;
-                if(result == null)
+                if (result == null)
                 {
                     result = new uint[(vertexCount - 2) * 3];
-                    for(int i = 0; i < result.Length; i += 3)
+                    for (int i = 0; i < result.Length; i += 3)
                     {
-                        if(rev)
+                        if (rev)
                         {
                             result[i] = index;
                             result[i + 1] = index + 1;
@@ -309,9 +307,9 @@ namespace SATools.SAModel.Convert
                 else
                 {
                     uint[] newResult = new uint[(result.Length - 2) * 3];
-                    for(int i = 0; i < result.Length; i += 3)
+                    for (int i = 0; i < result.Length; i += 3)
                     {
-                        if(rev)
+                        if (rev)
                         {
                             newResult[i] = result[index];
                             newResult[i + 1] = result[index + 1];
@@ -329,7 +327,7 @@ namespace SATools.SAModel.Convert
                 }
                 throw new NotImplementedException("Triangle strip todo!");
             }
-            else if(type != PrimitiveType.TRIANGLES)
+            else if (type != PrimitiveType.TRIANGLES)
                 throw new InvalidOperationException($"Unsupported primitive type {type} in mesh");
 
             return result;
@@ -342,23 +340,23 @@ namespace SATools.SAModel.Convert
             result.Specular = Color.White;
             result.SpecularExponent = 32f;
 
-            if(mat == null)
+            if (mat == null)
                 return result;
 
             result.SetAttribute(MaterialAttributes.Flat, mat.Unlit);
 
             var channels = mat.Channels.ToArray();
 
-            foreach(var c in channels)
+            foreach (var c in channels)
             {
-                if(c.Key == "BaseColor")
+                if (c.Key == "BaseColor")
                 {
-                    if(c.Texture != null)
+                    if (c.Texture != null)
                     {
                         result.SetAttribute(MaterialAttributes.useTexture, true);
                         result.TextureIndex = (uint)c.Texture.LogicalIndex;
 
-                        switch(c.TextureSampler.WrapS)
+                        switch (c.TextureSampler.WrapS)
                         {
                             case TextureWrapMode.MIRRORED_REPEAT:
                                 result.MirrorU = true;
@@ -369,7 +367,7 @@ namespace SATools.SAModel.Convert
                                 break;
                         }
 
-                        switch(c.TextureSampler.WrapT)
+                        switch (c.TextureSampler.WrapT)
                         {
                             case TextureWrapMode.MIRRORED_REPEAT:
                                 result.MirrorV = true;
@@ -382,9 +380,9 @@ namespace SATools.SAModel.Convert
 
                         result.TextureFiltering = c.TextureSampler.MinFilter switch
                         {
-                            TextureMipMapFilter.NEAREST 
-                            or TextureMipMapFilter.NEAREST_MIPMAP_NEAREST 
-                            or TextureMipMapFilter.LINEAR_MIPMAP_NEAREST 
+                            TextureMipMapFilter.NEAREST
+                            or TextureMipMapFilter.NEAREST_MIPMAP_NEAREST
+                            or TextureMipMapFilter.LINEAR_MIPMAP_NEAREST
                                 => FilterMode.PointSampled,
                             TextureMipMapFilter.LINEAR => FilterMode.Bilinear,
                             _ => FilterMode.Trilinear,
@@ -392,12 +390,12 @@ namespace SATools.SAModel.Convert
                     }
                     result.Diffuse = new(c.Parameter.X, c.Parameter.Y, c.Parameter.Z, c.Parameter.W);
                 }
-                else if(c.Key == "MetallicRoughness")
+                else if (c.Key == "MetallicRoughness")
                 {
                     result.Specular = Color.Lerp(Color.White, result.Diffuse, c.Parameter.X);
                     result.SpecularExponent = c.Parameter.Y;
                 }
-                else if(c.Key == "SpecularGlossiness")
+                else if (c.Key == "SpecularGlossiness")
                 {
                     result.Specular = new(c.Parameter.X, c.Parameter.Y, c.Parameter.Z);
                     result.SpecularExponent = c.Parameter.W;
@@ -421,31 +419,31 @@ namespace SATools.SAModel.Convert
             result.PlaybackSpeed = fps;
             result.Name = anim.Name;
 
-            for(int i = 0; i < anim.Channels.Count; i++)
+            for (int i = 0; i < anim.Channels.Count; i++)
             {
                 var channel = anim.Channels[i];
 
-                if(!result.Keyframes.TryGetValue(channel.TargetNode.LogicalIndex, out Keyframes kframes))
+                if (!result.Keyframes.TryGetValue(channel.TargetNode.LogicalIndex, out Keyframes kframes))
                 {
                     kframes = new();
                     result.Keyframes.Add(channel.TargetNode.LogicalIndex, kframes);
                 }
 
-                switch(channel.TargetNodePath)
+                switch (channel.TargetNodePath)
                 {
                     case PropertyPath.translation:
                         var posSampler = channel.GetTranslationSampler().CreateCurveSampler();
-                        for(uint f = 0; f < frames; f++)
+                        for (uint f = 0; f < frames; f++)
                             kframes.Position.Add(f, posSampler.GetPoint(keyframeStep * f));
                         break;
                     case PropertyPath.rotation:
                         var rotationSampler = channel.GetRotationSampler().CreateCurveSampler();
-                        for(uint f = 0; f < frames; f++)
+                        for (uint f = 0; f < frames; f++)
                             kframes.Quaternion.Add(f, rotationSampler.GetPoint(keyframeStep * f));
                         break;
                     case PropertyPath.scale:
                         var scaleSampler = channel.GetScaleSampler().CreateCurveSampler();
-                        for(uint f = 0; f < frames; f++)
+                        for (uint f = 0; f < frames; f++)
                             kframes.Scale.Add(f, scaleSampler.GetPoint(keyframeStep * f));
                         break;
                 }

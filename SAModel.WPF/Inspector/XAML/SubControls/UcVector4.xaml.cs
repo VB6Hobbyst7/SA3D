@@ -28,7 +28,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             {
                 Vector4 vector = Value;
 
-                switch(i)
+                switch (i)
                 {
                     default:
                     case 0:

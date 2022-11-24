@@ -10,41 +10,41 @@ namespace SATools.SACommon
 
         public static string ToCHex(this short i)
         {
-            if(i < 10 && i > -1)
+            if (i < 10 && i > -1)
                 return i.ToString(NumberFormatInfo.InvariantInfo);
             return "0x" + i.ToString("X");
         }
 
         public static string ToCHex(this int i)
         {
-            if(i < 10 && i > -1)
+            if (i < 10 && i > -1)
                 return i.ToString(NumberFormatInfo.InvariantInfo);
             return "0x" + i.ToString("X");
         }
 
         public static string ToCHex(this uint i)
         {
-            if(i < 10)
+            if (i < 10)
                 return i.ToString(NumberFormatInfo.InvariantInfo);
             return "0x" + i.ToString("X");
         }
 
         public static string ToCHex(this ulong i)
         {
-            if(i < 10)
+            if (i < 10)
                 return i.ToString(NumberFormatInfo.InvariantInfo);
             return "0x" + i.ToString("X");
         }
 
         public static string ToC(this string str)
         {
-            if(str == null)
+            if (str == null)
                 return "NULL";
             Encoding enc = Encoding.GetEncoding(932);
             StringBuilder result = new("\"");
-            foreach(char item in str)
+            foreach (char item in str)
             {
-                switch(item)
+                switch (item)
                 {
                     case '\0':
                         result.Append(@"\0");
@@ -77,11 +77,11 @@ namespace SATools.SACommon
                         result.Append(@"\\");
                         break;
                     default:
-                        if(item < ' ')
+                        if (item < ' ')
                             result.AppendFormat(@"\{0}", Convert.ToString((short)item, 8).PadLeft(3, '0'));
-                        else if(item > '\x7F')
+                        else if (item > '\x7F')
                         {
-                            foreach(byte b in enc.GetBytes(item.ToString()))
+                            foreach (byte b in enc.GetBytes(item.ToString()))
                                 result.AppendFormat(@"\{0}", Convert.ToString(b, 8).PadLeft(3, '0'));
                         }
                         else
@@ -96,7 +96,7 @@ namespace SATools.SACommon
         public static string ToC(this float num)
         {
             string result = num.ToLongString();
-            if(result.Contains("."))
+            if (result.Contains("."))
                 result += "f";
             return result;
         }
@@ -105,14 +105,14 @@ namespace SATools.SACommon
         {
             string str = input.ToString(NumberFormatInfo.InvariantInfo);
             // if string representation was collapsed from scientific notation, just return it: 
-            if(!str.Contains("E") & !str.Contains("e"))
+            if (!str.Contains("E") & !str.Contains("e"))
                 return str;
             str = str.ToUpper();
             char decSeparator = '.';
             string[] exponentParts = str.Split('E');
             string[] decimalParts = exponentParts[0].Split(decSeparator);
             // fix missing decimal point: 
-            if(decimalParts.Length == 1)
+            if (decimalParts.Length == 1)
             {
                 decimalParts = new[]
                 {
@@ -123,13 +123,13 @@ namespace SATools.SACommon
             int exponentValue = int.Parse(exponentParts[1]);
             string newNumber = decimalParts[0] + decimalParts[1];
             string result;
-            if(exponentValue > 0)
+            if (exponentValue > 0)
                 result = newNumber + GetZeros(exponentValue - decimalParts[1].Length);
             else
             {
                 // negative exponent 
                 result = string.Empty;
-                if(newNumber.StartsWith("-"))
+                if (newNumber.StartsWith("-"))
                 {
                     result = "-";
                     newNumber = newNumber.Substring(1);
@@ -142,7 +142,7 @@ namespace SATools.SACommon
 
         public static string GetZeros(int zeroCount)
         {
-            if(zeroCount < 0)
+            if (zeroCount < 0)
                 zeroCount = Math.Abs(zeroCount);
             return new string('0', zeroCount);
         }
@@ -150,12 +150,12 @@ namespace SATools.SACommon
         public static string MakeIdentifier(this string s)
         {
             StringBuilder result = new(s.Length + 1);
-            foreach(char item in s)
+            foreach (char item in s)
             {
-                if((item >= '0' & item <= '9') | (item >= 'A' & item <= 'Z') | (item >= 'a' & item <= 'z') | item == '_')
+                if ((item >= '0' & item <= '9') | (item >= 'A' & item <= 'Z') | (item >= 'a' & item <= 'z') | item == '_')
                     result.Append(item);
             }
-            if(result[0] >= '0' & result[0] <= '9')
+            if (result[0] >= '0' & result[0] <= '9')
                 result.Insert(0, '_');
             return result.ToString();
         }

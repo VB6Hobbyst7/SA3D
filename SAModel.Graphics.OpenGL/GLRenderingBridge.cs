@@ -126,7 +126,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void ChangeWireframe(WireFrameMode mode)
         {
-            switch(mode)
+            switch (mode)
             {
                 case WireFrameMode.ReplaceLine:
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
@@ -142,7 +142,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void UpdateViewport(Rectangle screen, bool resized)
         {
-            if(resized)
+            if (resized)
             {
                 GL.Viewport(screen.Size);
             }
@@ -156,14 +156,14 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             GLBufferingBridge.BufferMatrices(matrices);
 
-            for(int i = 0; i < mesh.Length; i++)
+            for (int i = 0; i < mesh.Length; i++)
             {
-                if(material != null)
+                if (material != null)
                     material.BufferMaterial = mesh[i].Material;
                 var handle = _bufferBridge.GetHandle(mesh[i]);
 
                 GL.BindVertexArray(handle.vao);
-                if(handle.eao == 0)
+                if (handle.eao == 0)
                     GL.DrawArrays(PrimitiveType.Triangles, 0, handle.vertexCount);
                 else
                     GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
@@ -175,14 +175,14 @@ namespace SATools.SAModel.Graphics.OpenGL
             var handle = _bufferBridge.GetHandle(mesh);
             GL.BindVertexArray(handle.vao);
 
-            if(handle.eao == 0)
-                foreach(var m in matrices)
+            if (handle.eao == 0)
+                foreach (var m in matrices)
                 {
                     GLBufferingBridge.BufferMatrices(m);
                     GL.DrawArrays(PrimitiveType.Triangles, 0, handle.vertexCount);
                 }
             else
-                foreach(var m in matrices)
+                foreach (var m in matrices)
                 {
                     GLBufferingBridge.BufferMatrices(m);
                     GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
@@ -198,7 +198,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             RenderLandentriesWireframe(opaqueGeo);
             RenderLandentriesWireframe(transparentgeo);
 
-            foreach(var (_, opaque, transparent) in models)
+            foreach (var (_, opaque, transparent) in models)
             {
                 RenderModelsWireframe(opaque);
                 RenderModelsWireframe(transparent);
@@ -209,7 +209,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private void RenderModelsWireframe(List<RenderMesh> renderMeshes)
         {
-            for(int i = 0; i < renderMeshes.Count; i++)
+            for (int i = 0; i < renderMeshes.Count; i++)
             {
                 var m = renderMeshes[i];
                 RenderMesh(m.meshes, m.matrices, null);
@@ -218,8 +218,8 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private void RenderLandentriesWireframe(LandEntryRenderBatch geometry)
         {
-            foreach(var g in geometry)
-                foreach(var t in g.Value)
+            foreach (var g in geometry)
+                foreach (var t in g.Value)
                     RenderMesh(t.Key, t.Value);
         }
 
@@ -232,17 +232,17 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.Disable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Blend);
 
-            if(!_bufferBridge.IsBuffered(sphere))
+            if (!_bufferBridge.IsBuffered(sphere))
                 _bufferBridge.LoadToCache(sphere);
             var handle = _bufferBridge.GetHandle(sphere);
             GL.BindVertexArray(handle.vao);
 
-            foreach(LandEntry le in entries)
+            foreach (LandEntry le in entries)
             {
                 var b = le.ModelBounds;
                 GLBufferingBridge.BufferMatrices(new(b.Matrix, b.Matrix * cam.ViewMatrix * cam.ProjectionMatrix));
 
-                if(handle.eao == 0)
+                if (handle.eao == 0)
                     GL.DrawArrays(PrimitiveType.Triangles, 0, handle.vertexCount);
                 else
                     GL.DrawElements(BeginMode.Triangles, handle.vertexCount, DrawElementsType.UnsignedInt, 0);
@@ -289,13 +289,13 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void CanvasPostDraw()
         {
-            foreach(var b in _bufferBridge.UIBuffers.Where(x => !x.Value.used).ToArray())
+            foreach (var b in _bufferBridge.UIBuffers.Where(x => !x.Value.used).ToArray())
             {
                 _bufferBridge.UIReuse.Enqueue(b.Value);
                 _bufferBridge.UIBuffers.Remove(b.Key);
             }
 
-            foreach(var b in _bufferBridge.UIBuffers)
+            foreach (var b in _bufferBridge.UIBuffers)
                 b.Value.used = false;
 
             GL.Disable(EnableCap.Blend);
@@ -306,7 +306,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override void CanvasDrawUIElement(UI.UIElement element, float width, float height, bool forceUpdateTransforms)
         {
-            if(_bufferBridge.GetUIBuffer(element.ID, out UIBuffer buffer))
+            if (_bufferBridge.GetUIBuffer(element.ID, out UIBuffer buffer))
             {
                 UpdateTransforms(element.GetTransformBuffer(width, height));
                 UpdateTexture(element.GetBufferTexture());
@@ -317,10 +317,10 @@ namespace SATools.SAModel.Graphics.OpenGL
                 GL.BindBuffer(BufferTarget.ArrayBuffer, buffer.vboHandle);
                 GL.BindTexture(TextureTarget.Texture2D, buffer.texHandle);
 
-                if(element.UpdatedTransforms || forceUpdateTransforms)
+                if (element.UpdatedTransforms || forceUpdateTransforms)
                     UpdateTransforms(element.GetTransformBuffer(width, height));
 
-                if(element.UpdatedTexture)
+                if (element.UpdatedTexture)
                     UpdateTexture(element.GetBufferTexture());
             }
 
@@ -330,7 +330,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         private static unsafe void UpdateTransforms(float[] transformBuffer)
         {
-            fixed(float* ptr = transformBuffer)
+            fixed (float* ptr = transformBuffer)
             {
                 GL.BufferData(BufferTarget.ArrayBuffer, 64, (IntPtr)ptr, BufferUsageHint.DynamicDraw);
             }

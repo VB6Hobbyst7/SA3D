@@ -7,7 +7,6 @@ using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace SATools.SA3D.ViewModel
 {
@@ -127,7 +126,7 @@ namespace SATools.SA3D.ViewModel
             FileFormat = AttachFormat.Buffer;
             FileIsNJ = false;
 
-            switch(mode)
+            switch (mode)
             {
                 case Mode.Model:
                     NJObject obj = new()
@@ -155,7 +154,7 @@ namespace SATools.SA3D.ViewModel
             byte[] file = File.ReadAllBytes(filepath);
 
             ModelFile mdlFile = ModelFile.Read(file, filepath);
-            if(mdlFile != null)
+            if (mdlFile != null)
             {
                 DebugTask task = new(mdlFile.Model, null, Path.GetFileNameWithoutExtension(filepath));
                 LoadModel(task);
@@ -169,7 +168,7 @@ namespace SATools.SA3D.ViewModel
 
 
             LandTable ltbl = LandTable.ReadFile(file);
-            if(ltbl != null)
+            if (ltbl != null)
             {
                 LoadLandtable(ltbl);
 
@@ -228,9 +227,9 @@ namespace SATools.SA3D.ViewModel
 
         public void InsertModel(NJObject insertRoot, bool insertAtRoot, TextureSet textures, Motion[] animations)
         {
-            if(ApplicationMode == Mode.Model)
+            if (ApplicationMode == Mode.Model)
             {
-                if(!insertAtRoot
+                if (!insertAtRoot
                     && ObjectTree?.Selected.ItemType == TreeItemType.Model
                     && ObjectTree.Selected.Parent.ItemType != TreeItemType.ModelHead)
                 {
@@ -239,7 +238,7 @@ namespace SATools.SA3D.ViewModel
                 else
                 {
                     DebugTask dbtsk = (DebugTask)Context.Scene.GameTasks[0];
-                    if(dbtsk.Model.ChildCount == 0)
+                    if (dbtsk.Model.ChildCount == 0)
                     {
                         dbtsk.ReplaceModel(insertRoot);
                     }
@@ -267,13 +266,13 @@ namespace SATools.SA3D.ViewModel
 
         public void SaveToFile(bool forceUpdate = false)
         {
-            if(ApplicationMode == Mode.Model)
+            if (ApplicationMode == Mode.Model)
             {
                 DebugTask dbtsk = (DebugTask)Context.Scene.GameTasks[0];
                 dbtsk.Model.ConvertAttachFormat(FileFormat, FileOptimize, false, forceUpdate);
                 ModelFile.WriteToFile(FilePath, FileFormat, FileIsNJ, dbtsk.Model);
             }
-            else if(ApplicationMode == Mode.Level)
+            else if (ApplicationMode == Mode.Level)
             {
                 var ltblFormat = FileFormat switch
                 {
@@ -288,7 +287,7 @@ namespace SATools.SA3D.ViewModel
                 ltbl.ConvertToFormat(ltblFormat, FileOptimize, forceUpdate);
 
                 // conversion to sa2/b may have added geometry right at the end
-                for(int i = Context.Scene.Geometry.Count; i < ltbl.Geometry.Count; i++)
+                for (int i = Context.Scene.Geometry.Count; i < ltbl.Geometry.Count; i++)
                     Context.Scene.Geometry.Add(ltbl.Geometry[i]);
 
                 ltbl.WriteFile(FilePath);

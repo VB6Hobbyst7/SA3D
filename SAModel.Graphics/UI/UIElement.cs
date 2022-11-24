@@ -1,5 +1,4 @@
-﻿using SATools.SAModel.Structs;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Numerics;
 
@@ -34,7 +33,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _position;
             set
             {
-                if(value == _position)
+                if (value == _position)
                     return;
                 _position = value;
                 UpdatedTransforms = true;
@@ -49,7 +48,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _localPivot;
             set
             {
-                if(value == _localPivot)
+                if (value == _localPivot)
                     return;
                 _localPivot = value;
                 UpdatedTransforms = true;
@@ -64,7 +63,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _globalPivot;
             set
             {
-                if(value == _globalPivot)
+                if (value == _globalPivot)
                     return;
                 _globalPivot = value;
                 UpdatedTransforms = true;
@@ -79,7 +78,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _scale;
             set
             {
-                if(value == _scale)
+                if (value == _scale)
                     return;
                 _scale = value;
                 UpdatedTransforms = true;
@@ -94,7 +93,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _rotation;
             set
             {
-                if(value == _rotation)
+                if (value == _rotation)
                     return;
                 _rotation = value;
                 UpdatedTransforms = true;

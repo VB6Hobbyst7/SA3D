@@ -80,13 +80,13 @@ namespace SATools.SAModel.Graphics.OpenGL
             GL.CompileShader(vertexShader);
 
             string infoLogVert = GL.GetShaderInfoLog(vertexShader);
-            if(!string.IsNullOrWhiteSpace(infoLogVert))
+            if (!string.IsNullOrWhiteSpace(infoLogVert))
                 throw new ShaderException("vertex shader couldnt compile: \n" + infoLogVert, infoLogVert.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
 
             GL.CompileShader(fragmentShader);
 
             string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
-            if(!string.IsNullOrWhiteSpace(infoLogFrag))
+            if (!string.IsNullOrWhiteSpace(infoLogFrag))
                 throw new ShaderException("fragment shader couldnt compile: \n" + infoLogFrag, infoLogFrag.Contains("ERROR___HEXADECIMAL_CONST_OVERFLOW"));
 
             //linking the shaders
@@ -115,18 +115,18 @@ namespace SATools.SAModel.Graphics.OpenGL
             int samplerInt = 0;
 
             // Loop over all the uniforms,
-            for(var i = 0; i < numberOfUniforms; i++)
+            for (var i = 0; i < numberOfUniforms; i++)
             {
                 // get the name of this uniform,
                 var key = GL.GetActiveUniform(_handle, i, out _, out ActiveUniformType t);
 
                 // get the location,
                 var location = GL.GetUniformLocation(_handle, key);
-                if(location < 0)
+                if (location < 0)
                     continue;
 
                 // and then add it to the dictionary.
-                if(t == ActiveUniformType.Sampler2D)
+                if (t == ActiveUniformType.Sampler2D)
                 {
                     _uniformLocations.Add(key, new UniformType(location, TextureUnit.Texture0 + samplerInt));
                     SetUniform(key, samplerInt);
@@ -152,7 +152,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         public void BindUniformBlock(string blockname, int blockid, int ubo)
         {
             int index = GL.GetUniformBlockIndex(_handle, blockname);
-            if(index < 0)
+            if (index < 0)
                 throw new ArgumentException("Block name does not exist: " + blockname);
 
             GL.UniformBlockBinding(_handle, index, blockid);
@@ -241,7 +241,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         /// <param name="data">The data to set</param>
         public void SetUniform(string name, Vector3 data)
         {
-            if(!_uniformLocations.ContainsKey(name))
+            if (!_uniformLocations.ContainsKey(name))
                 return;
             Use();
             GL.Uniform3(_uniformLocations[name].location, new OpenTK.Mathematics.Vector3(data.X, data.Y, data.Z));

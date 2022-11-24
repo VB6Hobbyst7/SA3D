@@ -1,5 +1,4 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.Structs;
 using System;
 using static SATools.SACommon.ByteConverter;
@@ -252,7 +251,7 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <param name="state">New state for the attribute/s</param>
         public void SetAttribute(MaterialAttributes attrib, bool state)
         {
-            if(state)
+            if (state)
                 MaterialAttributes |= attrib;
             else
                 MaterialAttributes &= ~attrib;
@@ -279,17 +278,17 @@ namespace SATools.SAModel.ModelData.Buffer
             writer.WriteSingle(MipmapDistanceAdjust);
 
             MaterialStates states = 0;
-            if(UseAlpha)
+            if (UseAlpha)
                 states |= MaterialStates.UseAlpha;
-            if(Culling)
+            if (Culling)
                 states |= MaterialStates.Culling;
-            if(ClampU)
+            if (ClampU)
                 states |= MaterialStates.ClampU;
-            if(ClampV)
+            if (ClampV)
                 states |= MaterialStates.ClampV;
-            if(MirrorU)
+            if (MirrorU)
                 states |= MaterialStates.MirrorU;
-            if(MirrorV)
+            if (MirrorV)
                 states |= MaterialStates.MirrorV;
 
             uint attribs = (uint)MaterialAttributes;

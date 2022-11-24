@@ -1,10 +1,5 @@
 ﻿using SATools.SAArchive;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {
@@ -24,7 +19,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public List<ITreeItemData> Expand()
         {
             List<ITreeItemData> result = new();
-            foreach(Texture t in Textures.Textures)
+            foreach (Texture t in Textures.Textures)
                 result.Add(new VmTexture(t));
             return result;
         }

@@ -51,9 +51,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         {
             object Value = info.Value;
 
-            if(!_viewModels.TryGetValue(Value, out object data))
+            if (!_viewModels.TryGetValue(Value, out object data))
             {
-                if(info.IsCollection)
+                if (info.IsCollection)
                 {
                     Type[] typeArgs = info.ValueType.IsArray ?
                         (new Type[] { info.ValueType.GetElementType() })
@@ -71,9 +71,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             }
 
             // check if a history element already wraps the viewmodel
-            foreach(VmHistoryElement h in History)
+            foreach (VmHistoryElement h in History)
             {
-                if(h.Data == data)
+                if (h.Data == data)
                 {
                     ActiveHistoryElement = h;
                     return;
@@ -81,9 +81,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             }
 
             int index = History.IndexOf(ActiveHistoryElement);
-            if(index < History.Count - 1)
+            if (index < History.Count - 1)
             {
-                for(int i = History.Count - 1; i > index; i--)
+                for (int i = History.Count - 1; i > index; i--)
                     History.RemoveAt(i);
             }
 

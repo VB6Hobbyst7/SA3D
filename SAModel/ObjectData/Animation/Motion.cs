@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Reloaded.Memory.Streams;
+using SATools.SACommon;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Reloaded.Memory.Streams;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
@@ -102,10 +101,10 @@ namespace SATools.SAModel.ObjData.Animation
         public void UpdateFrameCount()
         {
             Frames = 0;
-            foreach(var k in Keyframes.Values)
+            foreach (var k in Keyframes.Values)
             {
                 uint count = k.KeyframeCount;
-                if(count > Frames)
+                if (count > Frames)
                     Frames = count;
             }
         }
@@ -137,11 +136,11 @@ namespace SATools.SAModel.ObjData.Animation
             };
 
             uint tmpAddr = source.ToUInt32(address) - imageBase;
-            for(int i = 0; i < modelCount; i++)
+            for (int i = 0; i < modelCount; i++)
             {
                 Keyframes kf = Animation.Keyframes.Read(source, ref tmpAddr, imageBase, channels, animtype, shortrot);
 
-                if(kf.HasKeyframes)
+                if (kf.HasKeyframes)
                     result.Keyframes.Add(i, kf);
             }
 
@@ -170,9 +169,9 @@ namespace SATools.SAModel.ObjData.Animation
             PushBigEndian(false);
             Motion result = null;
 
-            if(source.ToUInt32(0) == NMDM)
+            if (source.ToUInt32(0) == NMDM)
             {
-                if(modelCount < 0)
+                if (modelCount < 0)
                     throw new ArgumentException("Cannot open NJM animations without a model!");
 
                 PushBigEndian(source.CheckBigEndianInt32(0xC));
@@ -181,11 +180,11 @@ namespace SATools.SAModel.ObjData.Animation
                 result = Read(source, ref aniaddr, ~7u, (uint)modelCount, null, true);
                 PopEndian();
             }
-            else if((source.ToUInt64(0) & HeaderMask) == SAANIM)
+            else if ((source.ToUInt64(0) & HeaderMask) == SAANIM)
             {
 
                 byte version = source[7];
-                if(version > CurrentVersion)
+                if (version > CurrentVersion)
                 {
                     PopEndian();
                     throw new FormatException("Not a valid SAANIM file.");
@@ -194,11 +193,11 @@ namespace SATools.SAModel.ObjData.Animation
                 uint aniaddr = source.ToUInt32(8);
                 Dictionary<uint, string> labels = new();
                 uint tmpaddr = BitConverter.ToUInt32(source, 0xC);
-                if(tmpaddr != 0)
+                if (tmpaddr != 0)
                     labels.Add(aniaddr, source.GetCString(tmpaddr));
-                if(version > 0)
+                if (version > 0)
                     modelCount = BitConverter.ToInt32(source, 0x10);
-                else if(modelCount == -1)
+                else if (modelCount == -1)
                 {
                     PopEndian();
                     throw new NotImplementedException("Cannot open version 0 animations without a model!");
@@ -221,16 +220,16 @@ namespace SATools.SAModel.ObjData.Animation
         public uint Write(EndianWriter writer, uint imageBase, Dictionary<string, uint> labels)
         {
             AnimationAttributes type = 0;
-            foreach(Keyframes kf in Keyframes.Values)
+            foreach (Keyframes kf in Keyframes.Values)
                 type |= kf.Type;
 
             int channels = type.ChannelCount();
 
             (uint addr, uint count)[][] keyFrameLocations = new (uint addr, uint count)[ModelCount][];
 
-            for(int i = 0; i < ModelCount; i++)
+            for (int i = 0; i < ModelCount; i++)
             {
-                if(!Keyframes.ContainsKey(i))
+                if (!Keyframes.ContainsKey(i))
                 {
                     keyFrameLocations[i] = new (uint addr, uint count)[channels];
                 }
@@ -242,11 +241,11 @@ namespace SATools.SAModel.ObjData.Animation
 
             uint keyframesAddr = writer.Position + imageBase;
 
-            foreach(var kf in keyFrameLocations)
+            foreach (var kf in keyFrameLocations)
             {
-                for(int i = 0; i < kf.Length; i++)
+                for (int i = 0; i < kf.Length; i++)
                     writer.WriteUInt32(kf[i].addr);
-                for(int i = 0; i < kf.Length; i++)
+                for (int i = 0; i < kf.Length; i++)
                     writer.WriteUInt32(kf[i].count);
             }
 

@@ -1,11 +1,7 @@
 ﻿using SATools.SA3D.ViewModel.Base;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace SATools.SA3D.ViewModel
@@ -71,11 +67,11 @@ namespace SATools.SA3D.ViewModel
             get => _expanded;
             set
             {
-                if(value && !loaded)
+                if (value && !loaded)
                 {
                     Children.Clear();
                     var children = Data.Expand();
-                    foreach(var t in children)
+                    foreach (var t in children)
                         Children.Add(new(this, t));
                     loaded = true;
                 }
@@ -89,7 +85,7 @@ namespace SATools.SA3D.ViewModel
             Parent = parent;
             Data = data;
             Children = new();
-            if(Data.CanExpand)
+            if (Data.CanExpand)
                 Children.Add(null);
         }
     }

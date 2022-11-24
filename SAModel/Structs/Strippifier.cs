@@ -62,7 +62,7 @@ namespace SATools.SAModel.Structs
             /// <returns></returns>
             public Edge IsConnectedWith(Vertex other)
             {
-                if(edges.ContainsKey(other))
+                if (edges.ContainsKey(other))
                     return edges[other];
                 return null;
             }
@@ -113,7 +113,7 @@ namespace SATools.SAModel.Structs
             /// <param name="tri"></param>
             public void AddTriangle(Triangle tri)
             {
-                foreach(Triangle t in triangles)
+                foreach (Triangle t in triangles)
                 {
                     t.neighbours.Add(tri);
                     tri.neighbours.Add(t);
@@ -160,8 +160,8 @@ namespace SATools.SAModel.Structs
                 get
                 {
                     List<Triangle> result = new();
-                    foreach(Triangle t in neighbours)
-                        if(!t.used)
+                    foreach (Triangle t in neighbours)
+                        if (!t.used)
                             result.Add(t);
                     return result.ToArray();
                 }
@@ -183,7 +183,7 @@ namespace SATools.SAModel.Structs
 
                 Vertex prevVert = vertices[2];
                 int i = 0;
-                foreach(Vertex v in vertices)
+                foreach (Vertex v in vertices)
                 {
                     v.triangles.Add(this);
                     edges[i] = AddEdge(v, prevVert, outEdges);
@@ -205,12 +205,12 @@ namespace SATools.SAModel.Structs
             {
                 Edge e = v1.IsConnectedWith(v2);
 
-                if(e == null)
+                if (e == null)
                 {
                     e = v1.Connect(v2);
                     edges.Add(e);
                 }
-                else if(raiseTopoError && e.triangles.Count > 1)
+                else if (raiseTopoError && e.triangles.Count > 1)
                 {
                     throw new TopologyException("Some edge has more than 2 faces! Can't strippify!");
                 }
@@ -239,9 +239,9 @@ namespace SATools.SAModel.Structs
             /// <returns></returns>
             public Vertex GetThirdVertex(Vertex v1, Vertex v2)
             {
-                if(vertices.Contains(v1) && vertices.Contains(v2))
-                    foreach(Vertex v in vertices)
-                        if(v != v1 && v != v2)
+                if (vertices.Contains(v1) && vertices.Contains(v2))
+                    foreach (Vertex v in vertices)
+                        if (v != v1 && v != v2)
                             return v;
                 return null;
             }
@@ -253,8 +253,8 @@ namespace SATools.SAModel.Structs
             /// <returns></returns>
             public Edge GetSharedEdge(Triangle other)
             {
-                foreach(Edge e in edges)
-                    if(other.edges.Contains(e))
+                foreach (Edge e in edges)
+                    if (other.edges.Contains(e))
                         return e;
                 return null;
             }
@@ -269,9 +269,9 @@ namespace SATools.SAModel.Structs
             {
                 Triangle[] trisToUse = AvailableNeighbours;
 
-                if(trisToUse.Length == 0)
+                if (trisToUse.Length == 0)
                     return null;
-                if(trisToUse.Length == 1)
+                if (trisToUse.Length == 1)
                     return trisToUse[0];
 
                 int[] weights = new int[trisToUse.Length];
@@ -281,18 +281,18 @@ namespace SATools.SAModel.Structs
                 bool hasBase = v1 != null && v2 != null;
 
                 int i = -1;
-                foreach(Triangle t in trisToUse)
+                foreach (Triangle t in trisToUse)
                 {
                     i++;
                     weights[i] = t.AvailableNeighbours.Length;
 
-                    if(weights[i] == 0)
+                    if (weights[i] == 0)
                         return t;
 
-                    if(hasBase)
+                    if (hasBase)
                     {
                         // if swap is needed, add weight
-                        if(t.HasVertex(v2))
+                        if (t.HasVertex(v2))
                         {
                             weights[i] -= 1;
                             vConnection[i] = v1.AvailableTris;
@@ -309,24 +309,24 @@ namespace SATools.SAModel.Structs
                         vConnection[i] = eVerts[0].AvailableTris + eVerts[1].AvailableTris;
                     }
 
-                    if(vConnection[i] > biggestConnection)
+                    if (vConnection[i] > biggestConnection)
                         biggestConnection = vConnection[i];
                 }
 
                 i = -1;
-                foreach(int v in vConnection)
+                foreach (int v in vConnection)
                 {
                     i++;
-                    if(v < biggestConnection)
+                    if (v < biggestConnection)
                         weights[i] -= 1;
                     else
                         weights[i] += 1;
                 }
 
                 int index = 0;
-                for(int j = 1; j < trisToUse.Length; j++)
+                for (int j = 1; j < trisToUse.Length; j++)
                 {
-                    if(weights[j] < weights[index]
+                    if (weights[j] < weights[index]
                         || hasBase && weights[j] == weights[index] && trisToUse[j].HasVertex(v2))
                         index = j;
                 }
@@ -344,8 +344,8 @@ namespace SATools.SAModel.Structs
             {
                 Edge e = v1.IsConnectedWith(v2);
 
-                foreach(Triangle t in e.triangles)
-                    if(t != this && !t.used)
+                foreach (Triangle t in e.triangles)
+                    if (t != this && !t.used)
                         return t;
                 return null;
             }
@@ -358,9 +358,9 @@ namespace SATools.SAModel.Structs
             public bool HasBrokenCullFlow(Triangle other)
             {
                 int t = 0;
-                foreach(Vertex v in vertices)
+                foreach (Vertex v in vertices)
                 {
-                    if(other.vertices.Contains(v))
+                    if (other.vertices.Contains(v))
                     {
                         int tt = Array.IndexOf(other.vertices, v);
                         return vertices[(t + 1) % 3] == other.vertices[(tt + 1) % 3];
@@ -401,7 +401,7 @@ namespace SATools.SAModel.Structs
 
                 vertices = new Vertex[vertCount];
 
-                for(int i = 0; i < vertCount; i++)
+                for (int i = 0; i < vertCount; i++)
                 {
                     vertices[i] = new Vertex(i);
                 }
@@ -409,7 +409,7 @@ namespace SATools.SAModel.Structs
                 edges = new List<Edge>();
                 triangles = new Triangle[triangleList.Length / 3];
 
-                for(int i = 0; i < triangles.Length; i++)
+                for (int i = 0; i < triangles.Length; i++)
                 {
                     int j = i * 3;
                     triangles[i] = new Triangle(i,
@@ -422,7 +422,7 @@ namespace SATools.SAModel.Structs
                 }
 
                 int triEdgeCount = edges.Count(x => x.triangles.Count > 2);
-                if(triEdgeCount > 0)
+                if (triEdgeCount > 0)
                 {
                     Console.WriteLine("Tripple edges: " + triEdgeCount);
                 }
@@ -465,27 +465,27 @@ namespace SATools.SAModel.Structs
                 int curNCount = int.MaxValue;
 
                 int i = -1;
-                foreach(Triangle t in mesh.triangles)
+                foreach (Triangle t in mesh.triangles)
                 {
                     i++;
-                    if(t.used)
+                    if (t.used)
                         continue;
-                    
+
                     int tnCount = t.AvailableNeighbours.Length;
-                    if(tnCount == 0)
+                    if (tnCount == 0)
                     {
                         AddZTriangle(t);
                         continue;
                     }
 
-                    if(tnCount < curNCount)
+                    if (tnCount < curNCount)
                     {
-                        if(tnCount == 1)
+                        if (tnCount == 1)
                             return t;
                         curNCount = tnCount;
                         resultTri = t;
                     }
-                    
+
                 }
 
                 return resultTri;
@@ -494,7 +494,7 @@ namespace SATools.SAModel.Structs
             Triangle firstTri = getFirstTri();
 
             // as long as some triangles remain to be written, keep the loop running
-            while(written != triCount)
+            while (written != triCount)
             {
                 // when looking for the first triangle, we also filter out some
                 // single triangles, which means that it will alter the written
@@ -511,7 +511,7 @@ namespace SATools.SAModel.Structs
                 // If the two triangles have a broken cull flow, then dont continue
                 // the strip (well ok, there is a chance it could continue on
                 // another tri, but its not worth looking for such a triangle)
-                if(currentTri.HasBrokenCullFlow(newTri))
+                if (currentTri.HasBrokenCullFlow(newTri))
                 {
                     AddZTriangle(currentTri);
                     // since we are wrapping back around, we have
@@ -540,7 +540,7 @@ namespace SATools.SAModel.Structs
                 // then that would mean that the second tri has only one neighbour,
                 // which can only occur if the first tri also has only one
                 // neighbour. Only two triangles in the strip! boom!
-                if(secNewTri == null)
+                if (secNewTri == null)
                 {
                     currentVert = sharedVerts[1];
                     nextVert = sharedVerts[0];
@@ -555,7 +555,7 @@ namespace SATools.SAModel.Structs
                     firstTri = getFirstTri();
                     continue;
                 }
-                else if(secNewTri.HasVertex(sharedVerts[0]))
+                else if (secNewTri.HasVertex(sharedVerts[0]))
                 {
                     currentVert = sharedVerts[1];
                     nextVert = sharedVerts[0];
@@ -582,7 +582,7 @@ namespace SATools.SAModel.Structs
                 // creating the strip
                 bool reachedEnd = false;
                 bool reversedList = false;
-                while(!reachedEnd)
+                while (!reachedEnd)
                 {
                     // writing the next index
                     strip.Add(currentVert.index);
@@ -590,20 +590,20 @@ namespace SATools.SAModel.Structs
 
                     // ending or reversing the loop when the current
                     // tri is None (end of the strip)
-                    if(newTri == null)
+                    if (newTri == null)
                     {
-                        if(!reversedList && firstTri.AvailableNeighbours.Length > 0)
+                        if (!reversedList && firstTri.AvailableNeighbours.Length > 0)
                         {
                             reversedList = true;
                             prevVert = mesh.vertices[strip[1]];
                             currentVert = mesh.vertices[strip[0]];
                             newTri = firstTri.NextTriangle(prevVert, currentVert);
-                            if(newTri == null)
+                            if (newTri == null)
                             {
                                 reachedEnd = true;
                                 continue;
                             }
-                            
+
                             strip.Reverse();
 
                             Triangle tTri = firstTri;
@@ -620,7 +620,7 @@ namespace SATools.SAModel.Structs
                     // getting the next vertex to write
                     nextVert = newTri.GetThirdVertex(prevVert, currentVert);
 
-                    if(nextVert == null)
+                    if (nextVert == null)
                     {
                         reachedEnd = true;
                         continue;
@@ -633,20 +633,20 @@ namespace SATools.SAModel.Structs
                     currentTri = newTri;
                     currentTri.used = true;
 
-                    if(oldTri.HasBrokenCullFlow(currentTri))
+                    if (oldTri.HasBrokenCullFlow(currentTri))
                         newTri = null;
                     else
                         newTri = currentTri.NextTriangle(prevVert, currentVert);
                 }
 
                 // checking if the triangle is reversed
-                for(int i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
                 {
-                    if(firstTri.vertices[0].index == strip[i])
+                    if (firstTri.vertices[0].index == strip[i])
                     {
-                        if(firstTri.vertices[1].index == strip[(i + 1) % 3])
+                        if (firstTri.vertices[1].index == strip[(i + 1) % 3])
                         {
-                            if(strip.Count % 2 == 1)
+                            if (strip.Count % 2 == 1)
                                 strip.Reverse();
                             else
                                 strip.Insert(0, strip[0]);

@@ -15,24 +15,24 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 new(null, new((d, e) =>
                 {
                     EnumComboBox ecb = (EnumComboBox)d;
-                    if(ecb.Items.Count == 0)
+                    if (ecb.Items.Count == 0)
                         return; // we'll handle this again after loading
 
                     ComboBoxItem item;
-                    if(ecb.SelectedIndex >= 0)
+                    if (ecb.SelectedIndex >= 0)
                     {
                         item = (ComboBoxItem)ecb.Items[ecb.SelectedIndex];
 
-                        if(item.Tag == e.NewValue)
+                        if (item.Tag == e.NewValue)
                             return;
                     }
 
-                    for(int i = 0; i < ecb.Items.Count; i++)
+                    for (int i = 0; i < ecb.Items.Count; i++)
                     {
                         item = (ComboBoxItem)ecb.Items[i];
-                        if(!item.Tag.Equals(e.NewValue))
+                        if (!item.Tag.Equals(e.NewValue))
                             continue;
-                           
+
                         ecb.SelectedIndex = i;
                         return;
                     }
@@ -55,10 +55,10 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             base.OnItemsChanged(e);
 
             object value = Value;
-            for(int i = 0; i < Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
                 ComboBoxItem item = (ComboBoxItem)Items[i];
-                if(!item.Tag.Equals(value))
+                if (!item.Tag.Equals(value))
                     continue;
 
                 SelectedIndex = i;
@@ -73,7 +73,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
         protected override void OnSelectionChanged(SelectionChangedEventArgs e)
         {
             base.OnSelectionChanged(e);
-            if(_handle)
+            if (_handle)
                 Handle();
             _handle = true;
         }

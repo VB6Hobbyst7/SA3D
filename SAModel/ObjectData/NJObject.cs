@@ -1,14 +1,14 @@
-﻿using System;
+﻿using SATools.SACommon;
+using SATools.SAModel.ModelData;
+using SATools.SAModel.Structs;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using SATools.SAModel.ModelData;
-using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
-using SATools.SACommon;
-using System.Collections.ObjectModel;
 
 namespace SATools.SAModel.ObjData
 {
@@ -43,12 +43,12 @@ namespace SATools.SAModel.ObjData
             get => _attach;
             set
             {
-                foreach(NJObject o in GetObjects())
+                foreach (NJObject o in GetObjects())
                 {
-                    if(o == this || o.Attach == null)
+                    if (o == this || o.Attach == null)
                         continue;
-                    if(o.Attach.Format != _attach.Format)
-                        throw new FormatException($"Format of the attach doesnt match! Model is { o.Attach.Format }, while the new attach is { _attach.Format }");
+                    if (o.Attach.Format != _attach.Format)
+                        throw new FormatException($"Format of the attach doesnt match! Model is {o.Attach.Format}, while the new attach is {_attach.Format}");
                 }
                 _attach = value;
             }
@@ -61,12 +61,12 @@ namespace SATools.SAModel.ObjData
         {
             get
             {
-                if(Attach != null)
+                if (Attach != null)
                     return Attach.Format;
 
-                foreach(NJObject obj in GetObjects())
+                foreach (NJObject obj in GetObjects())
                 {
-                    if(obj.Attach == null)
+                    if (obj.Attach == null)
                         continue;
                     return obj.Attach.Format;
                 }
@@ -140,10 +140,10 @@ namespace SATools.SAModel.ObjData
         {
             get
             {
-                if(Parent == null)
+                if (Parent == null)
                     return null;
                 int index = Parent._children.IndexOf(this);
-                if(index == -1 || index == Parent.ChildCount - 1)
+                if (index == -1 || index == Parent.ChildCount - 1)
                     return null;
                 else
                     return Parent._children[index + 1];
@@ -157,7 +157,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public ReadOnlyCollection<NJObject> Children { get; }
 
-        public int ChildCount 
+        public int ChildCount
             => _children.Count;
 
         /// <summary>
@@ -182,10 +182,10 @@ namespace SATools.SAModel.ObjData
         {
             get
             {
-                if(Attach?.HasWeight == true)
+                if (Attach?.HasWeight == true)
                     return true;
-                foreach(NJObject obj in _children)
-                    if(obj.HasWeight)
+                foreach (NJObject obj in _children)
+                    if (obj.HasWeight)
                         return true;
                 return false;
             }
@@ -200,21 +200,21 @@ namespace SATools.SAModel.ObjData
             {
                 ObjectAttributes r = 0;
 
-                if(Position == Vector3.Zero)
+                if (Position == Vector3.Zero)
                     r |= ObjectAttributes.NoPosition;
-                if(Rotation == Vector3.Zero)
+                if (Rotation == Vector3.Zero)
                     r |= ObjectAttributes.NoRotation;
-                if(Scale == Vector3.One)
+                if (Scale == Vector3.One)
                     r |= ObjectAttributes.NoScale;
-                if(Attach == null)
+                if (Attach == null)
                     r |= ObjectAttributes.NoDisplay;
-                if(ChildCount == 0)
+                if (ChildCount == 0)
                     r |= ObjectAttributes.NoChildren;
-                if(RotateZYX)
+                if (RotateZYX)
                     r |= ObjectAttributes.RotateZYX;
-                if(!Animate)
+                if (!Animate)
                     r |= ObjectAttributes.NoAnimate;
-                if(!Morph)
+                if (!Morph)
                     r |= ObjectAttributes.NoMorph;
 
                 return r;
@@ -226,7 +226,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="index">Child index</param>
         /// <returns></returns>
-        public NJObject this[int index] 
+        public NJObject this[int index]
             => _children[index];
 
         /// <summary>
@@ -245,13 +245,13 @@ namespace SATools.SAModel.ObjData
         /// <param name="Parent"></param>
         public NJObject(NJObject Parent) : this()
         {
-            if(Parent == null)
+            if (Parent == null)
                 return;
             this.Parent = Parent;
             Parent._children.Add(this);
         }
 
-        private void UpdateMatrix() 
+        private void UpdateMatrix()
             => LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
 
         /// <summary>
@@ -261,12 +261,12 @@ namespace SATools.SAModel.ObjData
         /// <param name="updateRotation">Update the euler rotation, so that the order but not the rotation changes</param>
         public void SetRotationZYX(bool newValue, bool updateRotation = true)
         {
-            if(RotateZYX == newValue)
+            if (RotateZYX == newValue)
                 return;
 
             RotateZYX = newValue;
 
-            if(updateRotation)
+            if (updateRotation)
                 _rotation = QuaternionExtensions.ToEuler(_quaternionRotation, newValue);
         }
 
@@ -280,7 +280,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="labels">C struct labels</param>
         /// <param name="attaches">Already read attaches</param>
         /// <returns></returns>
-        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches) 
+        public static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
             => Read(source, address, imageBase, format, DX, null, labels, attaches);
 
         private static NJObject Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, NJObject parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
@@ -296,10 +296,10 @@ namespace SATools.SAModel.ObjData
             // reading the attach
             Attach atc = null;
             uint tmpaddr = source.ToUInt32(address += 4);
-            if(tmpaddr != 0)
+            if (tmpaddr != 0)
             {
                 tmpaddr -= imageBase;
-                if(attaches.ContainsKey(tmpaddr))
+                if (attaches.ContainsKey(tmpaddr))
                     atc = attaches[tmpaddr];
                 else
                 {
@@ -330,12 +330,12 @@ namespace SATools.SAModel.ObjData
 
             // reading child | parent and child get set in the constructor
             tmpaddr = source.ToUInt32(address);
-            if(tmpaddr != 0)
+            if (tmpaddr != 0)
                 Read(source, tmpaddr - imageBase, imageBase, format, DX, result, labels, attaches);
 
             // reading sibling | parent and child get set in the constructor
             tmpaddr = source.ToUInt32(address + 4);
-            if(tmpaddr != 0)
+            if (tmpaddr != 0)
                 Read(source, tmpaddr - imageBase, imageBase, format, DX, parent, labels, attaches);
 
             return result;
@@ -387,12 +387,12 @@ namespace SATools.SAModel.ObjData
             Attach[] attaches = models.Where(x => x.Attach != null).Select(x => x.Attach).ToArray();
 
             // write attaches
-            foreach(var atc in attaches)
+            foreach (var atc in attaches)
             {
-                if(labels.ContainsKey(atc.Name))
+                if (labels.ContainsKey(atc.Name))
                     continue;
-                
-                if(writeBuffer)
+
+                if (writeBuffer)
                     atc.WriteBuffer(writer, imageBase, labels);
                 else
                     atc.Write(writer, imageBase, DX, labels);
@@ -400,7 +400,7 @@ namespace SATools.SAModel.ObjData
 
             // write models, but in reverse order
             writer.Stream.Seek(modelsEnd - Size, SeekOrigin.Begin);
-            for(int i = models.Length - 1; i > 0; i--)
+            for (int i = models.Length - 1; i > 0; i--)
             {
                 models[i].Write(writer, imageBase, labels);
                 writer.Stream.Seek((int)Size * -2, SeekOrigin.Current);
@@ -466,10 +466,10 @@ namespace SATools.SAModel.ObjData
         /// <param name="ignoreWeights">Convert regardless of weight information being lost</param>
         public void ConvertAttachFormat(AttachFormat newAttachFormat, bool optimize, bool ignoreWeights = false, bool forceUpdate = false)
         {
-            switch(newAttachFormat)
+            switch (newAttachFormat)
             {
                 case AttachFormat.Buffer:
-                    switch(AttachFormat)
+                    switch (AttachFormat)
                     {
                         case AttachFormat.Buffer:
                             return;
@@ -506,7 +506,7 @@ namespace SATools.SAModel.ObjData
         {
             Matrix4x4 local = LocalMatrix;
 
-            if(Parent != null)
+            if (Parent != null)
                 local *= Parent.GetWorldMatrix();
 
             return local;
@@ -530,7 +530,7 @@ namespace SATools.SAModel.ObjData
         public int Count()
         {
             int result = 1;
-            foreach(NJObject item in _children)
+            foreach (NJObject item in _children)
                 result += item.Count();
             return result;
         }
@@ -542,7 +542,7 @@ namespace SATools.SAModel.ObjData
         public int CountAnimated()
         {
             int result = Animate ? 1 : 0;
-            foreach(NJObject item in _children)
+            foreach (NJObject item in _children)
                 result += item.CountAnimated();
             return result;
         }
@@ -554,7 +554,7 @@ namespace SATools.SAModel.ObjData
         public int CountMorph()
         {
             int result = Morph ? 1 : 0;
-            foreach(NJObject item in _children)
+            foreach (NJObject item in _children)
                 result += item.CountMorph();
             return result;
         }
@@ -566,11 +566,11 @@ namespace SATools.SAModel.ObjData
         /// <returns></returns>
         public bool ContainsName(string name)
         {
-            if(Name == name)
+            if (Name == name)
                 return true;
 
-            foreach(NJObject item in _children)
-                if(item.ContainsName(name))
+            foreach (NJObject item in _children)
+                if (item.ContainsName(name))
                     return true;
 
             return false;
@@ -579,7 +579,7 @@ namespace SATools.SAModel.ObjData
         private void GetObjects(List<NJObject> result)
         {
             result.Add(this);
-            foreach(NJObject item in _children)
+            foreach (NJObject item in _children)
                 result.AddRange(item.GetObjects());
         }
 
@@ -599,7 +599,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="children"></param>
         public void AddChildren(IEnumerable<NJObject> children)
         {
-            foreach(NJObject child in children)
+            foreach (NJObject child in children)
                 AddChild(child);
         }
 
@@ -640,7 +640,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public void ClearChildren()
         {
-            foreach(NJObject child in _children)
+            foreach (NJObject child in _children)
                 child.Parent = null;
             _children.Clear();
         }

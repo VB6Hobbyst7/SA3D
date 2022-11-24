@@ -1,20 +1,20 @@
-﻿using SATools.SAModel.Graphics.APIAccess;
+﻿using SATools.SACommon;
+using SATools.SAModel.Graphics.APIAccess;
+using SATools.SAModel.Graphics.Properties;
 using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
-using SATools.SACommon;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
+using System.Numerics;
 using System.Windows.Input;
 using Color = SATools.SAModel.Structs.Color;
-using SATools.SAModel.Graphics.Properties;
-using System.Collections.Generic;
-using System.Numerics;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics
@@ -98,12 +98,12 @@ namespace SATools.SAModel.Graphics
             {
                 _debugMenu = _debugMenu == value ? DebugMenu.Disabled : value;
 
-                if(_debugMenu == DebugMenu.Disabled)
+                if (_debugMenu == DebugMenu.Disabled)
                     return;
 
                 int width = 0;
                 int height = 0;
-                switch(_debugMenu)
+                switch (_debugMenu)
                 {
                     case DebugMenu.Help:
                         width = 200;
@@ -128,7 +128,7 @@ namespace SATools.SAModel.Graphics
             get => _renderMode;
             set
             {
-                if(value == _renderMode)
+                if (value == _renderMode)
                     return;
                 DebugMaterial.RenderMode = value;
                 _renderMode = value;
@@ -143,7 +143,7 @@ namespace SATools.SAModel.Graphics
             get => _wireFrameMode;
             set
             {
-                if(value == _wireFrameMode)
+                if (value == _wireFrameMode)
                     return;
                 _renderingBridge.ChangeWireframe(value);
                 _wireFrameMode = value;
@@ -213,7 +213,7 @@ namespace SATools.SAModel.Graphics
             get => _activeNJO;
             set
             {
-                if(value == null)
+                if (value == null)
                     return;
                 _activeNJO = value;
                 _activeLE = null;
@@ -228,7 +228,7 @@ namespace SATools.SAModel.Graphics
             get => _activeLE;
             set
             {
-                if(value == null)
+                if (value == null)
                     return;
                 _activeLE = value;
                 _activeNJO = null;
@@ -286,9 +286,9 @@ namespace SATools.SAModel.Graphics
             int value = Convert.ToInt32(current);
             _ = back ? value-- : value++;
 
-            if(value < 0)
+            if (value < 0)
                 value = max;
-            else if(value > max)
+            else if (value > max)
                 value = 0;
 
             return (T)Enum.ToObject(typeof(T), value);
@@ -303,43 +303,43 @@ namespace SATools.SAModel.Graphics
             //calculate fps
             deltas.Enqueue(delta);
             deltasAdded += delta;
-            while(deltasAdded > 1)
+            while (deltasAdded > 1)
                 deltasAdded -= deltas.Dequeue();
 
 
-            if(Focused != this)
+            if (Focused != this)
                 return;
 
-            if(UseDebugCamera)
+            if (UseDebugCamera)
                 UpdateCamera(delta);
 
             DebugSettings s = DebugSettings.Default;
             bool backward = Input.IsKeyDown(s.CircleBackward);
 
-            if(Input.KeyPressed(s.CircleRenderMode))
+            if (Input.KeyPressed(s.CircleRenderMode))
                 RenderMode = Circle(RenderMode, backward);
 
             // Circle wireframe mode
-            if(Input.KeyPressed(s.CircleWireframe))
+            if (Input.KeyPressed(s.CircleWireframe))
                 WireframeMode = Circle(WireframeMode, backward);
 
             // Circle displaybounds mode
-            if(Input.KeyPressed(s.DisplayBounds))
+            if (Input.KeyPressed(s.DisplayBounds))
                 BoundsMode = Circle(BoundsMode, backward);
 
             // Switch collision rendering mode
-            if(Input.KeyPressed(s.SwapGeometry))
+            if (Input.KeyPressed(s.SwapGeometry))
                 RenderCollision = !RenderCollision;
 
             // Circle object relations mode
-            if(Input.KeyPressed(s.CircleObjectRelations))
+            if (Input.KeyPressed(s.CircleObjectRelations))
                 ObjectRelationsMode = Circle(ObjectRelationsMode, backward);
 
-            if(Input.KeyPressed(s.DebugHelp))
+            if (Input.KeyPressed(s.DebugHelp))
                 DebugMenu = DebugMenu.Help;
-            else if(Input.KeyPressed(s.DebugCamera))
+            else if (Input.KeyPressed(s.DebugCamera))
                 DebugMenu = DebugMenu.Camera;
-            else if(Input.KeyPressed(s.DebugRender))
+            else if (Input.KeyPressed(s.DebugRender))
                 DebugMenu = DebugMenu.RenderInfo;
 
 
@@ -352,35 +352,35 @@ namespace SATools.SAModel.Graphics
         private void UpdateCamera(double delta)
         {
             DebugSettings s = DebugSettings.Default;
-            if(!Camera.Orbiting) // if in first-person mode
+            if (!Camera.Orbiting) // if in first-person mode
             {
-                if(!_wasFocused || Input.KeyPressed(Key.Escape) || Input.KeyPressed(s.NavMode))
+                if (!_wasFocused || Input.KeyPressed(Key.Escape) || Input.KeyPressed(s.NavMode))
                 {
                     Camera.Orbiting = true;
                     Input.LockCursor = false;
                 }
             }
-            else if(Input.KeyPressed(s.NavMode))
+            else if (Input.KeyPressed(s.NavMode))
             {
                 Camera.Orbiting = false;
                 Input.LockCursor = true;
             }
             else
             {
-                if(Input.KeyPressed(s.FocusObj))
+                if (Input.KeyPressed(s.FocusObj))
                 {
-                    if(ActiveLE != null)
+                    if (ActiveLE != null)
                     {
                         Camera.Position = ActiveLE.ModelBounds.Position;
                     }
-                    else if(ActiveNJO != null)
+                    else if (ActiveNJO != null)
                     {
                         Camera.Position = ActiveNJO.Position;
                     }
                 }
             }
 
-            if(!Camera.Orbiting)
+            if (!Camera.Orbiting)
             {
                 // rotation
                 Camera.Rotation = new Vector3(
@@ -390,7 +390,7 @@ namespace SATools.SAModel.Graphics
 
                 // modifying movement speed 
                 float dir = Input.ScrollDif < 0 ? -0.05f : 0.05f;
-                for(int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
+                for (int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
                 {
                     CamMovementSpeed += CamMovementSpeed * dir;
                     CamMovementSpeed = Math.Max(0.0001f, Math.Min(1000, CamMovementSpeed));
@@ -399,25 +399,25 @@ namespace SATools.SAModel.Graphics
                 // movement
                 Vector3 dif = default;
 
-                if(Input.IsKeyDown(s.FpForward))
+                if (Input.IsKeyDown(s.FpForward))
                     dif += Camera.Forward;
 
-                if(Input.IsKeyDown(s.FpBackward))
+                if (Input.IsKeyDown(s.FpBackward))
                     dif -= Camera.Forward;
 
-                if(Input.IsKeyDown(s.FpLeft))
+                if (Input.IsKeyDown(s.FpLeft))
                     dif += Camera.Right;
 
-                if(Input.IsKeyDown(s.FpRight))
+                if (Input.IsKeyDown(s.FpRight))
                     dif -= Camera.Right;
 
-                if(Input.IsKeyDown(s.FpUp))
+                if (Input.IsKeyDown(s.FpUp))
                     dif += Camera.Up;
 
-                if(Input.IsKeyDown(s.FpDown))
+                if (Input.IsKeyDown(s.FpDown))
                     dif -= Camera.Up;
 
-                if(dif.Length() == 0)
+                if (dif.Length() == 0)
                     return;
 
                 Camera.Position += Vector3.Normalize(dif) * CamMovementSpeed * (Input.IsKeyDown(s.FpSpeedup) ? CamMovementModif : 1) * (float)delta;
@@ -425,13 +425,13 @@ namespace SATools.SAModel.Graphics
             else
             {
                 // mouse orientation
-                if(Input.IsKeyDown(s.OrbitKey))
+                if (Input.IsKeyDown(s.OrbitKey))
                 {
-                    if(Input.IsKeyDown(s.ZoomModifier)) // zooming
+                    if (Input.IsKeyDown(s.ZoomModifier)) // zooming
                     {
                         Camera.Distance += Camera.Distance * Input.CursorDif.Y * 0.01f;
                     }
-                    else if(Input.IsKeyDown(s.DragModifier)) // moving
+                    else if (Input.IsKeyDown(s.DragModifier)) // moving
                     {
                         Vector3 dif = default;
                         float speed = CamDragSpeed * Camera.Distance;
@@ -446,19 +446,19 @@ namespace SATools.SAModel.Graphics
                 }
                 else
                 {
-                    if(Input.KeyPressed(s.Perspective))
+                    if (Input.KeyPressed(s.Perspective))
                         Camera.Orthographic = !Camera.Orthographic;
 
                     bool invertAxis = Input.IsKeyDown(s.AlignInvert);
-                    if(Input.KeyPressed(s.AlignForward))
+                    if (Input.KeyPressed(s.AlignForward))
                         Camera.Rotation = new Vector3(0, invertAxis ? 180 : 0, 0);
-                    else if(Input.KeyPressed(s.AlignSide))
+                    else if (Input.KeyPressed(s.AlignSide))
                         Camera.Rotation = new Vector3(0, invertAxis ? -90 : 90, 0);
-                    else if(Input.KeyPressed(s.AlignUp))
+                    else if (Input.KeyPressed(s.AlignUp))
                         Camera.Rotation = new Vector3(invertAxis ? -90 : 90, 0, 0);
 
                     float dir = Input.ScrollDif < 0 ? 0.07f : -0.07f;
-                    for(int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
+                    for (int i = (int)Math.Abs(Input.ScrollDif); i > 0; i--)
                     {
                         Camera.Distance += Camera.Distance * dir;
                     }
@@ -471,10 +471,10 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         private void DrawDebug(uint meshesDrawn)
         {
-            if(_debugMenu == DebugMenu.Disabled)
+            if (_debugMenu == DebugMenu.Disabled)
                 return;
 
-            using(System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(_debugTexture))
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(_debugTexture))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -498,7 +498,7 @@ namespace SATools.SAModel.Graphics
                 }
 
                 g.Clear(System.Drawing.Color.FromArgb(0x60, 0, 0, 0));
-                switch(_debugMenu)
+                switch (_debugMenu)
                 {
                     case DebugMenu.Help:
                         textBold("== Debug == ", 30);
@@ -527,9 +527,9 @@ namespace SATools.SAModel.Graphics
                         text($"Wireframe Mode: {_wireFrameMode}", 10);
                         text($"Display: {(RenderCollision ? "Collision" : "Visual")}", 10);
                         text($"Display Bounds: {BoundsMode}", 10);
-                        if(ActiveNJO != null)
+                        if (ActiveNJO != null)
                             text($"Active: Object - {ActiveNJO.Name}", 10);
-                        else if(ActiveLE != null)
+                        else if (ActiveLE != null)
                         {
                             text($"Active: Landentry - {ActiveLE.Name}", 10);
                         }
@@ -541,7 +541,7 @@ namespace SATools.SAModel.Graphics
                 g.Flush();
             }
 
-            if(_debugPanel == null)
+            if (_debugPanel == null)
             {
                 _debugPanel = new UIImage(_debugTexture)
                 {
@@ -557,26 +557,26 @@ namespace SATools.SAModel.Graphics
 
         protected internal override void ExtraRenderStuff(List<LandEntry> geoData, LandEntryRenderBatch opaqueGeo, LandEntryRenderBatch transparenGeo, List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> models)
         {
-            if(WireframeMode == WireFrameMode.Overlay)
+            if (WireframeMode == WireFrameMode.Overlay)
             {
                 _renderingBridge.RenderOverlayWireframes(opaqueGeo, transparenGeo, models);
             }
 
-            if(BoundsMode == BoundsMode.All)
+            if (BoundsMode == BoundsMode.All)
             {
                 _renderingBridge.RenderBounds(geoData, SphereMesh, Camera);
             }
-            else if(BoundsMode == BoundsMode.Selected && ActiveLE != null)
+            else if (BoundsMode == BoundsMode.Selected && ActiveLE != null)
             {
                 _renderingBridge.RenderBounds(new() { ActiveLE }, SphereMesh, Camera);
             }
 
-            if(ObjectRelationsMode == ObjectRelationsMode.Lines)
+            if (ObjectRelationsMode == ObjectRelationsMode.Lines)
             {
                 List<Vector3> lines = new();
-                foreach(DisplayTask t in Scene.GameTasks)
+                foreach (DisplayTask t in Scene.GameTasks)
                 {
-                    if(t.Model != null)
+                    if (t.Model != null)
                         RenderHelper.GetModelLine(t.Model, lines, null);
                 }
                 _renderingBridge.DrawModelRelationship(lines, Camera);
@@ -592,7 +592,7 @@ namespace SATools.SAModel.Graphics
 
             unsafe
             {
-                fixed(byte* pFontData = fontBytes)
+                fixed (byte* pFontData = fontBytes)
                 {
                     _fonts.AddMemoryFont((IntPtr)pFontData, fontBytes.Length);
                 }

@@ -168,14 +168,14 @@ namespace SATools.SAModel.Graphics.OpenGL
                     WindowBorder = WindowBorder.Resizable,
                 })
         {
-            if(!UseVsync)
+            if (!UseVsync)
                 VSync = VSyncMode.Off;
             _context = context;
             _inputBridge = inputBridge;
 
             _inputBridge.OnSetCursorPosition += (o, v2) =>
             {
-                if(!_mouseLocked)
+                if (!_mouseLocked)
                     MousePosition = new(v2.X, v2.Y);
             };
 
@@ -185,7 +185,7 @@ namespace SATools.SAModel.Graphics.OpenGL
                 CursorVisible = !v;
             };
 
-            if(location.HasValue)
+            if (location.HasValue)
                 Location = new(location.Value.X, location.Value.Y);
 
             _center = Size / 2;
@@ -216,7 +216,7 @@ namespace SATools.SAModel.Graphics.OpenGL
             base.OnUpdateFrame(e);
             _context.IsFocused = IsFocused;
             _context.Update(e.Time);
-            if(_mouseLocked)
+            if (_mouseLocked)
             {
                 MousePosition = _center;
             }
@@ -234,20 +234,20 @@ namespace SATools.SAModel.Graphics.OpenGL
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
             base.OnKeyDown(e);
-            if(Keymap.TryGetValue(e.Key, out Key key))
+            if (Keymap.TryGetValue(e.Key, out Key key))
                 _inputBridge.KeyPressed(key);
         }
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
-            if(Keymap.TryGetValue(e.Key, out Key key))
+            if (Keymap.TryGetValue(e.Key, out Key key))
                 _inputBridge.KeyReleased(key);
         }
 
         protected override void OnFocusedChanged(FocusedChangedEventArgs e)
         {
             base.OnFocusedChanged(e);
-            if(!e.IsFocused)
+            if (!e.IsFocused)
                 _inputBridge.ClearInputs();
         }
 
@@ -255,7 +255,7 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             base.OnMouseMove(e);
             var pos = e.Position;
-            if(_mouseLocked)
+            if (_mouseLocked)
                 _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), new(_center.X, _center.Y));
             else
                 _inputBridge.UpdateCursorPos(new(pos.X, pos.Y), null);
@@ -277,14 +277,14 @@ namespace SATools.SAModel.Graphics.OpenGL
         {
             base.OnMouseDown(e);
 
-            if(MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
+            if (MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
                 _inputBridge.MouseButtonPressed(m);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            if(MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
+            if (MouseButtonMap.TryGetValue(e.Button, out MouseButton m))
                 _inputBridge.MouseButtonReleased(m);
         }
 

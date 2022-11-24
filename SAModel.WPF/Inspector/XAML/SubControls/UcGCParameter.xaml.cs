@@ -18,7 +18,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             public override DataTemplate SelectTemplate(object item, DependencyObject container)
             {
                 UcGCParameter uc = (UcGCParameter)item;
-                switch(uc.ParameterType)
+                switch (uc.ParameterType)
                 {
                     case ParameterType.VtxAttrFmt:
                     case ParameterType.IndexAttributes:
@@ -70,7 +70,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
         public ushort VAFUnknown
         {
             get => VtxAttrFmtParameter.Unknown;
-            set 
+            set
             {
                 VtxAttrFmtParameter t = VtxAttrFmtParameter;
                 t.Unknown = value;

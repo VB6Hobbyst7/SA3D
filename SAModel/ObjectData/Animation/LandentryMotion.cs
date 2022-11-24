@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.ModelData;
+using System;
+using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ObjData.Animation
@@ -128,11 +127,11 @@ namespace SATools.SAModel.ObjData.Animation
             writer.WriteSingle(Step);
             writer.WriteSingle(MaxFrame);
 
-            if(!labels.TryGetValue(Model.Name, out uint mdlAddress))
+            if (!labels.TryGetValue(Model.Name, out uint mdlAddress))
                 throw new NullReferenceException($"Model \"{Model.Name}\" has not been written yet / cannot be found in labels!");
             writer.WriteUInt32(mdlAddress);
 
-            if(!actionAddresses.TryGetValue(MotionAction, out uint actionAddress))
+            if (!actionAddresses.TryGetValue(MotionAction, out uint actionAddress))
                 throw new NullReferenceException($"Model \"{Model.Name}\" has not been written yet / cannot be found in labels!");
             writer.WriteUInt32(actionAddress);
 

@@ -28,7 +28,7 @@ namespace SATools.SACommon.Ini
             result.Add(string.Empty, current);
 
             string curgroup = string.Empty;
-            for(int i = 0; i < data.Length; i++)
+            for (int i = 0; i < data.Length; i++)
             {
                 string line = System.Text.RegularExpressions.Regex.Unescape(data[i]);
 
@@ -36,15 +36,15 @@ namespace SATools.SACommon.Ini
                 int firstequals = -1;
                 int endbracket = -1;
 
-                for(int c = 0; c < line.Length; c++)
-                    switch(line[c])
+                for (int c = 0; c < line.Length; c++)
+                    switch (line[c])
                     {
                         case '=':
-                            if(firstequals == -1)
+                            if (firstequals == -1)
                                 firstequals = c;
                             break;
                         case '[':
-                            if(c == 0)
+                            if (c == 0)
                                 startswithbracket = true;
                             break;
                         case ']':
@@ -55,7 +55,7 @@ namespace SATools.SACommon.Ini
                             break;
                     }
 
-                if(startswithbracket & endbracket != -1)
+                if (startswithbracket & endbracket != -1)
                 {
                     curgroup = line[1..endbracket];
                     current = new IniGroup();
@@ -63,16 +63,16 @@ namespace SATools.SACommon.Ini
                     {
                         result.Add(curgroup, current);
                     }
-                    catch(ArgumentException ex)
+                    catch (ArgumentException ex)
                     {
                         throw new Exception("INI File error: Group \"" + curgroup + "\" already exists.\nline " + (i + 1), ex);
                     }
                 }
-                else if(!string.IsNullOrWhiteSpace(line))
+                else if (!string.IsNullOrWhiteSpace(line))
                 {
                     string key;
                     string value = string.Empty;
-                    if(firstequals > -1)
+                    if (firstequals > -1)
                     {
                         key = line[..firstequals];
                         value = line[(firstequals + 1)..];
@@ -83,7 +83,7 @@ namespace SATools.SACommon.Ini
                     {
                         current.Add(key, value);
                     }
-                    catch(ArgumentException ex)
+                    catch (ArgumentException ex)
                     {
                         throw new Exception("INI File error: Value \"" + key + "\" already exists in group \"" + curgroup + "\".\nline " + (i + 1), ex);
                     }
@@ -120,7 +120,7 @@ namespace SATools.SACommon.Ini
             using StreamReader reader = new(stream);
 
             string line;
-            while((line = reader.ReadLine()) != null)
+            while ((line = reader.ReadLine()) != null)
                 data.Add(line);
 
             return Read(data.ToArray());
@@ -139,22 +139,22 @@ namespace SATools.SACommon.Ini
         {
             bool first = true;
             List<string> result = new List<string>();
-            foreach(IniNameGroup group in Ini)
+            foreach (IniNameGroup group in Ini)
             {
                 string add = "";
-                if(!first)
+                if (!first)
                     add += System.Environment.NewLine;
                 else
                     first = false;
-                if(!string.IsNullOrEmpty(group.Key))
+                if (!string.IsNullOrEmpty(group.Key))
                 {
                     add += "[" + group.Key.Replace(@"\", @"\\").Replace("\n", @"\n").Replace("\r", @"\r").Replace(";", @"\;") + "]";
                     result.Add(add);
                 }
-                foreach(IniNameValue value in group.Value)
+                foreach (IniNameValue value in group.Value)
                 {
                     string escapedkey = value.Key.Replace(@"\", @"\\").Replace("=", @"\=").Replace("\n", @"\n").Replace("\r", @"\r").Replace(";", @"\;");
-                    if(escapedkey.StartsWith("["))
+                    if (escapedkey.StartsWith("["))
                         escapedkey = escapedkey.Insert(0, @"\");
                     result.Add(escapedkey + "=" + value.Value.Replace(@"\", @"\\").Replace("\n", @"\n").Replace("\r", @"\r").Replace(";", @"\;"));
                 }
@@ -178,7 +178,7 @@ namespace SATools.SACommon.Ini
         public static void Write(IniDictionary Ini, Stream stream)
         {
             using StreamWriter writer = new(stream);
-            foreach(string line in Write(Ini))
+            foreach (string line in Write(Ini))
                 writer.WriteLine(line);
         }
 
@@ -194,13 +194,13 @@ namespace SATools.SACommon.Ini
         {
             IniDictionary result = new();
 
-            foreach(IniNameGroup group in dictA)
+            foreach (IniNameGroup group in dictA)
                 result.Add(group.Key, new(group.Value));
 
-            foreach(IniNameGroup group in dictB)
+            foreach (IniNameGroup group in dictB)
             {
-                if(result.ContainsKey(group.Key))
-                    foreach(IniNameValue item in group.Value)
+                if (result.ContainsKey(group.Key))
+                    foreach (IniNameValue item in group.Value)
                         result[group.Key][item.Key] = item.Value;
                 else
                     result.Add(group.Key, new IniGroup(group.Value));

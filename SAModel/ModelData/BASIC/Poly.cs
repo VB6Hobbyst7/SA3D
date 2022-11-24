@@ -57,13 +57,13 @@ namespace SATools.SAModel.ModelData.BASIC
 
         internal static void DefaultWrite(this IPoly poly, EndianWriter writer)
         {
-            foreach(ushort i in poly.Indices)
+            foreach (ushort i in poly.Indices)
                 writer.WriteUInt16(i);
         }
 
         internal static void DefaultWriteNJA(this IPoly poly, TextWriter writer)
         {
-            foreach(ushort i in poly.Indices)
+            foreach (ushort i in poly.Indices)
             {
                 writer.Write(i);
                 writer.Write(", ");
@@ -73,7 +73,7 @@ namespace SATools.SAModel.ModelData.BASIC
         internal static string DefaultToString(this IPoly poly)
             => $"{poly.Type}: {poly.Indices.Length}";
     }
-    
+
     /// <summary>
     /// A primitive with three corners
     /// </summary>
@@ -85,13 +85,13 @@ namespace SATools.SAModel.ModelData.BASIC
         {
             get
             {
-                if(_indices == null)
+                if (_indices == null)
                     _indices = new ushort[3];
                 return _indices;
             }
         }
 
-        public BASICPolyType Type 
+        public BASICPolyType Type
             => BASICPolyType.Triangles;
 
         public uint Size
@@ -140,7 +140,7 @@ namespace SATools.SAModel.ModelData.BASIC
         {
             get
             {
-                if(_indices == null)
+                if (_indices == null)
                     _indices = new ushort[4];
                 return _indices;
             }
@@ -224,7 +224,7 @@ namespace SATools.SAModel.ModelData.BASIC
             ushort[] indices = new ushort[header & 0x7FFF];
             bool reversed = (header & 0x8000) != 0;
             address += 2;
-            for(int i = 0; i < indices.Length; i++)
+            for (int i = 0; i < indices.Length; i++)
             {
                 indices[i] = source.ToUInt16(address);
                 address += 2;
@@ -247,7 +247,7 @@ namespace SATools.SAModel.ModelData.BASIC
             this.DefaultWriteNJA(writer);
         }
 
-        public override string ToString() 
+        public override string ToString()
             => $"{Type}: {Reversed} - {Indices.Length}";
 
         public object Clone() => this;

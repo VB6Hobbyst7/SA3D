@@ -2,8 +2,8 @@
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace SATools.SAModel.Graphics
 {
@@ -105,7 +105,7 @@ namespace SATools.SAModel.Graphics
 
         public void UpdateAnim(double delta)
         {
-            if(Model == null || Motions.Count == 0)
+            if (Model == null || Motions.Count == 0)
                 return;
 
             Motion motion = Motions[MotionIndex];
@@ -114,21 +114,21 @@ namespace SATools.SAModel.Graphics
             AnimationTimestamp %= motion.Frames - 1;
 
             NJObject[] models = Model.GetObjects();
-            for(int i = 0; i < models.Length; i++)
+            for (int i = 0; i < models.Length; i++)
             {
-                if(motion.Keyframes.ContainsKey(i))
+                if (motion.Keyframes.ContainsKey(i))
                 {
                     NJObject mdl = models[i];
-                    if(!mdl.Animate)
+                    if (!mdl.Animate)
                         continue;
                     Frame frame = motion.Keyframes[i].GetFrameAt(AnimationTimestamp);
-                    if(frame.position.HasValue)
+                    if (frame.position.HasValue)
                         mdl.Position = frame.position.Value;
-                    if(frame.rotation.HasValue)
+                    if (frame.rotation.HasValue)
                         mdl.Rotation = frame.rotation.Value;
-                    if(frame.quaternion.HasValue)
+                    if (frame.quaternion.HasValue)
                         mdl.QuaternionRotation = frame.quaternion.Value;
-                    if(frame.scale.HasValue)
+                    if (frame.scale.HasValue)
                         mdl.Scale = frame.scale.Value;
                 }
             }
@@ -139,6 +139,6 @@ namespace SATools.SAModel.Graphics
             base.Update(delta, time);
             UpdateAnim(delta);
         }
-        
+
     }
 }

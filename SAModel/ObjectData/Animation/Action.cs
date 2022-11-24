@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using SATools.SAModel.ModelData;
+using System;
+using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ObjData.Animation
@@ -47,13 +46,13 @@ namespace SATools.SAModel.ObjData.Animation
         public static Action Read(byte[] source, uint address, uint imagebase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             uint mdlAddress = source.ToUInt32(address);
-            if(mdlAddress == 0)
+            if (mdlAddress == 0)
                 throw new FormatException($"Action at {address:X8} does not have a model!");
             mdlAddress -= imagebase;
             NJObject mdl = NJObject.Read(source, mdlAddress, imagebase, format, DX, labels, attaches);
 
             uint aniAddress = source.ToUInt32(address + 4);
-            if(aniAddress == 0)
+            if (aniAddress == 0)
                 throw new FormatException($"Action at {address:X8} does not have a model!");
             aniAddress -= imagebase;
             Motion mtn = Motion.Read(source, ref aniAddress, imagebase, (uint)mdl.Count(), labels);
@@ -71,13 +70,13 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns>Address to the written action</returns>
         public uint Write(EndianWriter writer, uint imageBase, bool DX, bool writeBuffer, Dictionary<string, uint> labels)
         {
-            if(labels.TryGetValue(Model.Name, out uint mdlAddress))
+            if (labels.TryGetValue(Model.Name, out uint mdlAddress))
             {
                 mdlAddress = Model.WriteHierarchy(writer, imageBase, DX, writeBuffer, labels);
                 labels.Add(Model.Name, mdlAddress);
             }
 
-            if(labels.TryGetValue(Animation.Name, out uint aniAddress))
+            if (labels.TryGetValue(Animation.Name, out uint aniAddress))
             {
                 aniAddress = Animation.Write(writer, imageBase, labels);
                 labels.Add(Model.Name, aniAddress);

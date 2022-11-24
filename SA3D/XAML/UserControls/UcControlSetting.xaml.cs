@@ -1,11 +1,10 @@
-﻿using SATools.SAModel.Graphics;
-using SATools.SAModel.Graphics.Properties;
+﻿using SATools.SAModel.Graphics.Properties;
 using System;
+using System.Configuration;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Configuration;
 
 namespace SATools.SA3D.XAML.UserControls
 {
@@ -58,7 +57,7 @@ namespace SATools.SA3D.XAML.UserControls
 
             OptionName.Text = _attribute.Name;
 
-            if(UsesKey)
+            if (UsesKey)
             {
                 MouseButtonSelection.Visibility = Visibility.Collapsed;
             }
@@ -71,7 +70,7 @@ namespace SATools.SA3D.XAML.UserControls
 
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
-            if(UsesKey)
+            if (UsesKey)
                 KeySelection.SelectedItem = Default.Substring(5, Default.Length - 11);
             else
                 MouseButtonSelection.SelectedItem = Default;

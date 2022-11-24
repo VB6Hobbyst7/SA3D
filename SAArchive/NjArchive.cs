@@ -22,7 +22,7 @@ namespace SATools.SAArchive
             int count = source.ToInt32(0) - 1;
             List<int> sizehdrs = new();
 
-            for(uint i = 0; i < count; i++)
+            for (uint i = 0; i < count; i++)
             {
                 uint sizeaddr = 4 + i * 4;
                 int size = source.ToInt32(sizeaddr);
@@ -32,12 +32,12 @@ namespace SATools.SAArchive
 
             int[] sizes = sizehdrs.ToArray();
             int offset = 0x20;
-            for(int i = 0; i < sizes.Length; i++)
+            for (int i = 0; i < sizes.Length; i++)
             {
                 byte[] data = new byte[sizes[i]];
                 unsafe
                 {
-                    fixed(byte* ptr = data)
+                    fixed (byte* ptr = data)
                     {
                         Marshal.Copy(source, offset, (IntPtr)ptr, data.Length);
                     }

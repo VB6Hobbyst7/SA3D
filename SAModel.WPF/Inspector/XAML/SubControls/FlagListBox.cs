@@ -31,7 +31,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             set
             {
                 object newValue = Enum.ToObject(Value.GetType(), value);
-                if(Value == newValue)
+                if (Value == newValue)
                     return;
                 Value = newValue;
             }
@@ -42,10 +42,10 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             base.OnItemsChanged(e);
 
             ulong flag = Flag;
-            if(flag == 0)
+            if (flag == 0)
                 return;
 
-            foreach(FlagListItem item in Items)
+            foreach (FlagListItem item in Items)
             {
                 ulong flagVal = Convert.ToUInt64(item.Flag);
                 bool flagState = (flag & flagVal) != 0;
@@ -54,7 +54,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 flag &= ~flagVal;
             }
 
-            if(flag != 0)
+            if (flag != 0)
                 throw new FormatException($"Flag had either invalid values or the listbox missed a flag value: {flag:X}");
         }
 
@@ -64,31 +64,31 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
         {
             base.OnSelectionChanged(e);
 
-            if(updating)
+            if (updating)
                 return;
 
 
             ulong curFlag = Flag;
             ulong newFlag = curFlag;
-            foreach(FlagListItem i in e.AddedItems)
+            foreach (FlagListItem i in e.AddedItems)
             {
                 ulong flag = Convert.ToUInt64(i.Flag);
-                if((curFlag & flag) != 0)
+                if ((curFlag & flag) != 0)
                     continue;
 
                 newFlag |= flag;
             }
 
-            foreach(FlagListItem i in e.RemovedItems)
+            foreach (FlagListItem i in e.RemovedItems)
             {
                 ulong flag = Convert.ToUInt64(i.Flag);
-                if((curFlag & flag) == 0)
+                if ((curFlag & flag) == 0)
                     continue;
 
                 newFlag &= ~flag;
             }
 
-            if(curFlag != newFlag)
+            if (curFlag != newFlag)
             {
                 updating = true;
                 Flag = newFlag;
@@ -99,24 +99,24 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 
         private void UpdateCheckboxes(object newValue, object oldValue)
         {
-            if(updating)
+            if (updating)
                 return;
 
-            if(Items.Count == 0)
+            if (Items.Count == 0)
                 return; // we'll handle this again after loading
 
             ulong flag = Convert.ToUInt64(newValue) ^ Convert.ToUInt64(oldValue);
-            if(flag == 0)
+            if (flag == 0)
                 return;
 
             updating = true;
 
-            foreach(FlagListItem item in Items)
+            foreach (FlagListItem item in Items)
             {
                 ulong flagVal = Convert.ToUInt64(item.Flag);
 
                 bool flagState = (flag & flagVal) != 0;
-                if(flagState != item.IsSelected)
+                if (flagState != item.IsSelected)
                     item.IsSelected = flagState;
 
                 flag &= ~flagVal;
@@ -124,7 +124,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
 
             updating = false;
 
-            if(flag != 0)
+            if (flag != 0)
                 throw new FormatException($"Flag had either invalid values or the listbox missed a flag value: {flag:X}");
         }
     }

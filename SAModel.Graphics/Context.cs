@@ -3,7 +3,6 @@ using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.ObjData;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Interop;
 using Color = SATools.SAModel.Structs.Color;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
@@ -59,9 +58,9 @@ namespace SATools.SAModel.Graphics
             get => Focused == this;
             set
             {
-                if(value)
+                if (value)
                     Focused = this;
-                else if(Focused == this)
+                else if (Focused == this)
                     Focused = null;
             }
         }
@@ -107,7 +106,7 @@ namespace SATools.SAModel.Graphics
             {
                 _screen.Size = value;
                 Camera.Aspect = _screen.Width / (float)_screen.Height;
-                if(_graphicsInitiated)
+                if (_graphicsInitiated)
                     _renderingBridge.UpdateViewport(_screen, true);
             }
         }
@@ -121,7 +120,7 @@ namespace SATools.SAModel.Graphics
             set
             {
                 _screen.Location = value;
-                if(_graphicsInitiated)
+                if (_graphicsInitiated)
                     _renderingBridge.UpdateViewport(_screen, false);
             }
         }
@@ -175,7 +174,7 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public void AsWindow()
         {
-            if(_used)
+            if (_used)
                 throw new System.InvalidOperationException("Context object was already used before!");
             _used = true;
             _renderingBridge.AsWindow(this, _inputBridge);
@@ -188,7 +187,7 @@ namespace SATools.SAModel.Graphics
         /// <returns></returns>
         public System.Windows.FrameworkElement AsControl()
         {
-            if(_used)
+            if (_used)
                 throw new System.InvalidOperationException("Context object was already used before!");
             _used = true;
             return _renderingBridge.AsControl(this, _inputBridge);
@@ -199,7 +198,7 @@ namespace SATools.SAModel.Graphics
         /// </summary>
         public void GraphicsInit()
         {
-            if(!_graphicsInitiated)
+            if (!_graphicsInitiated)
                 _renderingBridge.InitializeGraphics(Resolution, BackgroundColor);
             _graphicsInitiated = true;
         }
@@ -232,10 +231,10 @@ namespace SATools.SAModel.Graphics
             Material.BufferTextureSet = Scene.LandTextureSet;
             opaqueGeo.RenderLandentries(Material, _renderingBridge);
 
-            foreach(var (task, opaque, transparent) in models)
+            foreach (var (task, opaque, transparent) in models)
             {
                 Material.BufferTextureSet = task.TextureSet;
-                foreach(var m in opaque)
+                foreach (var m in opaque)
                     _renderingBridge.RenderMesh(m.meshes, m.matrices, Material);
             }
 
@@ -245,10 +244,10 @@ namespace SATools.SAModel.Graphics
             Material.BufferTextureSet = Scene.LandTextureSet;
             transparentGeo.RenderLandentries(Material, _renderingBridge);
 
-            foreach(var (task, opaque, transparent) in models)
+            foreach (var (task, opaque, transparent) in models)
             {
                 Material.BufferTextureSet = task.TextureSet;
-                foreach(var m in transparent)
+                foreach (var m in transparent)
                     _renderingBridge.RenderMesh(m.meshes, m.matrices, Material);
             }
 

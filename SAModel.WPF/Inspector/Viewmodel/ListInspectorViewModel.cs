@@ -46,7 +46,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             {
                 get
                 {
-                    if(Value == null)
+                    if (Value == null)
                         return "Null";
 
                     string conv = Value.ToString();
@@ -118,7 +118,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             SmoothScroll = info.SmoothScroll;
 
             InspectorElements = new();
-            for(int i = 0; i < SourceList.Count; i++)
+            for (int i = 0; i < SourceList.Count; i++)
                 InspectorElements.Add(new(this, i));
         }
     }

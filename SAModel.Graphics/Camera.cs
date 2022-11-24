@@ -1,5 +1,4 @@
-﻿using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.Structs;
+﻿using SATools.SAModel.Structs;
 using System;
 using System.Numerics;
 using static SATools.SACommon.MathHelper;
@@ -133,7 +132,7 @@ namespace SATools.SAModel.Graphics
             get => _orbiting;
             set
             {
-                if(_orbiting == value)
+                if (_orbiting == value)
                     return;
                 _orbiting = value;
 
@@ -193,7 +192,7 @@ namespace SATools.SAModel.Graphics
             get => _orthographic;
             set
             {
-                if(_orthographic == value)
+                if (_orthographic == value)
                     return;
                 _orthographic = value;
                 UpdateViewMatrix();
@@ -276,7 +275,7 @@ namespace SATools.SAModel.Graphics
 
             ViewMatrix = posMtx * rotMtx;
 
-            if(_orbiting)
+            if (_orbiting)
             {
                 Vector3 orbitOffset = _forward * (_orthographic ? _viewDist * 0.5f : _distance);
                 Matrix4x4 orbitMatrix = Matrix4x4.CreateTranslation(orbitOffset);
@@ -291,7 +290,7 @@ namespace SATools.SAModel.Graphics
         {
             Matrix4x4 result = default;
 
-            if(_orthographic && _orbiting)
+            if (_orthographic && _orbiting)
             {
                 var invRL = 1.0f / (_distance * _aspect);
                 var invTB = 1.0f / _distance;

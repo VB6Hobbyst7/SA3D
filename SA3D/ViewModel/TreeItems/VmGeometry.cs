@@ -1,9 +1,5 @@
 ﻿using SATools.SAModel.ObjData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {

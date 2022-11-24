@@ -40,7 +40,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             get
             {
-                if(_data is not Vector3[] v3data)
+                if (_data is not Vector3[] v3data)
                     throw new InvalidOperationException("VertexSet does not contain Vector3 data!");
                 return v3data;
             }
@@ -50,7 +50,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             get
             {
-                if(_data is not Vector2[] uvdata)
+                if (_data is not Vector2[] uvdata)
                     throw new InvalidOperationException("VertexSet does not contain Vector2 data!");
                 return uvdata;
             }
@@ -60,13 +60,13 @@ namespace SATools.SAModel.ModelData.GC
         {
             get
             {
-                if(_data is not Color[] coldata)
+                if (_data is not Color[] coldata)
                     throw new InvalidOperationException("VertexSet does not contain Color data!");
                 return coldata;
             }
         }
 
-        public int DataLength 
+        public int DataLength
             => ((Array)_data).Length;
 
         public VertexSet(Vector3[] vector3Data, bool normals)
@@ -74,7 +74,7 @@ namespace SATools.SAModel.ModelData.GC
             _data = vector3Data;
             DataType = DataType.Float32;
 
-            if(!normals)
+            if (!normals)
             {
                 Attribute = VertexAttribute.Position;
                 StructType = StructType.NormalXYZ;
@@ -134,14 +134,14 @@ namespace SATools.SAModel.ModelData.GC
         public static VertexSet Read(byte[] source, uint address, uint imageBase)
         {
             VertexAttribute attribute = (VertexAttribute)source[address];
-            if(attribute == VertexAttribute.Null)
+            if (attribute == VertexAttribute.Null)
                 return new VertexSet(VertexAttribute.Null, default, default, null);
 
             uint structure = source.ToUInt32(address + 4);
             StructType structType = (StructType)(structure & 0x0F);
             DataType dataType = (DataType)((structure >> 4) & 0x0F);
             uint structSize = GCExtensions.GetStructSize(structType, dataType);
-            if(source[address + 1] != structSize)
+            if (source[address + 1] != structSize)
             {
                 throw new Exception($"Read structure size doesnt match calculated structure size: {source[address + 1]} != {structSize}");
             }
@@ -152,26 +152,26 @@ namespace SATools.SAModel.ModelData.GC
 
             object data;
 
-            switch(attribute)
+            switch (attribute)
             {
                 case VertexAttribute.Position:
                 case VertexAttribute.Normal:
                     Vector3[] vector3Data = new Vector3[count];
-                    for(int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i++)
                         vector3Data[i] = Vector3Extensions.Read(source, ref tmpaddr, IOType.Float);
 
                     data = vector3Data;
                     break;
                 case VertexAttribute.Color0:
                     Color[] colorData = new Color[count];
-                    for(int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i++)
                         colorData[i] = Color.Read(source, ref tmpaddr, IOType.RGBA8);
 
                     data = colorData;
                     break;
                 case VertexAttribute.Tex0:
                     Vector2[] uvData = new Vector2[count];
-                    for(int i = 0; i < count; i++)
+                    for (int i = 0; i < count; i++)
                         uvData[i] = Vector2Extensions.Read(source, ref tmpaddr, IOType.Short) / 256;
                     data = uvData;
                     break;

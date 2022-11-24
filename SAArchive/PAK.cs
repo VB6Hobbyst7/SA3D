@@ -1,15 +1,15 @@
-﻿using Reloaded.Memory.Streams;
+﻿using Pfim;
+using Reloaded.Memory.Streams;
 using Reloaded.Memory.Streams.Writers;
+using SATools.SACommon.Ini;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using Pfim;
-using System.Runtime.InteropServices;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using SATools.SACommon.Ini;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAArchive
@@ -52,7 +52,7 @@ namespace SATools.SAArchive
                 FolderName = folderName
             };
 
-            if(source.ToUInt32(0) != Header)
+            if (source.ToUInt32(0) != Header)
                 throw new Exception("Error: Unknown archive type");
 
             int numfiles = source.ToInt32(0x39);
@@ -61,7 +61,7 @@ namespace SATools.SAArchive
             uint[] lengths = new uint[numfiles];
             uint tmpaddr = 0x3D;
 
-            for(int i = 0; i < numfiles; i++)
+            for (int i = 0; i < numfiles; i++)
             {
                 uint stringLength = source.ToUInt32(tmpaddr);
                 longpaths[i] = source.GetCString(tmpaddr += 4, Encoding.ASCII, stringLength);
@@ -73,12 +73,12 @@ namespace SATools.SAArchive
                 tmpaddr += 8; // skipping an integer here
             }
 
-            for(int i = 0; i < numfiles; i++)
+            for (int i = 0; i < numfiles; i++)
             {
                 byte[] entryData = new byte[lengths[i]];
                 unsafe
                 {
-                    fixed(byte* ptr = entryData)
+                    fixed (byte* ptr = entryData)
                     {
                         Marshal.Copy(source, (int)tmpaddr, (IntPtr)ptr, entryData.Length);
 
@@ -104,17 +104,17 @@ namespace SATools.SAArchive
                 x => x.Name.Equals($"{fileNoExt}\\{fileNoExt}.inf", StringComparison.OrdinalIgnoreCase));
 
             // Get texture names from PAK INF, if it exists
-            if(infEntry != null)
+            if (infEntry != null)
             {
                 byte[] inf = infEntry.Data;
                 List<PAKEntry> result = new(inf.Length / 0x3C);
 
-                for(int i = 0; i < inf.Length; i += 0x3C)
+                for (int i = 0; i < inf.Length; i += 0x3C)
                 {
                     int j = 0;
-                    while(j < 0x1C)
+                    while (j < 0x1C)
                     {
-                        if(inf[i + j] == 0)
+                        if (inf[i + j] == 0)
                             break;
                     }
 
@@ -131,10 +131,10 @@ namespace SATools.SAArchive
                 // Otherwise get the original list
                 List<PAKEntry> result = new();
                 // But only add files that can be converted to Bitmap
-                foreach(PAKEntry entry in Entries)
+                foreach (PAKEntry entry in Entries)
                 {
                     string extension = Path.GetExtension(entry.Name).ToLowerInvariant();
-                    switch(extension)
+                    switch (extension)
                     {
                         case ".dds":
                         case ".png":
@@ -154,7 +154,7 @@ namespace SATools.SAArchive
         public override void CreateIndexFile(string path)
         {
             Dictionary<string, PAKIniItem> list = new Dictionary<string, PAKIniItem>(Entries.Count);
-            foreach(PAKEntry item in Entries)
+            foreach (PAKEntry item in Entries)
             {
                 list.Add(FolderName + "\\" + item.Name, new PAKIniItem(item.LongPath));
             }
@@ -175,7 +175,7 @@ namespace SATools.SAArchive
             writer.Write(new byte[8]);
             writer.Write(Entries.Count);
 
-            foreach(PAKEntry item in Entries)
+            foreach (PAKEntry item in Entries)
             {
                 string fullname = $"{FolderName}\\{item.Name}";
                 writer.Write(item.LongPath.Length);
@@ -185,7 +185,7 @@ namespace SATools.SAArchive
                 writer.Write(item.Data.Length);
                 writer.Write(item.Data.Length);
             }
-            foreach(PAKEntry item in Entries)
+            foreach (PAKEntry item in Entries)
                 writer.Write(item.Data);
 
             return stream.ToArray();
@@ -216,7 +216,7 @@ namespace SATools.SAArchive
                 using ExtendedMemoryStream str = new(Data);
 
                 // If not DDS header
-                if(BitConverter.ToUInt32(Data, 0) != 0x20534444)
+                if (BitConverter.ToUInt32(Data, 0) != 0x20534444)
                 {
                     return new Bitmap(str);
                 }

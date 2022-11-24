@@ -3,10 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VrSharp;
 using VrSharp.GvrTexture;
 using VrSharp.PvrTexture;
 
@@ -29,9 +25,9 @@ namespace SATools.SAArchive
 
         public override void CreateIndexFile(string path)
         {
-            using(TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
+            using (TextWriter texList = File.CreateText(Path.Combine(path, "index.txt")))
             {
-                foreach(ArchiveEntry pvmentry in Entries)
+                foreach (ArchiveEntry pvmentry in Entries)
                 {
                     texList.WriteLine(pvmentry.Name);
                 }
@@ -43,7 +39,7 @@ namespace SATools.SAArchive
         public static PuyoArchiveType Identify(byte[] data)
         {
             uint magic = BitConverter.ToUInt32(data, 0);
-            switch(magic)
+            switch (magic)
             {
                 case Header_PVM:
                     return PuyoArchiveType.PVMFile;
@@ -95,7 +91,7 @@ namespace SATools.SAArchive
             Entries = new List<ArchiveEntry>();
 
             Type = Identify(pvmdata);
-            switch(Type)
+            switch (Type)
             {
                 case PuyoArchiveType.PVMFile:
                     puyobase = new PvmArchive();
@@ -108,20 +104,20 @@ namespace SATools.SAArchive
             }
 
             ArchiveReader archiveReader = puyobase.Open(pvmdata);
-            foreach(var puyoentry in archiveReader.Entries)
+            foreach (var puyoentry in archiveReader.Entries)
             {
                 MemoryStream vrstream = (MemoryStream)(puyoentry.Open());
-                switch(Type)
+                switch (Type)
                 {
                     case PuyoArchiveType.PVMFile:
                         PvrTexture pvrt = new PvrTexture(vrstream);
-                        if(pvrt.NeedsExternalPalette)
+                        if (pvrt.NeedsExternalPalette)
                             PaletteRequired = true;
                         Entries.Add(new PVMEntry(vrstream.ToArray(), Path.GetFileName(puyoentry.Name)));
                         break;
                     case PuyoArchiveType.GVMFile:
                         GvrTexture gvrt = new GvrTexture(vrstream);
-                        if(gvrt.NeedsExternalPalette)
+                        if (gvrt.NeedsExternalPalette)
                             PaletteRequired = true;
                         Entries.Add(new GVMEntry(vrstream.ToArray(), Path.GetFileName(puyoentry.Name)));
                         break;
@@ -134,7 +130,7 @@ namespace SATools.SAArchive
             MemoryStream pvmStream = new MemoryStream();
             ArchiveBase pvmbase = new PvmArchive();
             ArchiveWriter puyoArchiveWriter = pvmbase.Create(pvmStream);
-            foreach(PVMEntry tex in Entries)
+            foreach (PVMEntry tex in Entries)
             {
                 MemoryStream ms = new MemoryStream(tex.Data);
                 puyoArchiveWriter.CreateEntry(ms, tex.Name);
@@ -172,7 +168,7 @@ namespace SATools.SAArchive
             public override Bitmap GetBitmap()
             {
                 PvrTexture pvrt = new PvrTexture(Data);
-                if(pvrt.NeedsExternalPalette)
+                if (pvrt.NeedsExternalPalette)
                     pvrt.SetPalette(Palette);
                 return pvrt.ToBitmap();
             }
@@ -207,7 +203,7 @@ namespace SATools.SAArchive
             public override Bitmap GetBitmap()
             {
                 GvrTexture gvrt = new GvrTexture(Data);
-                if(gvrt.NeedsExternalPalette)
+                if (gvrt.NeedsExternalPalette)
                     gvrt.SetPalette(Palette);
                 return gvrt.ToBitmap();
             }

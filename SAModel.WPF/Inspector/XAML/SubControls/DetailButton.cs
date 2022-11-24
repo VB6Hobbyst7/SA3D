@@ -25,7 +25,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             base.OnClick();
 
             DependencyObject parent = VisualTreeHelper.GetParent(this);
-            while(parent.GetType() != typeof(UcInspector))
+            while (parent.GetType() != typeof(UcInspector))
                 parent = VisualTreeHelper.GetParent(parent);
 
             UcInspector inspector = (UcInspector)parent;

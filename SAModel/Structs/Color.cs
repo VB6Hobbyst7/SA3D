@@ -1,9 +1,8 @@
-﻿using System;
+﻿using SATools.SACommon;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.Structs
@@ -195,18 +194,18 @@ namespace SATools.SAModel.Structs
                 hex = hex.StartsWith("#") ? hex[1..] : hex;
 
                 // check if the format is valid
-                if(hex.Length < 3 || hex.Length == 5 || hex.Length == 7 || hex.Length > 8
+                if (hex.Length < 3 || hex.Length == 5 || hex.Length == 7 || hex.Length > 8
                     || !Regex.IsMatch(hex, "^[0-9a-fA-F]+$"))
                     throw new FormatException("Invalid Color format!");
 
-                byte conv(char character) 
+                byte conv(char character)
                     => (byte)(character >= 'A' ? character - 'A' + 10 : character - '0');
 
-                byte comp(byte f, byte s) 
+                byte comp(byte f, byte s)
                     => (byte)(f | (s << 4));
 
                 hex = hex.ToUpper();
-                switch(hex.Length)
+                switch (hex.Length)
                 {
                     case 3: // RGB
                         R = conv(hex[0]);
@@ -291,7 +290,7 @@ namespace SATools.SAModel.Structs
         public static Color Read(byte[] source, ref uint address, IOType type)
         {
             Color col = default;
-            switch(type)
+            switch (type)
             {
                 case IOType.RGBA8:
                     col.RGBA = source.ToUInt32(address);
@@ -323,7 +322,7 @@ namespace SATools.SAModel.Structs
 
         public void WriteNJA(TextWriter writer, IOType type)
         {
-            switch(type)
+            switch (type)
             {
                 case IOType.ARGB8_32:
                     writer.Write("( ");
@@ -343,7 +342,7 @@ namespace SATools.SAModel.Structs
 
         public void Write(EndianWriter writer, IOType type)
         {
-            switch(type)
+            switch (type)
             {
                 case IOType.RGBA8:
                     writer.WriteUInt32(RGBA);

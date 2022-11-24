@@ -34,7 +34,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             {
                 Inspector.LoadNewObject(obj);
             }
-            catch(InvalidInspectorTypeException e)
+            catch (InvalidInspectorTypeException e)
             {
                 _ = MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -46,7 +46,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML
             {
                 Inspector.LoadSubObject(info);
             }
-            catch(InvalidInspectorTypeException e)
+            catch (InvalidInspectorTypeException e)
             {
                 _ = MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

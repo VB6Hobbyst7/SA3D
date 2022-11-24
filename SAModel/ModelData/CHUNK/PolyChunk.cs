@@ -27,7 +27,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         protected PolyChunk(ChunkType type)
         {
-            if(type.IsVertex())
+            if (type.IsVertex())
                 throw new ArgumentException("Chunktype has to be ");
             Type = type;
         }
@@ -45,7 +45,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             byte attribs = (byte)(header >> 8);
 
             PolyChunk chunk;
-            switch(type)
+            switch (type)
             {
                 case ChunkType.Null:
                     chunk = new PolyChunkNull();
@@ -307,11 +307,11 @@ namespace SATools.SAModel.ModelData.CHUNK
             get
             {
                 ushort val = 0;
-                if(((byte)Type & 0x01) != 0)
+                if (((byte)Type & 0x01) != 0)
                     val += 2;
-                if(((byte)Type & 0x02) != 0)
+                if (((byte)Type & 0x02) != 0)
                     val += 2;
-                if(((byte)Type & 0x04) != 0)
+                if (((byte)Type & 0x04) != 0)
                     val += 2;
                 return val;
             }
@@ -385,7 +385,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         private void TypeAttribute(byte val, bool state)
         {
             byte type = (byte)Type;
-            if(state)
+            if (state)
                 Type = (ChunkType)(byte)(type | val);
             else
                 Type = (ChunkType)(byte)(type & ~val);
@@ -409,17 +409,17 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Attributes = attribs
             };
 
-            if(((byte)type & 0x01) != 0)
+            if (((byte)type & 0x01) != 0)
             {
                 mat.Diffuse = Color.Read(source, ref address, IOType.ARGB8_16);
             }
 
-            if(((byte)type & 0x02) != 0)
+            if (((byte)type & 0x02) != 0)
             {
                 mat.Ambient = Color.Read(source, ref address, IOType.ARGB8_16);
             }
 
-            if(((byte)type & 0x04) != 0)
+            if (((byte)type & 0x04) != 0)
             {
                 Color spec = Color.Read(source, ref address, IOType.ARGB8_16);
                 mat.SpecularExponent = spec.A;
@@ -435,11 +435,11 @@ namespace SATools.SAModel.ModelData.CHUNK
         public override void Write(EndianWriter writer)
         {
             base.Write(writer);
-            if(_diffuse.HasValue)
+            if (_diffuse.HasValue)
                 _diffuse.Value.Write(writer, IOType.ARGB8_16);
-            if(_ambient.HasValue)
+            if (_ambient.HasValue)
                 _ambient.Value.Write(writer, IOType.ARGB8_16);
-            if(_specular.HasValue)
+            if (_specular.HasValue)
             {
                 Color wSpecular = _specular.Value;
                 wSpecular.A = SpecularExponent;

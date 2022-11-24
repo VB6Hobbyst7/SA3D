@@ -1,9 +1,5 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.Structs;
+﻿using SATools.SACommon;
 using System;
-using System.Collections.Generic;
-using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ModelData.Buffer
@@ -103,30 +99,30 @@ namespace SATools.SAModel.ModelData.Buffer
         /// </summary>
         public void Optimize()
         {
-            if(Corners == null)
+            if (Corners == null)
                 return;
 
             BufferCorner[] corners = Corners;
-            if(TriangleList != null)
+            if (TriangleList != null)
             {
                 corners = new BufferCorner[TriangleList.Length];
-                for(int i = 0; i < TriangleList.Length; i++)
+                for (int i = 0; i < TriangleList.Length; i++)
                     corners[i] = Corners[TriangleList[i]];
             }
 
             // filter degenerate triangles
             int newArraySize = corners.Length;
-            for(int i = 0; i < newArraySize; i += 3)
+            for (int i = 0; i < newArraySize; i += 3)
             {
                 ushort index1 = corners[i].VertexIndex;
                 ushort index2 = corners[i + 1].VertexIndex;
                 ushort index3 = corners[i + 2].VertexIndex;
 
-                if(index1 == index2 || index2 == index3 || index3 == index1)
+                if (index1 == index2 || index2 == index3 || index3 == index1)
                 {
                     corners[i] = corners[newArraySize - 3];
-                    corners[i+1] = corners[newArraySize - 2];
-                    corners[i+2] = corners[newArraySize - 1];
+                    corners[i + 1] = corners[newArraySize - 2];
+                    corners[i + 2] = corners[newArraySize - 1];
                     i -= 3;
                     newArraySize -= 3;
                 }
@@ -147,26 +143,26 @@ namespace SATools.SAModel.ModelData.Buffer
         public uint Write(EndianWriter writer, uint imageBase)
         {
             uint vtxAddr = 0;
-            if(Vertices != null)
+            if (Vertices != null)
             {
                 vtxAddr = writer.Position + imageBase;
-                foreach(BufferVertex vtx in Vertices)
+                foreach (BufferVertex vtx in Vertices)
                     vtx.Write(writer);
             }
 
             uint cornerAddr = 0;
-            if(Corners != null)
+            if (Corners != null)
             {
                 cornerAddr = writer.Position + imageBase;
-                foreach(BufferCorner c in Corners)
+                foreach (BufferCorner c in Corners)
                     c.Write(writer);
             }
 
             uint triangleAddr = 0;
-            if(TriangleList != null)
+            if (TriangleList != null)
             {
                 triangleAddr = writer.Position + imageBase;
-                foreach(uint t in TriangleList)
+                foreach (uint t in TriangleList)
                     writer.WriteUInt32(t);
             }
 
@@ -175,7 +171,7 @@ namespace SATools.SAModel.ModelData.Buffer
             writer.WriteUInt16((ushort)(ContinueWeight ? 1u : 0u));
             writer.WriteUInt32((uint)(Corners == null ? 0 : Corners.Length));
             writer.WriteUInt32((uint)(TriangleList == null ? 0 : TriangleList.Length));
-            if(Material == null)
+            if (Material == null)
                 writer.Write(new byte[32]);
             else
                 Material.Write(writer);
@@ -203,25 +199,25 @@ namespace SATools.SAModel.ModelData.Buffer
 
             uint tmpAddr = source.ToUInt32(address) - imageBase;
 
-            for(int i = 0; i < vertices.Length; i++)
+            for (int i = 0; i < vertices.Length; i++)
                 vertices[i] = BufferVertex.Read(source, ref tmpAddr);
 
             tmpAddr = source.ToUInt32(address += 4) - imageBase;
 
-            for(int i = 0; i < corners.Length; i++)
+            for (int i = 0; i < corners.Length; i++)
                 corners[i] = BufferCorner.Read(source, ref tmpAddr);
 
             tmpAddr = source.ToUInt32(address += 4) - imageBase;
 
-            for(int i = 0; i < triangles.Length; i++)
+            for (int i = 0; i < triangles.Length; i++)
             {
                 triangles[i] = source.ToUInt32(tmpAddr);
                 tmpAddr += 4;
             }
 
-            if(vertices.Length == 0)
+            if (vertices.Length == 0)
                 return new BufferMesh(corners, triangles, material);
-            else if(corners.Length == 0)
+            else if (corners.Length == 0)
                 return new BufferMesh(vertices, continueWeight);
             else
                 return new BufferMesh(vertices, continueWeight, corners, triangles, material);

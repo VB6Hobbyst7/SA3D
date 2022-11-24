@@ -17,7 +17,8 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
                 nameof(Poly),
                 typeof(Poly),
                 typeof(UcGCPoly),
-                new(new((d, e) => {
+                new(new((d, e) =>
+                {
                     UcGCPoly uc = (UcGCPoly)d;
                     uc.ivm = new((Poly)e.NewValue);
                     uc.OnPropertyChanged(nameof(PolyType));

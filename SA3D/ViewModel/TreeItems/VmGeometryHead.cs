@@ -1,9 +1,5 @@
 ﻿using SATools.SAModel.ObjData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {
@@ -26,7 +22,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
         {
             List<ITreeItemData> result = new();
 
-            foreach(var vsg in Geometry)
+            foreach (var vsg in Geometry)
             {
                 result.Add(new VmGeometry(vsg, IsCollision));
             }

@@ -1,14 +1,9 @@
 ﻿using SATools.SAModel.Graphics.UI;
-using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ObjData;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using LandEntryRenderBatch = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<SATools.SAModel.ModelData.Buffer.BufferMesh, System.Collections.Generic.List<SATools.SAModel.Graphics.RenderMatrices>>>;
 
 namespace SATools.SAModel.Graphics.APIAccess
@@ -24,7 +19,7 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// </summary>
         public void AsWindow(Context context, InputBridge inputBridge)
         {
-            if(_used)
+            if (_used)
                 throw new System.InvalidOperationException("Access object was already used before!");
             _used = true;
             InternalAsWindow(context, inputBridge);
@@ -38,7 +33,7 @@ namespace SATools.SAModel.Graphics.APIAccess
         /// <param name="windowSource">Window source to attach to</param>
         public System.Windows.FrameworkElement AsControl(Context context, InputBridge inputBridge)
         {
-            if(_used)
+            if (_used)
                 throw new System.InvalidOperationException("Access object was already used before!");
             _used = true;
             return InternalAsControl(context, inputBridge);

@@ -28,7 +28,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML.SubControls
             {
                 Quaternion quat = Value;
 
-                switch(i)
+                switch (i)
                 {
                     default:
                     case 0:

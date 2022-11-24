@@ -42,16 +42,16 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         {
             get
             {
-                if(Source == null || Value == null)
+                if (Source == null || Value == null)
                     return "Null";
 
-                if(ValueType == typeof(RelayCommand))
+                if (ValueType == typeof(RelayCommand))
                     return "Execute";
 
-                if(IsCollection)
+                if (IsCollection)
                 {
                     IList collection = (IList)Value;
-                    if(ValueType.IsArray)
+                    if (ValueType.IsArray)
                     {
                         return $"{ValueType.Name[0..^2]}[{collection.Count}]";
                     }
@@ -157,7 +157,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             get => _container is IInspectorInfo f ? f.Value : _container;
             set
             {
-                if(_container is IInspectorInfo f)
+                if (_container is IInspectorInfo f)
                 {
                     f.Value = value;
                     return;
@@ -177,7 +177,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         static InspectorViewModel()
         {
             _viewmodelTypes = new Dictionary<Type, Type>();
-            foreach(Type t in typeof(InspectorViewModel).Assembly.GetTypes().Where(x => !x.IsAbstract && x.IsSubclassOf(typeof(InspectorViewModel))))
+            foreach (Type t in typeof(InspectorViewModel).Assembly.GetTypes().Where(x => !x.IsAbstract && x.IsSubclassOf(typeof(InspectorViewModel))))
             {
                 InspectorViewModel ivm = (InspectorViewModel)Activator.CreateInstance(t);
                 _viewmodelTypes.Add(ivm.ViewmodelType, t);
@@ -194,7 +194,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         /// <returns></returns>
         public static InspectorViewModel GetViewModel(object source)
         {
-            if(!_viewmodelTypes.TryGetValue(source.GetType(), out Type ivmType))
+            if (!_viewmodelTypes.TryGetValue(source.GetType(), out Type ivmType))
                 throw new InvalidInspectorTypeException(source.GetType());
 
             return (InspectorViewModel)Activator.CreateInstance(ivmType, source);
@@ -207,7 +207,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
         /// <returns></returns>
         public static InspectorViewModel GetViewModel(IInspectorInfo info)
         {
-            if(!_viewmodelTypes.TryGetValue(info.ValueType, out Type ivmType))
+            if (!_viewmodelTypes.TryGetValue(info.ValueType, out Type ivmType))
                 throw new InvalidInspectorTypeException(info.ValueType);
 
             return (InspectorViewModel)Activator.CreateInstance(ivmType, (object)info);
@@ -224,9 +224,9 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel
             Type type = GetType();
             var properties = type.GetProperties();
 
-            foreach(var p in properties)
+            foreach (var p in properties)
             {
-                if(!p.CanRead || p.GetCustomAttribute<IgnoreAttribute>() != null)
+                if (!p.CanRead || p.GetCustomAttribute<IgnoreAttribute>() != null)
                     continue;
 
                 string displayName = p.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? p.Name;

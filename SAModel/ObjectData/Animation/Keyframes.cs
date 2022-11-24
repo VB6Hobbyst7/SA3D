@@ -1,10 +1,9 @@
-﻿using System;
+﻿using SATools.SACommon;
+using SATools.SAModel.Structs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.Structs;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.MathHelper;
 
@@ -134,33 +133,33 @@ namespace SATools.SAModel.ObjData.Animation
             {
                 AnimationAttributes attribs = 0;
 
-                if(Position.Count > 0)
+                if (Position.Count > 0)
                     attribs |= AnimationAttributes.Position;
-                if(Rotation.Count > 0)
+                if (Rotation.Count > 0)
                     attribs |= AnimationAttributes.Rotation;
-                if(Scale.Count > 0)
+                if (Scale.Count > 0)
                     attribs |= AnimationAttributes.Scale;
-                if(Vector.Count > 0)
+                if (Vector.Count > 0)
                     attribs |= AnimationAttributes.Vector;
-                if(Vertex.Count > 0)
+                if (Vertex.Count > 0)
                     attribs |= AnimationAttributes.Vertex;
-                if(Normal.Count > 0)
+                if (Normal.Count > 0)
                     attribs |= AnimationAttributes.Normal;
-                if(Target.Count > 0)
+                if (Target.Count > 0)
                     attribs |= AnimationAttributes.Target;
-                if(Roll.Count > 0)
+                if (Roll.Count > 0)
                     attribs |= AnimationAttributes.Roll;
-                if(Angle.Count > 0)
+                if (Angle.Count > 0)
                     attribs |= AnimationAttributes.Angle;
-                if(LightColor.Count > 0)
+                if (LightColor.Count > 0)
                     attribs |= AnimationAttributes.LightColor;
-                if(Intensity.Count > 0)
+                if (Intensity.Count > 0)
                     attribs |= AnimationAttributes.Intensity;
-                if(Spot.Count > 0)
+                if (Spot.Count > 0)
                     attribs |= AnimationAttributes.Spot;
-                if(Point.Count > 0)
+                if (Point.Count > 0)
                     attribs |= AnimationAttributes.Point;
-                if(Quaternion.Count > 0)
+                if (Quaternion.Count > 0)
                     attribs |= AnimationAttributes.Quaternion;
 
                 return attribs;
@@ -204,14 +203,14 @@ namespace SATools.SAModel.ObjData.Animation
         /// <returns></returns>
         public static float GetNearestFrames<T>(SortedDictionary<uint, T> keyframes, float frame, out T before, out T next)
         {
-            if(frame < 0)
+            if (frame < 0)
                 frame = 0;
 
             // if there is only one frame, we can take that one
             next = default;
 
-            if(keyframes.Count == 1)
-                foreach(T val in keyframes.Values) // faster than converting to an array and accessing the first index
+            if (keyframes.Count == 1)
+                foreach (T val in keyframes.Values) // faster than converting to an array and accessing the first index
                 {
                     before = val;
                     return 0;
@@ -219,7 +218,7 @@ namespace SATools.SAModel.ObjData.Animation
 
             // if the given frame is spot on and exists, then we can use it
             uint baseFrame = (uint)Math.Floor(frame);
-            if(frame == baseFrame && keyframes.ContainsKey(baseFrame))
+            if (frame == baseFrame && keyframes.ContainsKey(baseFrame))
             {
                 before = keyframes[baseFrame];
                 return 0;
@@ -232,14 +231,14 @@ namespace SATools.SAModel.ObjData.Animation
 
             // getting the first frame index
             var keys = keyframes.Keys;
-            foreach(uint key in keys) // faster than converting to an array and accessing the first index
+            foreach (uint key in keys) // faster than converting to an array and accessing the first index
             {
                 nextSmallestFrame = key;
                 break;
             }
 
             // if the smallest frame is greater than the frame we are at right now, then we can just return the frame
-            if(nextSmallestFrame > baseFrame)
+            if (nextSmallestFrame > baseFrame)
             {
                 before = keyframes[nextSmallestFrame];
                 return 0;
@@ -247,11 +246,11 @@ namespace SATools.SAModel.ObjData.Animation
 
             // getting the actual next smallest and biggest frames
             uint nextBiggestFrame = baseFrame;
-            foreach(uint key in keyframes.Keys)
+            foreach (uint key in keyframes.Keys)
             {
-                if(key > nextSmallestFrame && key <= baseFrame)
+                if (key > nextSmallestFrame && key <= baseFrame)
                     nextSmallestFrame = key;
-                else if(key > baseFrame)
+                else if (key > baseFrame)
                 {
                     // the first bigger value must be the next biggest frame
                     nextBiggestFrame = key;
@@ -261,7 +260,7 @@ namespace SATools.SAModel.ObjData.Animation
 
             // if the next biggest frame hasnt changed, then that means we are past the last frame
             before = keyframes[nextSmallestFrame];
-            if(nextBiggestFrame == baseFrame)
+            if (nextBiggestFrame == baseFrame)
                 return 0;
 
             // the regular result
@@ -275,7 +274,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static Vector3 ValueAtFrame(SortedDictionary<uint, Vector3> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Vector3 before, out Vector3 next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return Vector3.Lerp(before, next, interpolation);
@@ -284,12 +283,12 @@ namespace SATools.SAModel.ObjData.Animation
         private static float LerpShorterAngle(float a, float b, float t)
         {
             float dif = Math.Abs(a - b);
-            if(dif < 180)
+            if (dif < 180)
                 return Lerp(a, b, t);
 
             dif = 360 - dif;
 
-            if(a < 0)
+            if (a < 0)
                 return Lerp(a, a - dif, t);
             else
                 return Lerp(a, a + dif, t);
@@ -298,11 +297,11 @@ namespace SATools.SAModel.ObjData.Animation
         private static Vector3[] ValueAtFrame(SortedDictionary<uint, Vector3[]> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Vector3[] before, out Vector3[] next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return (Vector3[])before.Clone();
 
             Vector3[] result = new Vector3[before.Length];
-            for(int i = 0; i < result.Length; i++)
+            for (int i = 0; i < result.Length; i++)
             {
                 result[i] = Vector3.Lerp(before[i], next[i], interpolation);
             }
@@ -312,7 +311,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static Vector2 ValueAtFrame(SortedDictionary<uint, Vector2> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Vector2 before, out Vector2 next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return Vector2.Lerp(before, next, interpolation);
@@ -321,7 +320,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static Color ValueAtFrame(SortedDictionary<uint, Color> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Color before, out Color next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return Color.Lerp(before, next, interpolation);
@@ -330,7 +329,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static float ValueAtFrame(SortedDictionary<uint, float> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out float before, out float next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return next * interpolation + before * (1 - interpolation);
@@ -339,7 +338,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static Spotlight ValueAtFrame(SortedDictionary<uint, Spotlight> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Spotlight before, out Spotlight next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return Spotlight.Lerp(before, next, interpolation);
@@ -348,7 +347,7 @@ namespace SATools.SAModel.ObjData.Animation
         private static Quaternion ValueAtFrame(SortedDictionary<uint, Quaternion> keyframes, float frame)
         {
             float interpolation = GetNearestFrames(keyframes, frame, out Quaternion before, out Quaternion next);
-            if(interpolation == 0)
+            if (interpolation == 0)
                 return before;
             else
                 return System.Numerics.Quaternion.Lerp(before, next, interpolation);
@@ -366,57 +365,57 @@ namespace SATools.SAModel.ObjData.Animation
                 frame = frame,
             };
 
-            if(Position.Count > 0)
+            if (Position.Count > 0)
                 result.position = ValueAtFrame(Position, frame);
 
-            if(Rotation.Count > 0)
+            if (Rotation.Count > 0)
                 result.rotation = ValueAtFrame(Rotation, frame);
 
-            if(Scale.Count > 0)
+            if (Scale.Count > 0)
                 result.scale = ValueAtFrame(Scale, frame);
 
-            if(Vector.Count > 0)
+            if (Vector.Count > 0)
                 result.vector = ValueAtFrame(Vector, frame);
 
-            if(Vertex.Count > 0)
+            if (Vertex.Count > 0)
                 result.vertex = ValueAtFrame(Vertex, frame);
 
-            if(Normal.Count > 0)
+            if (Normal.Count > 0)
                 result.normal = ValueAtFrame(Normal, frame);
 
-            if(Target.Count > 0)
+            if (Target.Count > 0)
                 result.target = ValueAtFrame(Target, frame);
 
-            if(Roll.Count > 0)
+            if (Roll.Count > 0)
                 result.roll = ValueAtFrame(Roll, frame);
 
-            if(Angle.Count > 0)
+            if (Angle.Count > 0)
                 result.angle = ValueAtFrame(Angle, frame);
 
-            if(LightColor.Count > 0)
+            if (LightColor.Count > 0)
                 result.color = ValueAtFrame(LightColor, frame);
 
-            if(Intensity.Count > 0)
+            if (Intensity.Count > 0)
                 result.Intensity = ValueAtFrame(Intensity, frame);
 
-            if(Spot.Count > 0)
+            if (Spot.Count > 0)
                 result.spot = ValueAtFrame(Spot, frame);
 
-            if(Point.Count > 0)
+            if (Point.Count > 0)
                 result.point = ValueAtFrame(Point, frame);
 
-            if(Quaternion.Count > 0)
+            if (Quaternion.Count > 0)
                 result.quaternion = ValueAtFrame(Quaternion, frame);
 
             return result;
         }
 
-       
+
         private static void ReadVector3Set(byte[] source, uint address, uint count, SortedDictionary<uint, Vector3> dictionary, IOType type)
         {
-            if(type == IOType.BAMS16)
+            if (type == IOType.BAMS16)
             {
-                for(int i = 0; i < count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     uint frame = source.ToUInt16(address);
                     address += 2;
@@ -425,7 +424,7 @@ namespace SATools.SAModel.ObjData.Animation
             }
             else
             {
-                for(int i = 0; i < count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     uint frame = source.ToUInt32(address);
                     address += 4;
@@ -441,7 +440,7 @@ namespace SATools.SAModel.ObjData.Animation
 
             // <address, frame>
             SortedDictionary<uint, uint> ptrs = new();
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 uint ptr = source.ToUInt32(address + 4) - imageBase;
@@ -450,16 +449,16 @@ namespace SATools.SAModel.ObjData.Animation
                 ptrs.Add(ptr, frame);
             }
 
-            if(ptrs.Count == 0)
+            if (ptrs.Count == 0)
                 return;
 
             var values = ptrs.ToArray();
             uint size = (origAddr - values[^1].Key) / 12;
-            for(int i = values.Length - 1; i >= 0; i--)
+            for (int i = values.Length - 1; i >= 0; i--)
             {
                 uint ptr = values[i].Key;
                 Vector3[] vectors = new Vector3[size];
-                for(int j = 0; j < size; j++)
+                for (int j = 0; j < size; j++)
                     vectors[j] = Vector3Extensions.Read(source, ref ptr, IOType.Float);
                 dictionary.Add(values[i].Value, vectors);
             }
@@ -467,7 +466,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadVector2Set(byte[] source, uint address, uint count, SortedDictionary<uint, Vector2> dictionary, IOType type)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 address += 4;
@@ -477,7 +476,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadColorSet(byte[] source, uint address, uint count, SortedDictionary<uint, Color> dictionary, IOType type)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 address += 4;
@@ -487,7 +486,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadFloatSet(byte[] source, uint address, uint count, SortedDictionary<uint, float> dictionary, bool BAMS)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 float value = BAMS ? BAMSToDeg(source.ToInt32(address + 4)) : source.ToSingle(address + 4);
@@ -498,7 +497,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadSpotSet(byte[] source, uint address, uint count, SortedDictionary<uint, Spotlight> dictionary)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 Spotlight value = Spotlight.Read(source, address + 4);
@@ -509,7 +508,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static void ReadQuaternionSet(byte[] source, uint address, uint count, SortedDictionary<uint, Quaternion> dictionary)
         {
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 uint frame = source.ToUInt32(address);
                 address += 4;
@@ -531,14 +530,14 @@ namespace SATools.SAModel.ObjData.Animation
         {
             uint[] addresses = new uint[channels];
             uint[] frameCounts = new uint[channels];
-            for(int i = 0; i < channels; i++)
+            for (int i = 0; i < channels; i++)
             {
                 uint val = source.ToUInt32(address);
-                if(val > 0)
+                if (val > 0)
                     addresses[i] = val - imageBase;
                 address += 4;
             }
-            for(int i = 0; i < channels; i++)
+            for (int i = 0; i < channels; i++)
             {
                 frameCounts[i] = source.ToUInt32(address);
                 address += 4;
@@ -547,16 +546,16 @@ namespace SATools.SAModel.ObjData.Animation
             int channelIndex = 0;
             Keyframes result = new();
 
-            foreach(AnimationAttributes flag in AllAnimAttributes)
+            foreach (AnimationAttributes flag in AllAnimAttributes)
             {
-                if(!type.HasFlag(flag))
+                if (!type.HasFlag(flag))
                     continue;
 
                 uint taddr = addresses[channelIndex];
-                if(taddr != 0)
+                if (taddr != 0)
                 {
                     uint frameCount = frameCounts[channelIndex];
-                    switch(flag)
+                    switch (flag)
                     {
                         case AnimationAttributes.Position:
                             ReadVector3Set(source, taddr, frameCount, result.Position, IOType.Float);
@@ -624,9 +623,9 @@ namespace SATools.SAModel.ObjData.Animation
 
             bool ContinueWrite(int count, AnimationAttributes flag)
             {
-                if(type.HasFlag(flag))
+                if (type.HasFlag(flag))
                 {
-                    if(count == 0)
+                    if (count == 0)
                     {
                         channelIndex++;
                         return false;
@@ -640,10 +639,10 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteVector3(SortedDictionary<uint, Vector3> dict, IOType ioType, AnimationAttributes flag)
             {
-                if(!ContinueWrite(dict.Count, flag))
+                if (!ContinueWrite(dict.Count, flag))
                     return;
 
-                foreach(var pair in dict)
+                foreach (var pair in dict)
                 {
                     writer.WriteUInt32(pair.Key);
                     pair.Value.Write(writer, ioType);
@@ -652,10 +651,10 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteVector2(SortedDictionary<uint, Vector2> dict, IOType ioType, AnimationAttributes flag)
             {
-                if(!ContinueWrite(dict.Count, flag))
+                if (!ContinueWrite(dict.Count, flag))
                     return;
 
-                foreach(var pair in dict)
+                foreach (var pair in dict)
                 {
                     writer.WriteUInt32(pair.Key);
                     pair.Value.Write(writer, ioType);
@@ -665,10 +664,10 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteColor(SortedDictionary<uint, Color> dict, IOType ioType, AnimationAttributes flag)
             {
-                if(!ContinueWrite(dict.Count, flag))
+                if (!ContinueWrite(dict.Count, flag))
                     return;
 
-                foreach(var pair in dict)
+                foreach (var pair in dict)
                 {
                     writer.WriteUInt32(pair.Key);
                     pair.Value.Write(writer, ioType);
@@ -677,25 +676,25 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteVector3Array(SortedDictionary<uint, Vector3[]> dict, AnimationAttributes flag)
             {
-                if(type.HasFlag(flag))
+                if (type.HasFlag(flag))
                 {
-                    if(dict.Count == 0)
+                    if (dict.Count == 0)
                     {
                         channelIndex++;
                         return;
                     }
                     // <frame, ptr>
                     Dictionary<uint, uint> ptrs = new();
-                    foreach(var pair in dict)
+                    foreach (var pair in dict)
                     {
                         ptrs.Add(pair.Key, writer.Position + imageBase);
-                        foreach(Vector3 v in pair.Value)
+                        foreach (Vector3 v in pair.Value)
                             v.Write(writer, IOType.Float);
                     }
 
                     keyframeLocs[channelIndex] = (writer.Position + imageBase, (uint)dict.Count);
 
-                    foreach(var pair in dict)
+                    foreach (var pair in dict)
                     {
                         writer.WriteUInt32(pair.Key);
                         writer.WriteUInt32(ptrs[pair.Key]);
@@ -707,13 +706,13 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteFloat(SortedDictionary<uint, float> dict, bool BAMS, AnimationAttributes flag)
             {
-                if(!ContinueWrite(dict.Count, flag))
+                if (!ContinueWrite(dict.Count, flag))
                     return;
 
-                foreach(var pair in dict)
+                foreach (var pair in dict)
                 {
                     writer.WriteUInt32(pair.Key);
-                    if(BAMS)
+                    if (BAMS)
                         writer.WriteInt32(DegToBAMS(pair.Value));
                     else
                         writer.WriteSingle(pair.Value);
@@ -722,10 +721,10 @@ namespace SATools.SAModel.ObjData.Animation
 
             void WriteSpotlight(SortedDictionary<uint, Spotlight> dict, AnimationAttributes flag)
             {
-                if(!ContinueWrite(dict.Count, flag))
+                if (!ContinueWrite(dict.Count, flag))
                     return;
 
-                foreach(var pair in dict)
+                foreach (var pair in dict)
                 {
                     writer.WriteUInt32(pair.Key);
                     pair.Value.Write(writer);

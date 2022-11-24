@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -84,7 +83,7 @@ namespace SATools.SAWPF
 
             AlphaSlider.ValueChanged += (s, e) =>
             {
-                if(_manual)
+                if (_manual)
                     return;
                 _manual = true;
 
@@ -120,49 +119,49 @@ namespace SATools.SAWPF
             RedNumber.ValueChanged += (s, e) =>
             {
                 byte value = e.NewValue ?? 0;
-                if(value != RedSlider.Value)
+                if (value != RedSlider.Value)
                     RedSlider.Value = value;
             };
 
             GreenNumber.ValueChanged += (s, e) =>
             {
                 byte value = e.NewValue ?? 0;
-                if(value != GreenSlider.Value)
+                if (value != GreenSlider.Value)
                     GreenSlider.Value = value;
             };
 
             BlueNumber.ValueChanged += (s, e) =>
             {
                 byte value = e.NewValue ?? 0;
-                if(value != BlueSlider.Value)
+                if (value != BlueSlider.Value)
                     BlueSlider.Value = value;
             };
 
             AlphaNumber.ValueChanged += (s, e) =>
             {
                 byte value = e.NewValue ?? 0;
-                if(value != AlphaSlider.Value)
+                if (value != AlphaSlider.Value)
                     AlphaSlider.Value = value;
             };
 
             HueNumber.ValueChanged += (s, e) =>
             {
                 double value = e.NewValue ?? 0;
-                if(value != HueSlider.Value)
+                if (value != HueSlider.Value)
                     HueSlider.Value = value;
             };
 
             SaturationNumber.ValueChanged += (s, e) =>
             {
                 double value = e.NewValue ?? 0;
-                if(value != SaturationSlider.Value)
+                if (value != SaturationSlider.Value)
                     SaturationSlider.Value = value;
             };
 
             ValueNumber.ValueChanged += (s, e) =>
             {
                 double value = e.NewValue ?? 0;
-                if(value != ValueSlider.Value)
+                if (value != ValueSlider.Value)
                     ValueSlider.Value = value;
             };
 
@@ -173,7 +172,7 @@ namespace SATools.SAWPF
 
         private void ManualUpdateRGB()
         {
-            if(_manual)
+            if (_manual)
                 return;
             _manual = true;
             UpdateRGB();
@@ -185,7 +184,7 @@ namespace SATools.SAWPF
 
         private void ManualUpdateHSV()
         {
-            if(_manual)
+            if (_manual)
                 return;
             _manual = true;
             UpdateHSV();
@@ -249,7 +248,7 @@ namespace SATools.SAWPF
 
         private void UpdateFromText()
         {
-            if(_manual)
+            if (_manual)
                 return;
             _manual = true;
 
@@ -257,7 +256,7 @@ namespace SATools.SAWPF
             hex = hex.StartsWith("#") ? hex[1..] : hex;
 
             // check if the format is valid
-            if(hex.Length < 3 || hex.Length == 5 || hex.Length == 7 || hex.Length > 8
+            if (hex.Length < 3 || hex.Length == 5 || hex.Length == 7 || hex.Length > 8
                 || !Regex.IsMatch(hex, "^[0-9a-fA-F]+$"))
             {
                 HexTextBox.Background = pink;
@@ -278,7 +277,7 @@ namespace SATools.SAWPF
             hex = hex.ToUpper();
             byte r = 0, g = 0, b = 0, a = 0;
 
-            switch(hex.Length)
+            switch (hex.Length)
             {
                 case 3: // RGB
                     r = conv(hex[0]);
@@ -358,7 +357,7 @@ namespace SATools.SAWPF
         public static bool ShowAsDialog(ref Color color)
         {
             WndColorPicker picker = new(color);
-            if(picker.ShowDialog() == true)
+            if (picker.ShowDialog() == true)
             {
                 color = picker.Color;
                 return true;
@@ -373,7 +372,7 @@ namespace SATools.SAWPF
 
         private void PickerBG_MouseMove(object sender, MouseEventArgs e)
         {
-            if(!_selectingColor)
+            if (!_selectingColor)
                 return;
 
             Point pos = Mouse.GetPosition(PickerBG);

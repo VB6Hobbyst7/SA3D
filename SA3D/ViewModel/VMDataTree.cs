@@ -17,7 +17,7 @@ namespace SATools.SA3D.ViewModel
             get => _selected;
             set
             {
-                if(_selected == value)
+                if (_selected == value)
                     return;
                 _selected = value;
 
@@ -32,7 +32,7 @@ namespace SATools.SA3D.ViewModel
 
             Objects = new();
 
-            foreach(var obj in VmMain.Context.Scene.GameTasks)
+            foreach (var obj in VmMain.Context.Scene.GameTasks)
             {
                 Objects.Add(new(null, new VmObject(obj, null)));
             }

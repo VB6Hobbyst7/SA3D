@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Reloaded.Memory.Streams;
+using SATools.SACommon;
+using SATools.SAModel.ModelData;
+using SATools.SAModel.ObjData.Animation;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Reloaded.Memory.Streams;
-using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
-using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData.Animation;
 using static SATools.SACommon.ByteConverter;
 
 namespace SATools.SAModel.ObjData
@@ -157,15 +156,15 @@ namespace SATools.SAModel.ObjData
             bool nj = false;
 
             ushort NJMagic = source.ToUInt16(0);
-            if(NJMagic == NJ || NJMagic == GJ)
+            if (NJMagic == NJ || NJMagic == GJ)
             {
                 NJMagic = source.ToUInt16(0x2);
 
                 uint ninjaOffset = 8u;
                 bool fileEndian = source.CheckBigEndianInt32(0x8u);
-                texlistRetry:
+            texlistRetry:
 
-                switch(NJMagic)
+                switch (NJMagic)
                 {
                     case BM:
                         format = AttachFormat.BASIC;
@@ -188,7 +187,7 @@ namespace SATools.SAModel.ObjData
                         uint texOffset = 0;
                         List<string> texNames = new();
 
-                        for(int i = 0; i < texCount; i++)
+                        for (int i = 0; i < texCount; i++)
                         {
                             uint textAddress = source.ToUInt32(texOffset + 0x10) + 0x8;
                             texNames.Add(source.GetCString(textAddress, System.Text.Encoding.UTF8));
@@ -210,7 +209,7 @@ namespace SATools.SAModel.ObjData
             {
                 // checking for mdl format
                 ulong header8 = source.ToUInt64(0) & HeaderMask;
-                switch(header8)
+                switch (header8)
                 {
                     case SA1MDL:
                         format = AttachFormat.BASIC;
@@ -231,7 +230,7 @@ namespace SATools.SAModel.ObjData
 
                 // checking the version
                 byte version = source[7];
-                if(version > CurrentVersion)
+                if (version > CurrentVersion)
                 {
                     PopEndian();
                     return null;
@@ -244,12 +243,12 @@ namespace SATools.SAModel.ObjData
                 model = NJObject.Read(source, source.ToUInt32(8), 0, format.Value, false, labels, attaches);
 
                 // reading animations
-                if(filename != null)
+                if (filename != null)
                 {
                     string path = Path.GetDirectoryName(filename);
                     try
                     {
-                        foreach(string item in metaData.AnimFiles)
+                        foreach (string item in metaData.AnimFiles)
                             Animations.Add(Motion.ReadFile(Path.Combine(path, item), model.CountAnimated()));
                     }
                     catch
@@ -308,7 +307,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="format">Format of the file</param>
         /// <param name="NJFile">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
-        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model) 
+        public static byte[] Write(AttachFormat format, bool NJFile, NJObject model)
             => Write(format, NJFile, model, new MetaData());
 
         /// <summary>
@@ -327,10 +326,10 @@ namespace SATools.SAModel.ObjData
             EndianWriter writer = new(stream);
             uint imageBase = 0;
 
-            if(NJFile)
+            if (NJFile)
             {
                 writer.WriteUInt16(NJ);
-                switch(format)
+                switch (format)
                 {
                     case AttachFormat.BASIC:
                         writer.WriteUInt32(BM);
@@ -363,7 +362,7 @@ namespace SATools.SAModel.ObjData
             Dictionary<string, uint> labels = new();
             model.WriteHierarchy(writer, imageBase, false, format == AttachFormat.Buffer, labels);
 
-            if(NJFile)
+            if (NJFile)
             {
                 // replace size
                 writer.Stream.Seek(4, SeekOrigin.Begin);
@@ -391,20 +390,20 @@ namespace SATools.SAModel.ObjData
             Attach[] attaches = objects.Select(x => x.Attach).Distinct().ToArray();
 
             AttachFormat fmt = AttachFormat.Buffer;
-            if(attaches.Length > 0)
+            if (attaches.Length > 0)
             {
                 fmt = attaches[0].Format;
-                foreach(Attach atc in attaches)
-                    if(fmt != atc.Format)
+                foreach (Attach atc in attaches)
+                    if (fmt != atc.Format)
                         throw new InvalidCastException("Not all attaches are of the same type!");
-                if(fmt == AttachFormat.Buffer)
+                if (fmt == AttachFormat.Buffer)
                     throw new InvalidCastException("All attaches are of buffer format! Can't decide what format to write");
             }
 
             outputPath = Path.ChangeExtension(outputPath, ".NJA");
             using TextWriter writer = File.CreateText(outputPath);
             List<string> labels = new();
-            foreach(var atc in attaches)
+            foreach (var atc in attaches)
             {
                 atc.WriteNJA(writer, DX, labels, textures);
             }
@@ -412,7 +411,7 @@ namespace SATools.SAModel.ObjData
             writer.WriteLine("OBJECT_START");
             writer.WriteLine();
 
-            foreach(NJObject obj in objects.Reverse())
+            foreach (NJObject obj in objects.Reverse())
             {
                 obj.WriteNJA(writer, labels);
             }

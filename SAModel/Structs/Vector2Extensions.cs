@@ -1,12 +1,7 @@
-﻿using Reloaded.Memory.Streams.Writers;
-using SATools.SACommon;
+﻿using SATools.SACommon;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SAModel.Structs
 {
@@ -27,7 +22,7 @@ namespace SATools.SAModel.Structs
         public static Vector2 Read(byte[] source, ref uint address, IOType type)
         {
             Vector2 result;
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     result = new()
@@ -58,7 +53,7 @@ namespace SATools.SAModel.Structs
         /// <param name="type">Datatype to write object as</param>
         public static void Write(this Vector2 vector, EndianWriter writer, IOType type)
         {
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     writer.WriteInt16((short)vector.X);
@@ -81,7 +76,7 @@ namespace SATools.SAModel.Structs
         public static void WriteNJA(this Vector2 vector, TextWriter writer, IOType type)
         {
             writer.Write("( ");
-            switch(type)
+            switch (type)
             {
                 case IOType.Short:
                     writer.Write((short)vector.X);

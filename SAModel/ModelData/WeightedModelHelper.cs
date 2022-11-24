@@ -189,9 +189,9 @@ namespace SATools.SAModel.ModelData
 
             public void ModifyVertexOffset(int offset)
             {
-                foreach(Attach atc in this.Attaches)
+                foreach (Attach atc in this.Attaches)
                 {
-                    foreach(BufferMesh bm in atc.MeshData)
+                    foreach (BufferMesh bm in atc.MeshData)
                     {
                         bm.VertexWriteOffset = (ushort)(bm.VertexWriteOffset + offset);
                         bm.VertexReadOffset = (ushort)(bm.VertexReadOffset + offset);
@@ -246,7 +246,7 @@ namespace SATools.SAModel.ModelData
                 }
             }
             return false;
-        }     
+        }
 
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace SATools.SAModel.ModelData
                             int index = vtx.Index + bufferMesh.VertexWriteOffset;
                             if (vtx.Weight == 0.0f)
                             {
-                                if(!bufferMesh.ContinueWeight)
+                                if (!bufferMesh.ContinueWeight)
                                     cache[index] = new(default, default);
                                 continue;
                             }
@@ -371,7 +371,7 @@ namespace SATools.SAModel.ModelData
                 }
             }
 
-            if(!combineAtDependencyRoots)
+            if (!combineAtDependencyRoots)
             {
                 return result.ToArray();
             }
@@ -526,7 +526,7 @@ namespace SATools.SAModel.ModelData
                 List<BufferVertex> initVerts = new();
                 List<BufferVertex> continueVerts = new();
 
-                for(int i = 0; i < wba.Vertices.Length; i++)
+                for (int i = 0; i < wba.Vertices.Length; i++)
                 {
                     WeightedVertex wVert = wba.Vertices[i];
 
@@ -571,7 +571,7 @@ namespace SATools.SAModel.ModelData
             int[] nodeIndices = new int[meshSets.Count];
             Attach[] attaches = new Attach[meshSets.Count];
 
-            for(int i = 0; i < meshSets.Count - 1; i++)
+            for (int i = 0; i < meshSets.Count - 1; i++)
             {
                 (int nodeIndex, BufferMesh[] vertexMeshes) = meshSets[i];
                 nodeIndices[i] = nodeIndex;
@@ -599,7 +599,7 @@ namespace SATools.SAModel.ModelData
 
             BufferVertex[] vertices = new BufferVertex[wba.Vertices.Length];
 
-            for(int i = 0; i < vertices.Length; i++)
+            for (int i = 0; i < vertices.Length; i++)
             {
                 WeightedVertex wVert = wba.Vertices[i];
                 vertices[i] = new(wVert.Position, wVert.Normal, (ushort)i);
@@ -612,9 +612,9 @@ namespace SATools.SAModel.ModelData
                 var (distinctVerts, vertMap) = vertices.CreateDistinctMap();
                 vertices = distinctVerts;
 
-                foreach(BufferMesh polyMesh in polygonMeshes)
+                foreach (BufferMesh polyMesh in polygonMeshes)
                 {
-                    for(int i = 0; i < polyMesh.Corners.Length; i++)
+                    for (int i = 0; i < polyMesh.Corners.Length; i++)
                     {
                         polyMesh.Corners[i].VertexIndex = (ushort)vertMap[polyMesh.Corners[i].VertexIndex];
                     }
@@ -626,8 +626,8 @@ namespace SATools.SAModel.ModelData
             meshes.AddRange(polygonMeshes);
 
             return new(
-                vertices.Length, 
-                new int[] { wba.DependencyRootIndex }, 
+                vertices.Length,
+                new int[] { wba.DependencyRootIndex },
                 new Attach[] { new(meshes.ToArray()) });
         }
 

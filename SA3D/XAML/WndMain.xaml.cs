@@ -2,11 +2,7 @@
 using SATools.SA3D.ViewModel;
 using SATools.SA3D.XAML.Dialogs;
 using SATools.SA3D.XAML.UserControls;
-using SATools.SAModel.Graphics;
-using System;
-using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace SATools.SA3D.XAML
 {
@@ -39,7 +35,7 @@ namespace SATools.SA3D.XAML
         {
             WndGltfImport import = new();
 
-            if(import.ShowDialog() != true)
+            if (import.ShowDialog() != true)
                 return;
 
             Main.InsertModel(import.Imported.Root, import.InsertMode.Text == "Root", import.Imported.Textures, import.Imported.Animations);
@@ -52,10 +48,10 @@ namespace SATools.SA3D.XAML
                 Filter = "Model File (*.*mdl, *.nj, *.gj)|*.BFMDL;*.SA1MDL;*.SA2MDL;*.SA2BMDL;*.NJ;*.GJ|Level File (*.*lvl)|*.BFLVL;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
             };
 
-            if(ofd.ShowDialog() != true)
+            if (ofd.ShowDialog() != true)
                 return;
 
-            if(Main.OpenFile(ofd.FileName))
+            if (Main.OpenFile(ofd.FileName))
                 return;
 
             _ = MessageBox.Show("File not in any valid format", "Invalid File", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -73,7 +69,7 @@ namespace SATools.SA3D.XAML
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            if(Main.FilePath == null)
+            if (Main.FilePath == null)
                 SaveAs(sender, e);
             else
                 Main.SaveToFile();
@@ -83,7 +79,7 @@ namespace SATools.SA3D.XAML
         {
             WndSave saveDialog = new(Main.ApplicationMode, Main.FilePath, Main.FileFormat, Main.FileIsNJ, Main.FileOptimize);
 
-            if(saveDialog.ShowDialog() != true)
+            if (saveDialog.ShowDialog() != true)
                 return;
 
             Main.SaveToFile(saveDialog.Filepath, saveDialog.Format, saveDialog.NJ, saveDialog.Optimize);

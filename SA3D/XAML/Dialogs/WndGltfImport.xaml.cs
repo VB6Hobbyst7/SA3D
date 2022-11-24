@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using SATools.SAModel.Convert;
+using System;
 using System.IO;
+using System.Windows;
+using System.Windows.Input;
 
 namespace SATools.SA3D.XAML.Dialogs
 {
@@ -37,7 +27,7 @@ namespace SATools.SA3D.XAML.Dialogs
 
         private void AnimFrameRate_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            if(string.IsNullOrWhiteSpace(e.Text))
+            if (string.IsNullOrWhiteSpace(e.Text))
             {
                 AnimFrameRate.Text = "0";
                 return;
@@ -52,7 +42,7 @@ namespace SATools.SA3D.XAML.Dialogs
 
             try
             {
-                if(!File.Exists(filepath.FilePath))
+                if (!File.Exists(filepath.FilePath))
                 {
                     _ = MessageBox.Show("Filepath doesnt exist!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
@@ -61,7 +51,7 @@ namespace SATools.SA3D.XAML.Dialogs
                 Imported = GLTF.Read(filepath.FilePath, ImportTextures.IsChecked.Value, ImportAnims.IsChecked.Value ? playbackSpeed : null);
                 DialogResult = true;
             }
-            catch(Exception exc)
+            catch (Exception exc)
             {
                 _ = new SAWPF.ErrorDialog("GLTF Import", "GLTF Import failed!", exc.ToString()).ShowDialog();
                 DialogResult = false;

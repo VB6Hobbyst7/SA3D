@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace SATools.SAModel.ModelData.CHUNK
+﻿namespace SATools.SAModel.ModelData.CHUNK
 {
     /// <summary>
     /// Vertex chunk weight status
@@ -142,7 +140,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <returns></returns>
         public static ushort Size(this ChunkType type)
         {
-            switch(type)
+            switch (type)
             {
                 case ChunkType.Vertex_Vertex:
                     return 3;

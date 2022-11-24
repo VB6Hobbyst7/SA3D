@@ -57,7 +57,7 @@ namespace SATools.SA3D.XAML.Dialogs
 
         public WndSave(Mode appMode, string lastFilePath, AttachFormat lastFormat, bool lastNJ, bool lastOptimized)
         {
-            if(appMode is not Mode.Level and not Mode.Model)
+            if (appMode is not Mode.Level and not Mode.Model)
                 throw new NotImplementedException("Only model and level files can be saved atm");
 
             InitializeComponent();
@@ -66,7 +66,7 @@ namespace SATools.SA3D.XAML.Dialogs
             _sfd.OverwritePrompt = false;
             FilepathControl.Dialog = _sfd;
 
-            if(!string.IsNullOrWhiteSpace(lastFilePath))
+            if (!string.IsNullOrWhiteSpace(lastFilePath))
             {
                 _sfd.InitialDirectory = Path.GetDirectoryName(lastFilePath);
                 Filepath = lastFilePath;
@@ -81,7 +81,7 @@ namespace SATools.SA3D.XAML.Dialogs
             }
             _appMode = appMode;
 
-            switch(appMode)
+            switch (appMode)
             {
                 case Mode.Model:
                     Title = "Save Model File";
@@ -102,23 +102,23 @@ namespace SATools.SA3D.XAML.Dialogs
         private void RefreshFileExtension()
         {
             NJFormatControl.IsEnabled = _format != AttachFormat.Buffer && _format != AttachFormat.GC && _appMode == Mode.Model;
-            switch(_format)
+            switch (_format)
             {
                 case AttachFormat.Buffer:
                     NJFormatControl.IsChecked = false;
-                    if(_appMode == Mode.Model)
+                    if (_appMode == Mode.Model)
                     {
                         _currentFileExtension = "bfmdl";
                         _sfd.Filter = "Buffer Model (*.bfmdl)|*.bfmdl";
                     }
-                    else if(_appMode == Mode.Level)
+                    else if (_appMode == Mode.Level)
                     {
                         _currentFileExtension = "bflvl";
                         _sfd.Filter = "Buffer Level (*.bflvl)|*.bflvl";
                     }
                     break;
                 case AttachFormat.BASIC:
-                    if(_appMode == Mode.Model)
+                    if (_appMode == Mode.Model)
                     {
                         _sfd.Filter = NJFormatControl.IsChecked == true ?
                             "BASIC Ninja file (*.nj)|*.nj" :
@@ -126,14 +126,14 @@ namespace SATools.SA3D.XAML.Dialogs
 
                         _currentFileExtension = NJFormatControl.IsChecked == true ? "nj" : "sa1mdl";
                     }
-                    else if(_appMode == Mode.Level)
+                    else if (_appMode == Mode.Level)
                     {
                         _sfd.Filter = "Sonic Adventure 1 Level (*.sa1lvl)|*.sa1lvl";
                         _currentFileExtension = "sa1lvl";
                     }
                     break;
                 case AttachFormat.CHUNK:
-                    if(_appMode == Mode.Model)
+                    if (_appMode == Mode.Model)
                     {
                         _sfd.Filter = NJFormatControl.IsChecked == true ?
                             "BASIC Ninja file (*.nj)|*.nj" :
@@ -141,7 +141,7 @@ namespace SATools.SA3D.XAML.Dialogs
 
                         _currentFileExtension = NJFormatControl.IsChecked == true ? "nj" : "sa2mdl";
                     }
-                    else if(_appMode == Mode.Level)
+                    else if (_appMode == Mode.Level)
                     {
                         _currentFileExtension = "sa2lvl";
                         _sfd.Filter = "Sonic Adventure 2 Level (*.sa2lvl)|*.sa2lvl";
@@ -149,12 +149,12 @@ namespace SATools.SA3D.XAML.Dialogs
                     break;
                 case AttachFormat.GC:
                     NJFormatControl.IsChecked = false;
-                    if(_appMode == Mode.Model)
+                    if (_appMode == Mode.Model)
                     {
                         _sfd.Filter = "Sonic Adventure 2 Battle Model (*.sa2bmdl)|*.sa2bmdl";
                         _currentFileExtension = "sa2bmdl";
                     }
-                    else if(_appMode == Mode.Level)
+                    else if (_appMode == Mode.Level)
                     {
                         _sfd.Filter = "Sonic Adventure 2 Battle Level (*.sa2blvl)|*.sa2blvl";
                         _currentFileExtension = "sa2blvl";
@@ -170,16 +170,16 @@ namespace SATools.SA3D.XAML.Dialogs
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            if(string.IsNullOrWhiteSpace(Filepath))
+            if (string.IsNullOrWhiteSpace(Filepath))
             {
                 _ = MessageBox.Show("Please select a path to write to.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            if(File.Exists(Filepath))
+            if (File.Exists(Filepath))
             {
                 MessageBoxResult r = MessageBox.Show($"\"{Filepath}\"already exists.\n Do you want to overwrite it?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if(r is MessageBoxResult.No or MessageBoxResult.Cancel)
+                if (r is MessageBoxResult.No or MessageBoxResult.Cancel)
                     return;
             }
 
@@ -197,7 +197,7 @@ namespace SATools.SA3D.XAML.Dialogs
             Close();
         }
 
-        private void NJFormat_Click(object sender, RoutedEventArgs e) 
+        private void NJFormat_Click(object sender, RoutedEventArgs e)
             => RefreshFileExtension();
 
         private void Format_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -205,7 +205,7 @@ namespace SATools.SA3D.XAML.Dialogs
             ComboBox s = (ComboBox)sender;
 
             AttachFormat newFormat = (AttachFormat)s.SelectedIndex;
-            if(_format == newFormat)
+            if (_format == newFormat)
                 return;
 
             _format = newFormat;
@@ -217,17 +217,17 @@ namespace SATools.SA3D.XAML.Dialogs
             TextBox fp = (TextBox)sender;
 
             string newPath = fp.Text;
-            if(newPath == "")
+            if (newPath == "")
                 return;
 
-            if(string.IsNullOrWhiteSpace(newPath))
+            if (string.IsNullOrWhiteSpace(newPath))
             {
                 fp.Text = "";
                 return;
             }
 
             string extension = Path.GetExtension(fp.Text);
-            if(extension != _currentFileExtension)
+            if (extension != _currentFileExtension)
             {
                 fp.Text = Path.ChangeExtension(fp.Text, _currentFileExtension);
             }

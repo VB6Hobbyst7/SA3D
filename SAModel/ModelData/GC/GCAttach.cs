@@ -52,13 +52,13 @@ namespace SATools.SAModel.ModelData.GC
             RecalculateBounds();
         }
 
-        
+
         internal GCAttach(VertexSet[] vertexData, Mesh[] opaqueMeshes, Mesh[] transprentMeshes)
         {
             VertexData = new();
-            foreach(VertexSet v in vertexData)
+            foreach (VertexSet v in vertexData)
             {
-                if(VertexData.ContainsKey(v.Attribute))
+                if (VertexData.ContainsKey(v.Attribute))
                     throw new ArgumentException($"Vertexdata contains two sets with the attribute {v.Attribute}");
                 VertexData.Add(v.Attribute, v);
             }
@@ -81,7 +81,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             VertexSet? GetSet(VertexAttribute attrib)
             {
-                if(VertexData.TryGetValue(attrib, out VertexSet checkPositions))
+                if (VertexData.TryGetValue(attrib, out VertexSet checkPositions))
                     return checkPositions;
                 return null;
             }
@@ -96,32 +96,32 @@ namespace SATools.SAModel.ModelData.GC
             (Vector2[] distinctUvs, int[] uvMap) = (uvs?.UVData).CreateDistinctMap();
             (Color[] distinctcolors, int[] colorMap) = (colors?.ColorData).CreateDistinctMap();
 
-            if(positionMap == null && normalMap == null && uvMap == null && colorMap == null)
+            if (positionMap == null && normalMap == null && uvMap == null && colorMap == null)
                 return;
 
             // adjust the indices of the polygon corners
             List<Mesh> meshes = new(OpaqueMeshes);
             meshes.AddRange(TransparentMeshes);
 
-            foreach(Mesh m in meshes)
+            foreach (Mesh m in meshes)
             {
-                for(int i = 0; i < m.Polys.Length; i++)
+                for (int i = 0; i < m.Polys.Length; i++)
                 {
                     Poly p = m.Polys[i];
-                    for(int j = 0; j < p.Corners.Length; j++)
+                    for (int j = 0; j < p.Corners.Length; j++)
                     {
                         Corner c = p.Corners[j];
 
-                        if(positionMap != null)
+                        if (positionMap != null)
                             c.PositionIndex = (ushort)positionMap[c.PositionIndex];
 
-                        if(normalMap != null)
+                        if (normalMap != null)
                             c.NormalIndex = (ushort)normalMap[c.NormalIndex];
 
-                        if(uvMap != null)
+                        if (uvMap != null)
                             c.UV0Index = (ushort)uvMap[c.UV0Index];
 
-                        if(colorMap != null)
+                        if (colorMap != null)
                             c.Color0Index = (ushort)colorMap[c.Color0Index];
 
                         p.Corners[j] = c;
@@ -132,36 +132,36 @@ namespace SATools.SAModel.ModelData.GC
             // replace the vertex data
             IndexAttributeParameter indexParam;
             Mesh[] source = OpaqueMeshes;
-            if(source == null || source.Length == 0)
+            if (source == null || source.Length == 0)
                 source = TransparentMeshes;
 
             indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
 
-            if(positionMap != null)
+            if (positionMap != null)
             {
                 VertexData[VertexAttribute.Position] = new(distinctPositions, false);
-                if(distinctPositions.Length <= 256)
+                if (distinctPositions.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.Position16BitIndex;
             }
 
-            if(normalMap != null)
+            if (normalMap != null)
             {
                 VertexData[VertexAttribute.Normal] = new(distinctNormals, true);
-                if(distinctNormals.Length <= 256)
+                if (distinctNormals.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.Normal16BitIndex;
             }
 
-            if(uvMap != null)
+            if (uvMap != null)
             {
                 VertexData[VertexAttribute.Tex0] = new(distinctUvs);
-                if(distinctUvs.Length <= 256)
+                if (distinctUvs.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.UV16BitIndex;
             }
 
-            if(colorMap != null)
+            if (colorMap != null)
             {
                 VertexData[VertexAttribute.Color0] = new(distinctcolors);
-                if(distinctcolors.Length <= 256)
+                if (distinctcolors.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.Color16BitIndex;
             }
         }
@@ -173,16 +173,16 @@ namespace SATools.SAModel.ModelData.GC
             {
                 // getting the current triangles
                 List<Corner> triangles = new();
-                foreach(Poly p in mesh.Polys)
+                foreach (Poly p in mesh.Polys)
                 {
-                    if(p.Type == PolyType.Triangles)
+                    if (p.Type == PolyType.Triangles)
                         triangles.AddRange(p.Corners);
-                    else if(p.Type == PolyType.TriangleStrip)
+                    else if (p.Type == PolyType.TriangleStrip)
                     {
                         bool rev = false;
-                        for(int i = 0; i < p.Corners.Length - 2; i++)
+                        for (int i = 0; i < p.Corners.Length - 2; i++)
                         {
-                            if(rev)
+                            if (rev)
                             {
                                 triangles.Add(p.Corners[i + 1]);
                                 triangles.Add(p.Corners[i]);
@@ -202,7 +202,7 @@ namespace SATools.SAModel.ModelData.GC
 
                 // getting the distinct corners and generating strip information with them
                 var (distinct, map) = triangles.CreateDistinctMap();
-                if(map == null)
+                if (map == null)
                     return mesh;
 
                 int[][] strips = Strippifier.Strip(map);
@@ -211,25 +211,25 @@ namespace SATools.SAModel.ModelData.GC
                 List<Poly> polygons = new();
                 List<Corner> singleTris = new();
 
-                for(int i = 0; i < strips.Length; i++)
+                for (int i = 0; i < strips.Length; i++)
                 {
                     int[] strip = strips[i];
                     Corner[] stripCorners = strip.Select(x => distinct[x]).ToArray();
-                    if(stripCorners.Length == 3)
+                    if (stripCorners.Length == 3)
                         singleTris.AddRange(stripCorners);
                     else
                         polygons.Add(new(PolyType.TriangleStrip, stripCorners));
                 }
-                if(singleTris.Count > 0)
+                if (singleTris.Count > 0)
                     polygons.Add(new(PolyType.Triangles, singleTris.ToArray()));
 
                 return new(mesh.Parameters, polygons.ToArray());
             }
 
-            for(int i = 0; i < OpaqueMeshes.Length; i++)
+            for (int i = 0; i < OpaqueMeshes.Length; i++)
                 OpaqueMeshes[i] = ProcessMesh(OpaqueMeshes[i]);
 
-            for(int i = 0; i < TransparentMeshes.Length; i++)
+            for (int i = 0; i < TransparentMeshes.Length; i++)
                 TransparentMeshes[i] = ProcessMesh(TransparentMeshes[i]);
         }
 
@@ -244,7 +244,7 @@ namespace SATools.SAModel.ModelData.GC
         public static GCAttach Read(byte[] source, uint address, uint imageBase, Dictionary<uint, string> labels)
         {
             string name;
-            if(labels.ContainsKey(address))
+            if (labels.ContainsKey(address))
                 name = labels[address];
             else
                 name = "attach_" + address.ToString("X8");
@@ -264,7 +264,7 @@ namespace SATools.SAModel.ModelData.GC
             // reading vertex data
             List<VertexSet> vertexData = new();
             VertexSet vertexSet = VertexSet.Read(source, vertexAddress, imageBase);
-            while(vertexSet.Attribute != VertexAttribute.Null)
+            while (vertexSet.Attribute != VertexAttribute.Null)
             {
                 vertexData.Add(vertexSet);
                 vertexAddress += 16;
@@ -274,7 +274,7 @@ namespace SATools.SAModel.ModelData.GC
             IndexAttributes indexAttribs = IndexAttributes.HasPosition;
 
             List<Mesh> opaqueMeshes = new();
-            for(int i = 0; i < opaqueCount; i++)
+            for (int i = 0; i < opaqueCount; i++)
             {
                 Mesh mesh = Mesh.Read(source, opaqueAddress, imageBase, ref indexAttribs);
                 opaqueMeshes.Add(mesh);
@@ -284,7 +284,7 @@ namespace SATools.SAModel.ModelData.GC
             indexAttribs = IndexAttributes.HasPosition;
 
             List<Mesh> transparentMeshes = new();
-            for(int i = 0; i < transparentCount; i++)
+            for (int i = 0; i < transparentCount; i++)
             {
                 Mesh mesh = Mesh.Read(source, transparentAddress, imageBase, ref indexAttribs);
                 transparentMeshes.Add(mesh);
@@ -307,22 +307,22 @@ namespace SATools.SAModel.ModelData.GC
         {
             VertexSet[] sets = VertexData.Values.ToArray();
             uint[] vtxAddresses = new uint[VertexData.Count];
-            for(int i = 0; i < sets.Length; i++)
+            for (int i = 0; i < sets.Length; i++)
             {
                 VertexSet vtxSet = sets[i];
                 vtxAddresses[i] = writer.Position + imageBase;
                 IOType outputType = vtxSet.DataType.ToStructType();
 
-                switch(vtxSet.Attribute)
+                switch (vtxSet.Attribute)
                 {
                     case VertexAttribute.Position:
                     case VertexAttribute.Normal:
-                        foreach(Vector3 vec in vtxSet.Vector3Data)
+                        foreach (Vector3 vec in vtxSet.Vector3Data)
                             vec.Write(writer, outputType);
                         break;
                     case VertexAttribute.Color0:
                     case VertexAttribute.Color1:
-                        foreach(Color col in vtxSet.ColorData)
+                        foreach (Color col in vtxSet.ColorData)
                             col.Write(writer, outputType);
                         break;
                     case VertexAttribute.Tex0:
@@ -333,7 +333,7 @@ namespace SATools.SAModel.ModelData.GC
                     case VertexAttribute.Tex5:
                     case VertexAttribute.Tex6:
                     case VertexAttribute.Tex7:
-                        foreach(Vector2 uv in vtxSet.UVData)
+                        foreach (Vector2 uv in vtxSet.UVData)
                             (uv * 256).Write(writer, outputType);
                         break;
                     case VertexAttribute.PositionMatrixId:
@@ -346,7 +346,7 @@ namespace SATools.SAModel.ModelData.GC
             uint vtxAddr = writer.Position + imageBase;
 
             // writing vertex attributes
-            for(int i = 0; i < sets.Length; i++)
+            for (int i = 0; i < sets.Length; i++)
             {
                 VertexSet vtxSet = sets[i];
 
@@ -371,23 +371,23 @@ namespace SATools.SAModel.ModelData.GC
             {
                 uint[] result = new uint[meshes.Length * 4];
                 IndexAttributes indexAttribs = IndexAttributes.HasPosition;
-                for(int i = 0, ri = 0; i < meshes.Length; i++, ri += 4)
+                for (int i = 0, ri = 0; i < meshes.Length; i++, ri += 4)
                 {
                     Mesh m = meshes[i];
 
                     IndexAttributes? t = m.IndexAttributes;
-                    if(t.HasValue)
+                    if (t.HasValue)
                         indexAttribs = t.Value;
 
                     // writing parameters
                     result[ri] = writer.Position + imageBase;
                     result[ri + 1] = (uint)m.Parameters.Length;
-                    foreach(IParameter p in m.Parameters)
+                    foreach (IParameter p in m.Parameters)
                         p.Write(writer);
 
                     // writing polygons
                     uint addr = writer.Position;
-                    foreach(Poly p in m.Polys)
+                    foreach (Poly p in m.Polys)
                         p.Write(writer, indexAttribs);
                     result[ri + 2] = addr + imageBase;
                     result[ri + 3] = writer.Position - addr;
@@ -401,11 +401,11 @@ namespace SATools.SAModel.ModelData.GC
 
             // writing geometry properties
             uint opaqueAddress = writer.Position + imageBase;
-            foreach(uint i in opaqueMeshStructs)
+            foreach (uint i in opaqueMeshStructs)
                 writer.Write(i);
 
             uint transparentAddress = writer.Position + imageBase;
-            foreach(uint i in transparentMeshStructs)
+            foreach (uint i in transparentMeshStructs)
                 writer.Write(i);
 
             uint address = writer.Position + imageBase;
@@ -424,7 +424,7 @@ namespace SATools.SAModel.ModelData.GC
         public override Attach Clone()
         {
             Dictionary<VertexAttribute, VertexSet> vertexSets = new();
-            foreach(KeyValuePair<VertexAttribute, VertexSet> t in VertexData)
+            foreach (KeyValuePair<VertexAttribute, VertexSet> t in VertexData)
             {
                 vertexSets.Add(t.Key, t.Value.Clone());
             }

@@ -31,13 +31,13 @@ namespace SAModelInspector
                        + "|Level File (*.*lvl)|*.BFLVL;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
             };
 
-            if(ofd.ShowDialog() != true)
+            if (ofd.ShowDialog() != true)
                 return;
 
             byte[] file = File.ReadAllBytes(ofd.FileName);
 
             ModelFile mdlFile = ModelFile.Read(file, ofd.FileName);
-            if(mdlFile != null)
+            if (mdlFile != null)
             {
                 loaded = mdlFile;
                 Inspector.LoadNewObject(mdlFile);
@@ -46,7 +46,7 @@ namespace SAModelInspector
 
 
             LandTable ltbl = LandTable.ReadFile(file);
-            if(ltbl != null)
+            if (ltbl != null)
             {
                 loaded = ltbl;
 
@@ -57,31 +57,31 @@ namespace SAModelInspector
 
         private void SaveFile(object sender, RoutedEventArgs e)
         {
-            if(loaded == null)
+            if (loaded == null)
                 return;
 
 
-            if(loaded is ModelFile mdlfile)
+            if (loaded is ModelFile mdlfile)
             {
                 SaveFileDialog sfd = new()
                 {
                     Filter = "Model File (*.*mdl, *.nj, *.gj)|*.BFMDL;*.SA1MDL;*.SA2MDL;*.SA2BMDL;*.NJ;*.GJ"
                 };
 
-                if(sfd.ShowDialog() != true)
+                if (sfd.ShowDialog() != true)
                     return;
 
                 mdlfile.SaveToFile(sfd.FileName, false);
             }
 
-            if(loaded is LandTable ltbl)
+            if (loaded is LandTable ltbl)
             {
                 SaveFileDialog sfd = new()
                 {
                     Filter = "Level File (*.*lvl)|*.BFLVL;*.SA1LVL;*.SA2LVL;*.SA2BLVL"
                 };
 
-                if(sfd.ShowDialog() != true)
+                if (sfd.ShowDialog() != true)
                     return;
 
                 ltbl.WriteFile(sfd.FileName);

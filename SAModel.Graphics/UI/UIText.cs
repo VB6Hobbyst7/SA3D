@@ -17,7 +17,7 @@ namespace SATools.SAModel.Graphics.UI
             get => _text;
             set
             {
-                if(value == _text)
+                if (value == _text)
                     return;
                 _text = value ?? throw new NullReferenceException("Text cannot be null");
                 UpdateTexture();

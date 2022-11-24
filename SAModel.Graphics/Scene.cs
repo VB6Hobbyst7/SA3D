@@ -1,8 +1,6 @@
 ﻿using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -56,7 +54,7 @@ namespace SATools.SAModel.Graphics
             get => _geometryTextures;
             set
             {
-                if(_geometryTextures == value)
+                if (_geometryTextures == value)
                     return;
                 TaskTexturesChanged(_geometryTextures, value);
                 _geometryTextures = value;
@@ -107,7 +105,7 @@ namespace SATools.SAModel.Graphics
         {
             OnUpdateEvent.Invoke(delta);
             SceneTime += delta;
-            foreach(GameTask tsk in GameTasks)
+            foreach (GameTask tsk in GameTasks)
                 tsk.Update(delta, SceneTime);
         }
 
@@ -116,10 +114,10 @@ namespace SATools.SAModel.Graphics
 
         public void AddTask(GameTask task)
         {
-            if(_gameTasks.Contains(task))
+            if (_gameTasks.Contains(task))
                 throw new ArgumentException("The added task was already part of the scene!");
             _gameTasks.Add(task);
-            if(task is DisplayTask dtsk)
+            if (task is DisplayTask dtsk)
             {
                 dtsk.OnTextureSetChanged += TaskTexturesChanged;
                 TaskTexturesChanged(null, dtsk.TextureSet);
@@ -128,7 +126,7 @@ namespace SATools.SAModel.Graphics
 
         public void RemoveTask(GameTask task)
         {
-            if(_gameTasks.Remove(task) && task is DisplayTask dtsk)
+            if (_gameTasks.Remove(task) && task is DisplayTask dtsk)
             {
                 dtsk.OnTextureSetChanged -= TaskTexturesChanged;
                 TaskTexturesChanged(dtsk.TextureSet, null);
@@ -138,9 +136,9 @@ namespace SATools.SAModel.Graphics
         public void ClearTasks()
         {
             List<GameTask> toRemove = new(_gameTasks);
-            foreach(GameTask t in toRemove)
+            foreach (GameTask t in toRemove)
             {
-                if(_gameTasks.Remove(t) && t is DisplayTask dtsk)
+                if (_gameTasks.Remove(t) && t is DisplayTask dtsk)
                 {
                     dtsk.OnTextureSetChanged -= TaskTexturesChanged;
                     TaskTexturesChanged(dtsk.TextureSet, null);
@@ -172,21 +170,21 @@ namespace SATools.SAModel.Graphics
         private void TaskTexturesChanged(TextureSet oldSet, TextureSet newSet, bool manual)
         {
             // Removing the old texture set
-            if(oldSet != null)
+            if (oldSet != null)
             {
                 // this can only happen when texture was loaded manually
-                if(!_textureSetCounts.TryGetValue(oldSet, out var found))
+                if (!_textureSetCounts.TryGetValue(oldSet, out var found))
                     throw new InvalidOperationException("Texture was not manually added!");
 
-                if(manual)
+                if (manual)
                 {
-                    if(found.manual)
+                    if (found.manual)
                         found.manual = false;
                     else
                         throw new InvalidOperationException("Texture was not manually added!");
                 }
 
-                if(found.count == 1 && !found.manual)
+                if (found.count == 1 && !found.manual)
                 {
                     _textureSets.Remove(oldSet);
                     _textureSetCounts.Remove(oldSet);
@@ -200,13 +198,13 @@ namespace SATools.SAModel.Graphics
             }
 
             // adding new texture set
-            if(newSet != null)
+            if (newSet != null)
             {
-                if(_textureSetCounts.TryGetValue(newSet, out var found))
+                if (_textureSetCounts.TryGetValue(newSet, out var found))
                 {
-                    if(manual)
+                    if (manual)
                     {
-                        if(found.manual)
+                        if (found.manual)
                             throw new InvalidOperationException("Texture was already manually added!");
                         else
                             found.manual = true;

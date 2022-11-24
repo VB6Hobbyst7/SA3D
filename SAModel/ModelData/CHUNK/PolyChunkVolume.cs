@@ -37,7 +37,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 get
                 {
-                    if(_indices == null)
+                    if (_indices == null)
                         _indices = new ushort[3];
                     return _indices;
                 }
@@ -51,14 +51,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 get
                 {
-                    if(_userAttributes == null)
+                    if (_userAttributes == null)
                         _userAttributes = new ushort[3];
                     return _userAttributes;
                 }
                 private set => _userAttributes = value;
             }
 
-            public ushort Size(byte userAttributes) 
+            public ushort Size(byte userAttributes)
                 => (ushort)(6u + userAttributes * 2u);
 
             /// <summary>
@@ -72,13 +72,13 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 Triangle tri = new();
 
-                for(int i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     tri.Indices[i] = source.ToUInt16(address);
                     address += 2;
                 }
 
-                for(int i = 0; i < userAttribs; i++)
+                for (int i = 0; i < userAttribs; i++)
                 {
                     tri.UserAttributes[i] = source.ToUInt16(address);
                     address += 2;
@@ -89,9 +89,9 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             public void Write(EndianWriter writer, byte userAttribs)
             {
-                foreach(ushort i in Indices)
+                foreach (ushort i in Indices)
                     writer.WriteUInt16(i);
-                for(int i = 0; i < userAttribs; i++)
+                for (int i = 0; i < userAttribs; i++)
                     writer.WriteUInt16(UserAttributes[i]);
             }
 
@@ -118,7 +118,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 get
                 {
-                    if(_indices == null)
+                    if (_indices == null)
                         _indices = new ushort[4];
                     return _indices;
                 }
@@ -132,7 +132,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 get
                 {
-                    if(_userAttributes == null)
+                    if (_userAttributes == null)
                         _userAttributes = new ushort[3];
                     return _userAttributes;
                 }
@@ -153,13 +153,13 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 Triangle tri = new();
 
-                for(int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     tri.Indices[i] = source.ToUInt16(address);
                     address += 2;
                 }
 
-                for(int i = 0; i < userAttribs; i++)
+                for (int i = 0; i < userAttribs; i++)
                 {
                     tri.UserAttributes[i] = source.ToUInt16(address);
                     address += 2;
@@ -170,9 +170,9 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             public void Write(EndianWriter writer, byte userAttribs)
             {
-                foreach(ushort i in Indices)
+                foreach (ushort i in Indices)
                     writer.WriteUInt16(i);
-                for(int i = 0; i < userAttribs; i++)
+                for (int i = 0; i < userAttribs; i++)
                     writer.WriteUInt16(UserAttributes[i]);
             }
 
@@ -257,17 +257,17 @@ namespace SATools.SAModel.ModelData.CHUNK
                 r.Indices[0] = source.ToUInt16(address);
                 r.Indices[1] = source.ToUInt16(address += 2);
 
-                for(int i = 2; i < r.Indices.Length; i++)
+                for (int i = 2; i < r.Indices.Length; i++)
                 {
                     r.Indices[i] = source.ToUInt16(address += 2);
-                    if(flag1)
+                    if (flag1)
                     {
                         int j = i - 2;
                         r.UserAttributes1[j] = source.ToUInt16(address += 2);
-                        if(flag2)
+                        if (flag2)
                         {
                             r.UserAttributes2[j] = source.ToUInt16(address += 2);
-                            if(flag3)
+                            if (flag3)
                             {
                                 r.UserAttributes3[j] = source.ToUInt16(address += 2);
                             }
@@ -290,17 +290,17 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                 writer.WriteUInt16(Indices[0]);
                 writer.WriteUInt16(Indices[1]);
-                for(int i = 2; i < count; i++)
+                for (int i = 2; i < count; i++)
                 {
                     writer.WriteUInt16(Indices[i]);
-                    if(flag1)
+                    if (flag1)
                     {
                         int j = i - 2;
                         writer.WriteUInt16(UserAttributes1[j]);
-                        if(flag2)
+                        if (flag2)
                         {
                             writer.WriteUInt16(UserAttributes2[j]);
-                            if(flag3)
+                            if (flag3)
                             {
                                 writer.WriteUInt16(UserAttributes3[j]);
                             }
@@ -373,18 +373,18 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             address += 6;
 
-            switch(type)
+            switch (type)
             {
                 case ChunkType.Volume_Polygon3:
-                    for(int i = 0; i < polyCount; i++)
+                    for (int i = 0; i < polyCount; i++)
                         cnk.Polys[i] = Triangle.Read(source, ref address, userAttribs);
                     break;
                 case ChunkType.Volume_Polygon4:
-                    for(int i = 0; i < polyCount; i++)
+                    for (int i = 0; i < polyCount; i++)
                         cnk.Polys[i] = Quad.Read(source, ref address, userAttribs);
                     break;
                 case ChunkType.Volume_Strip:
-                    for(int i = 0; i < polyCount; i++)
+                    for (int i = 0; i < polyCount; i++)
                         cnk.Polys[i] = Strip.Read(source, ref address, userAttribs);
                     break;
                 default:
@@ -398,21 +398,21 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             // updating the size
             uint size = 2;
-            foreach(IPoly p in Polys)
+            foreach (IPoly p in Polys)
                 size += p.Size(UserAttributes);
             size /= 2;
-            if(size > ushort.MaxValue)
+            if (size > ushort.MaxValue)
                 throw new InvalidOperationException($"Volume chunk size ({size}) exceeds maximum ({ushort.MaxValue})");
             Size = (ushort)size;
 
             base.Write(writer);
 
-            if(Polys.Length > 0x3FFF)
+            if (Polys.Length > 0x3FFF)
                 throw new InvalidOperationException($"Poly count ({Polys.Length}) exceeds maximum ({0x3FFF})");
 
             writer.WriteUInt16((ushort)(Math.Min(Polys.Length, 0x3FFFu) | (ushort)(UserAttributes << 14)));
 
-            foreach(IPoly p in Polys)
+            foreach (IPoly p in Polys)
             {
                 p.Write(writer, UserAttributes);
             }

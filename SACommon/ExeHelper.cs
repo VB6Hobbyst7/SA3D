@@ -38,10 +38,10 @@ namespace SATools.SACommon
 
         public static uint? SetupEXE(ref byte[] exefile)
         {
-            if(exefile.ToUInt16(0) != 0x5A4D)
+            if (exefile.ToUInt16(0) != 0x5A4D)
                 return null;
             uint ptr = exefile.ToUInt32(0x3c);
-            if(exefile.ToUInt32(ptr) != 0x4550) //PE\0\0
+            if (exefile.ToUInt32(ptr) != 0x4550) //PE\0\0
                 return null;
             ptr += 4;
             ushort numsects = exefile.ToUInt16(ptr + 2);
@@ -50,7 +50,7 @@ namespace SATools.SACommon
             byte[] result = new byte[exefile.ToUInt32(ptr + 56)];
             Array.Copy(exefile, result, exefile.ToUInt32(ptr + 60));
             ptr += 0xe0;
-            for(int i = 0; i < numsects; i++)
+            for (int i = 0; i < numsects; i++)
             {
                 Array.Copy(exefile,
                     exefile.ToUInt32(ptr + (uint)SectOffs.FAddr),
@@ -96,7 +96,7 @@ namespace SATools.SACommon
             int diff = (int)Align((uint)data.Length);
             ByteConverter.GetBytes(diff).CopyTo(exefile, ptr + (int)SectOffs.VSize);
             ByteConverter.GetBytes(diff).CopyTo(exefile, ptr + (int)SectOffs.FSize);
-            if(isCode)
+            if (isCode)
                 ByteConverter.GetBytes(Convert.ToUInt32(exefile.ToUInt32(PEHead + 4) + diff)).CopyTo(exefile, PEHead + 4);
             else
                 ByteConverter.GetBytes(Convert.ToUInt32(exefile.ToUInt32(PEHead + 8) + diff)).CopyTo(exefile, PEHead + 8);
@@ -107,10 +107,10 @@ namespace SATools.SACommon
 
         public static void CompactEXE(ref byte[] exefile)
         {
-            if(exefile.ToUInt16(0) != 0x5A4D)
+            if (exefile.ToUInt16(0) != 0x5A4D)
                 return;
             uint ptr = exefile.ToUInt32(0x3c);
-            if(exefile.ToInt32(ptr) != 0x4550) //PE\0\0
+            if (exefile.ToInt32(ptr) != 0x4550) //PE\0\0
                 return;
             ptr += 4;
             ushort numsects = exefile.ToUInt16(ptr + 2);
@@ -120,7 +120,7 @@ namespace SATools.SACommon
             byte[] result = new byte[exefile.ToInt32((uint)(ptr + 0xe0 + ((int)SectOffs.Size * (numsects - 1)) + (int)SectOffs.FAddr)) + exefile.ToInt32((uint)(ptr + 0xe0 + ((int)SectOffs.Size * (numsects - 1)) + (int)SectOffs.FSize))];
             Array.Copy(exefile, result, exefile.ToUInt32(ptr + 60));
             ptr += 0xe0;
-            for(int i = 0; i < numsects; i++)
+            for (int i = 0; i < numsects; i++)
             {
                 Array.Copy(exefile, exefile.ToInt32(ptr + (int)SectOffs.VAddr), result, exefile.ToInt32(ptr + (int)SectOffs.FAddr), exefile.ToInt32(ptr + (int)SectOffs.FSize));
                 ptr += (int)SectOffs.Size;
@@ -132,14 +132,14 @@ namespace SATools.SACommon
         {
             OSModuleHeader header = new(file, 0);
             OSSectionInfo[] sections = new OSSectionInfo[header.info.numSections];
-            for(uint i = 0; i < header.info.numSections; i++)
+            for (uint i = 0; i < header.info.numSections; i++)
                 sections[i] = new OSSectionInfo(file, header.info.sectionInfoOffset + (i * 8));
             OSImportInfo[] imports = new OSImportInfo[header.impSize / 8];
-            for(uint i = 0; i < imports.Length; i++)
+            for (uint i = 0; i < imports.Length; i++)
                 imports[i] = new OSImportInfo(file, header.impOffset + (i * 8));
             uint reladdr = 0;
-            for(int i = 0; i < imports.Length; i++)
-                if(imports[i].id == header.info.id)
+            for (int i = 0; i < imports.Length; i++)
+                if (imports[i].id == header.info.id)
                 {
                     reladdr = imports[i].offset;
                     break;
@@ -148,11 +148,11 @@ namespace SATools.SACommon
             uint dataaddr = 0;
             unchecked
             {
-                while(rel.type != (byte)RelocTypes.R_DOLPHIN_END)
+                while (rel.type != (byte)RelocTypes.R_DOLPHIN_END)
                 {
                     dataaddr += rel.offset;
                     uint sectionbase = (uint)(sections[rel.section].offset & ~1);
-                    switch(rel.type)
+                    switch (rel.type)
                     {
                         case 0x01:
                             ByteConverter.GetBytes(rel.addend + sectionbase + imageBase).CopyTo(file, dataaddr);
@@ -191,13 +191,13 @@ namespace SATools.SACommon
 
         public static void AlignCode(this List<byte> me)
         {
-            while(me.Count % 0x10 > 0)
+            while (me.Count % 0x10 > 0)
                 me.Add(0x90);
         }
 
         public static uint Align(uint address)
         {
-            if(address % 0x1000 == 0)
+            if (address % 0x1000 == 0)
                 return address;
             return ((address / 0x1000) + 1) * 0x1000;
         }

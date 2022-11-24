@@ -1,12 +1,7 @@
 ﻿using SATools.SA3D.ViewModel.Base;
 using SATools.SAModel.ObjData;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {
@@ -131,7 +126,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
         public List<ITreeItemData> Expand()
         {
             List<ITreeItemData> result = new();
-            for(int i = 0; i < ObjectData.ChildCount; i++)
+            for (int i = 0; i < ObjectData.ChildCount; i++)
                 result.Add(new VmNJObject(ObjectData[i]));
             return result;
         }

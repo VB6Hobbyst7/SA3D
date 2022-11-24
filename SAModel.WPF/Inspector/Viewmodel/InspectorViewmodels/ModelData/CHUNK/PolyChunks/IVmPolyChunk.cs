@@ -2,10 +2,6 @@
 using SATools.SAModel.ModelData.CHUNK;
 using SATools.SAModel.Structs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.CHUNK.PolyChunks
 {
@@ -161,7 +157,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             set
             {
                 _diffuseColor = value;
-                if(HasDiffuse)
+                if (HasDiffuse)
                     Chunk.Diffuse = _diffuseColor;
             }
         }
@@ -182,7 +178,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             set
             {
                 _ambientColor = value;
-                if(HasAmbient)
+                if (HasAmbient)
                     Chunk.Ambient = _ambientColor;
             }
         }
@@ -203,7 +199,7 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
             set
             {
                 _specularColor = value;
-                if(HasSpecularColor)
+                if (HasSpecularColor)
                     Chunk.Specular = _specularColor;
             }
         }
@@ -219,11 +215,11 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ModelData.
 
         public IVmPolyChunkMaterial(object source) : base(source)
         {
-            if(Chunk.Diffuse.HasValue)
+            if (Chunk.Diffuse.HasValue)
                 _diffuseColor = Chunk.Diffuse.Value;
-            if(Chunk.Ambient.HasValue)
+            if (Chunk.Ambient.HasValue)
                 _ambientColor = Chunk.Ambient.Value;
-            if(Chunk.Specular.HasValue)
+            if (Chunk.Specular.HasValue)
                 _specularColor = Chunk.Specular.Value;
         }
     }

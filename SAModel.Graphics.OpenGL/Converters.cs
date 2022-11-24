@@ -45,7 +45,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         internal static TextureWrapMode WrapModeU(this BufferMaterial mat)
         {
-            if(mat.ClampU)
+            if (mat.ClampU)
                 return mat.MirrorU ? TextureWrapMode.MirroredRepeat : TextureWrapMode.ClampToEdge;
             else
                 return TextureWrapMode.Repeat;
@@ -53,7 +53,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         internal static TextureWrapMode WrapModeV(this BufferMaterial mat)
         {
-            if(mat.ClampV)
+            if (mat.ClampV)
                 return mat.MirrorV ? TextureWrapMode.MirroredRepeat : TextureWrapMode.ClampToEdge;
             else
                 return TextureWrapMode.Repeat;

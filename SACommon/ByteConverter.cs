@@ -16,7 +16,7 @@ namespace SATools.SACommon
         /// <summary>
         /// Whether bytes should be read in big endian. Set with <see cref="PushBigEndian(bool)"/> and free afterwards with <see cref="PopEndian"/>
         /// </summary>
-        public static bool BigEndian 
+        public static bool BigEndian
             => _endianStack.Peek();
 
         public static bool Reverse { get; set; }
@@ -25,7 +25,7 @@ namespace SATools.SACommon
         /// Sets an endian. Dont forget to free it afterwards as well using <see cref="PopEndian"/>
         /// </summary>
         /// <param name="bigEndian">New bigendian mode</param>
-        public static void PushBigEndian(bool bigEndian) 
+        public static void PushBigEndian(bool bigEndian)
             => _endianStack.Push(bigEndian);
 
         public static void PopEndian()
@@ -39,7 +39,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this ushort value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[1], y[0] };
             return y;
         }
@@ -47,7 +47,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this short value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[1], y[0] };
             return y;
         }
@@ -55,7 +55,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this uint value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -63,7 +63,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this int value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -71,7 +71,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this ulong value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[7], y[6], y[5], y[4], y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -79,7 +79,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this long value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[7], y[6], y[5], y[4], y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -87,7 +87,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this float value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -95,7 +95,7 @@ namespace SATools.SACommon
         public static byte[] GetBytes(this double value)
         {
             byte[] y = BitConverter.GetBytes(value);
-            if(BigEndian)
+            if (BigEndian)
                 y = new byte[] { y[7], y[6], y[5], y[4], y[3], y[2], y[1], y[0] };
             return y;
         }
@@ -175,7 +175,7 @@ namespace SATools.SACommon
         public static string GetCString(this byte[] file, uint address, Encoding encoding)
         {
             int count = 0;
-            while(file[address + count] != 0)
+            while (file[address + count] != 0)
                 count++;
             return encoding.GetString(file, (int)address, count);
         }

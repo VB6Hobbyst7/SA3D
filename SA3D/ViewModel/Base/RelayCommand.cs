@@ -50,7 +50,7 @@ namespace SATools.SA3D.ViewModel.Base
         /// <param name="parameter"></param>
         public void Execute(object parameter)
         {
-            if(typeof(ParameterType) == null || parameter.GetType() == typeof(ParameterType))
+            if (typeof(ParameterType) == null || parameter.GetType() == typeof(ParameterType))
                 _mAction((ParameterType)parameter);
             else
                 throw new ArgumentException("Parameter of type " + parameter.GetType() + ", but it should be " + typeof(ParameterType), "parameter");
