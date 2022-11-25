@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using SATools.SACommon;
 
 namespace SATools.SAModel.ObjData
 {
@@ -46,8 +48,8 @@ namespace SATools.SAModel.ObjData
         NoPosition = 0x01,
         NoRotation = 0x02,
         NoScale = 0x04,
-        NoDisplay = 0x08,
-        NoChildren = 0x10,
+        SkipDraw = 0x08,
+        SkipChildren = 0x10,
         RotateZYX = 0x20,
         NoAnimate = 0x40,
         NoMorph = 0x80
@@ -76,45 +78,59 @@ namespace SATools.SAModel.ObjData
     /// Combination of <see cref="SA1SurfaceAttributes"/> and <see cref="SA2SurfaceAttributes"/>
     /// </summary>
     [Flags]
-    public enum SurfaceAttributes : uint
+    public enum SurfaceAttributes : ulong
     {
-        Visible = 0x01,
-        Solid = 0x02,
-        Water = 0x04,
-        WaterNoAlpha = 0x08,
-        NoFriction = 0x10,
-        NoAcceleration = 0x20,
-        LessAcceleration = 0x40,
-        IncreasedAcceleration = 0x80,
-        CannotLand = 0x0100,
-        NotClimbable = 0x0200,
-        IgnoreSlope = 0x0400,
-        Diggable = 0x0600,
-        Hurt = 0x0800,
-        Footprints = 0x1000,
-        NoShadows = 0x2000,
-        NoFog = 0x4000,
-        Unknown24 = 0x8000,
+        Visible = Flag64.B0,
+        Solid = Flag64.B1,
+        Water = Flag64.B2,
+        WaterNoAlpha = Flag64.B3,
 
-        /// <summary>
-        /// SA2; Moving collision
-        /// </summary>
-        DynamicCollision = 0x010000,
+        Accelerate = Flag64.B4,
+        LowAcceleration = Flag64.B5,
+        NoAcceleration = Flag64.B6,
+        IncreasedAcceleration = Flag64.B7,
+        TubeAcceleration = Flag64.B8,
 
-        /// <summary>
-        /// SA2; Bounds center is offset from 0,0,0 and gets influenced by rotation and scale
-        /// </summary>
-        OffsetBoundsCenter = 0x020000,
+        NoFriction = Flag64.B9,
+        CannotLand = Flag64.B10,
+        Unclimbable = Flag64.B11,
+        Stairs = Flag64.B12,
+        Diggable = Flag64.B13,
+        Hurt = Flag64.B14,
+        DynamicCollision = Flag64.B15,
+        WaterCollision = Flag64.B16,
 
-        /// <summary>
-        /// SA2; Radius is < 20, with Tiny its < 3
-        /// </summary>
-        BoundsRadiusSmall = 0x040000,
+        Gravity = Flag64.B17,
 
-        /// <summary>
-        /// SA2; Radius is < 10, with Small its < 3
-        /// </summary>
-        BoundsRadiusTiny = 0x080000,
+        Footprints = Flag64.B18,
+        NoShadows = Flag64.B19,
+        NoFog = Flag64.B20,
+        LowDepth = Flag64.B21,
+        UseSkyDrawDistance = Flag64.B22,
+        EasyDraw = Flag64.B23,
+        NoZWrite = Flag64.B24,
+        DrawByMesh = Flag64.B25,
+        EnableManipulation = Flag64.B26,
+        Waterfall = Flag64.B27,
+        Chaos0Land = Flag64.B28,
+
+        TransformBounds = Flag64.B29,
+        BoundsRadiusSmall = Flag64.B30,
+        BoundsRadiusTiny = Flag64.B31,
+
+        SA1_Unknown9 = Flag64.B52,
+        SA1_Unknown11 = Flag64.B53,
+        SA1_Unknown15 = Flag64.B54,
+        SA1_Unknown19 = Flag64.B55,
+
+        SA2_Unknown6 = Flag64.B56,
+        SA2_Unknown9 = Flag64.B57,
+        SA2_Unknown14 = Flag64.B58,
+        SA2_Unknown16 = Flag64.B59,
+        SA2_Unknown17 = Flag64.B60,
+        SA2_Unknown18 = Flag64.B61,
+        SA2_Unknown25 = Flag64.B62,
+        SA2_Unknown26 = Flag64.B63,
     }
 
     /// <summary>
@@ -152,64 +168,203 @@ namespace SATools.SAModel.ObjData
     [Flags]
     public enum SA1SurfaceAttributes : uint
     {
-        Solid = 0x1,
-        Water = 0x2,
-        NoFriction = 0x4,
-        NoAcceleration = 0x8,
-        CannotLand = 0x40,
-        IncreasedAcceleration = 0x80,
-        Diggable = 0x100,
-        NotClimbable = 0x1000,
-        Hurt = 0x10000,
-        Footprints = 0x100000,
-        Visible = 0x80000000
+        Solid = Flag32.B0,
+        Water = Flag32.B1,
+        NoFriction = Flag32.B2,
+        NoAcceleration = Flag32.B3,
+
+        LowAcceleration = Flag32.B4,
+        UseSkyDrawDistance = Flag32.B5,
+        CannotLand = Flag32.B6,
+        IncreasedAcceleration = Flag32.B7,
+
+        Diggable = Flag32.B8,
+        Unknown9 = Flag32.B9,
+        /// <summary>
+        /// Force alpha sorting; Disable Z Write when used together with Water; Force disable Z write in all levels except Lost World 2
+        /// </summary>
+        Waterfall = Flag32.B10,
+        Unknown11 = Flag32.B11,
+
+        Unclimbable = Flag32.B12,
+        /// <summary>
+        /// Turns off Visible when Chaos 0 jumps up a pole
+        /// </summary>
+        Chaos0Land = Flag32.B13,
+        Stairs = Flag32.B14,
+        Unknown15 = Flag32.B15,
+
+        Hurt = Flag32.B16,
+        TubeAcceleration = Flag32.B17,
+        LowDepth = Flag32.B18,
+        Unknown19 = Flag32.B19,
+
+        Footprints = Flag32.B20,
+        Accelerate = Flag32.B21,
+        WaterCollision = Flag32.B22,
+        Gravity = Flag32.B23,
+
+        NoZWrite = Flag32.B24,
+        DrawByMesh = Flag32.B25,
+        EnableManipulation = Flag32.B26,
+        DynamicCollision = Flag32.B27,
+
+        /// <summary>
+        /// Bounds center is offset from 0,0,0 and gets influenced by rotation and scale
+        /// </summary>
+        TransformBounds = Flag32.B28,
+        /// <summary>
+        /// Radius is &lt; 20, with Tiny its &lt; 3
+        /// </summary>
+        BoundsRadiusSmall = Flag32.B29,
+        /// <summary>
+        /// Radius is &lt; 10, with Small its &lt; 3
+        /// </summary>
+        BoundsRadiusTiny = Flag32.B30,
+        Visible = Flag32.B31
     }
 
     [Flags]
     public enum SA2SurfaceAttributes : uint
     {
-        Solid = 0x1,
-        Water = 0x2,
-        NoFriction = 0x4,
-        NoAcceleration = 0x8,
-        LessAcceleration = 0x10,
-        Diggable = 0x20,
-        NotClimbable = 0x80,
-        IgnoreSlope = 0x100,
-        Hurt = 0x400,
-        Footprints = 0x800,
-        CannotLand = 0x1000,
-        WaterNoAlpha = 0x2000,
-        NoShadows = 0x8000,
-        IncreasedAcceleration = 0x100000,
-        NoFog = 0x400000,
-        Unknown24 = 0x1000000,
+        Solid = Flag32.B0,
+        Water = Flag32.B1,
+        NoFriction = Flag32.B2,
+        NoAcceleration = Flag32.B3,
 
+        LowAcceleration = Flag32.B4,
+        Diggable = Flag32.B5,
+        Unknown6 = Flag32.B6,
+        Unclimbable = Flag32.B7,
+
+        Stairs = Flag32.B8,
+        Unknown9 = Flag32.B9,
+        Hurt = Flag32.B10,
+        Footprints = Flag32.B11,
+
+        CannotLand = Flag32.B12,
+        WaterNoAlpha = Flag32.B13,
+        Unknown14 = Flag32.B14,
+        NoShadows = Flag32.B15,
+
+        Unknown16 = Flag32.B16,
+        Unknown17 = Flag32.B17,
+        Unknown18 = Flag32.B18,
+        Gravity = Flag32.B19,
+
+        TubeAcceleration = Flag32.B20,
+        IncreasedAcceleration = Flag32.B21,
+        NoFog = Flag32.B22,
+        UseSkyDrawDistance = Flag32.B23,
+
+        /// <summary>
+        /// SA2 DC flag - Indicates to use simpler rendering calculations
+        /// </summary>
+        EasyDraw = Flag32.B24,
+        Unknown25 = Flag32.B25,
+        Unknown26 = Flag32.B26,
         /// <summary>
         /// Moving collision
         /// </summary>
-        DynamicCollision = 0x8000000,
+        DynamicCollision = Flag32.B27,
+
 
         /// <summary>
         /// Bounds center is offset from 0,0,0 and gets influenced by rotation and scale
         /// </summary>
-        OffsetBoundsCenter = 0x10000000,
-
+        TransformBounds = Flag32.B28,
         /// <summary>
         /// Radius is &lt; 20, with Tiny its &lt; 3
         /// </summary>
-        BoundsRadiusSmall = 0x20000000,
-
+        BoundsRadiusSmall = Flag32.B29,
         /// <summary>
         /// Radius is &lt; 10, with Small its &lt; 3
         /// </summary>
-        BoundsRadiusTiny = 0x40000000,
-
-        Visible = 0x80000000
+        BoundsRadiusTiny = Flag32.B30,
+        Visible = Flag32.B31
     }
 
     public static partial class EnumExtensions
     {
+        private static readonly (SA1SurfaceAttributes sa1, SurfaceAttributes universal)[] SA1SurfaceAttributeMapping = new[]
+        {
+            ( SA1SurfaceAttributes.Solid, SurfaceAttributes.Solid ),
+            ( SA1SurfaceAttributes.Water, SurfaceAttributes.Water ),
+            ( SA1SurfaceAttributes.NoFriction, SurfaceAttributes.NoFriction ),
+            ( SA1SurfaceAttributes.NoAcceleration, SurfaceAttributes.NoAcceleration ),
+
+            ( SA1SurfaceAttributes.LowAcceleration, SurfaceAttributes.LowAcceleration ),
+            ( SA1SurfaceAttributes.UseSkyDrawDistance, SurfaceAttributes.UseSkyDrawDistance ),
+            ( SA1SurfaceAttributes.CannotLand, SurfaceAttributes.CannotLand ),
+            ( SA1SurfaceAttributes.IncreasedAcceleration, SurfaceAttributes.IncreasedAcceleration ),
+
+            ( SA1SurfaceAttributes.Diggable, SurfaceAttributes.Diggable ),
+            ( SA1SurfaceAttributes.Unknown9, SurfaceAttributes.SA1_Unknown9 ),
+            ( SA1SurfaceAttributes.Waterfall, SurfaceAttributes.Waterfall ),
+            ( SA1SurfaceAttributes.Unknown11, SurfaceAttributes.SA1_Unknown11 ),
+
+            ( SA1SurfaceAttributes.Unclimbable, SurfaceAttributes.Unclimbable ),
+            ( SA1SurfaceAttributes.Chaos0Land, SurfaceAttributes.Chaos0Land ),
+            ( SA1SurfaceAttributes.Stairs, SurfaceAttributes.Stairs ),
+            ( SA1SurfaceAttributes.Unknown15, SurfaceAttributes.SA1_Unknown15 ),
+
+            ( SA1SurfaceAttributes.Hurt, SurfaceAttributes.Hurt ),
+            ( SA1SurfaceAttributes.TubeAcceleration, SurfaceAttributes.TubeAcceleration ),
+            ( SA1SurfaceAttributes.LowDepth, SurfaceAttributes.LowDepth ),
+            ( SA1SurfaceAttributes.Unknown19, SurfaceAttributes.SA1_Unknown19 ),
+
+            ( SA1SurfaceAttributes.Footprints, SurfaceAttributes.Footprints ),
+            ( SA1SurfaceAttributes.Accelerate, SurfaceAttributes.Accelerate ),
+            ( SA1SurfaceAttributes.WaterCollision, SurfaceAttributes.WaterCollision ),
+            ( SA1SurfaceAttributes.Gravity, SurfaceAttributes.Gravity ),
+
+            ( SA1SurfaceAttributes.NoZWrite, SurfaceAttributes.NoZWrite ),
+            ( SA1SurfaceAttributes.DrawByMesh, SurfaceAttributes.DrawByMesh ),
+            ( SA1SurfaceAttributes.EnableManipulation, SurfaceAttributes.EnableManipulation ),
+            ( SA1SurfaceAttributes.DynamicCollision, SurfaceAttributes.DynamicCollision ),
+
+            ( SA1SurfaceAttributes.TransformBounds, SurfaceAttributes.TransformBounds ),
+            ( SA1SurfaceAttributes.BoundsRadiusSmall, SurfaceAttributes.BoundsRadiusSmall ),
+            ( SA1SurfaceAttributes.BoundsRadiusTiny, SurfaceAttributes.BoundsRadiusTiny ),
+            ( SA1SurfaceAttributes.Visible, SurfaceAttributes.Visible ),
+        };
+
+        private static readonly (SA2SurfaceAttributes sa2, SurfaceAttributes universal)[] SA2SurfaceAttributeMapping = new[] 
+        {
+            ( SA2SurfaceAttributes.Solid, SurfaceAttributes.Solid ),
+            ( SA2SurfaceAttributes.Water, SurfaceAttributes.Water ),
+            ( SA2SurfaceAttributes.NoFriction, SurfaceAttributes.NoFriction ),
+            ( SA2SurfaceAttributes.NoAcceleration, SurfaceAttributes.NoAcceleration ),
+            ( SA2SurfaceAttributes.LowAcceleration, SurfaceAttributes.LowAcceleration ),
+            ( SA2SurfaceAttributes.Diggable, SurfaceAttributes.Diggable ),
+            ( SA2SurfaceAttributes.Unknown6, SurfaceAttributes.SA2_Unknown6 ),
+            ( SA2SurfaceAttributes.Unclimbable, SurfaceAttributes.Unclimbable ),
+            ( SA2SurfaceAttributes.Stairs, SurfaceAttributes.Stairs ),
+            ( SA2SurfaceAttributes.Unknown9, SurfaceAttributes.SA2_Unknown9 ),
+            ( SA2SurfaceAttributes.Hurt, SurfaceAttributes.Hurt ),
+            ( SA2SurfaceAttributes.Footprints, SurfaceAttributes.Footprints ),
+            ( SA2SurfaceAttributes.CannotLand, SurfaceAttributes.CannotLand ),
+            ( SA2SurfaceAttributes.WaterNoAlpha, SurfaceAttributes.WaterNoAlpha ),
+            ( SA2SurfaceAttributes.Unknown14, SurfaceAttributes.SA2_Unknown14 ),
+            ( SA2SurfaceAttributes.NoShadows, SurfaceAttributes.NoShadows ),
+            ( SA2SurfaceAttributes.Unknown16, SurfaceAttributes.SA2_Unknown16 ),
+            ( SA2SurfaceAttributes.Unknown17, SurfaceAttributes.SA2_Unknown17 ),
+            ( SA2SurfaceAttributes.Unknown18, SurfaceAttributes.SA2_Unknown18 ),
+            ( SA2SurfaceAttributes.Gravity, SurfaceAttributes.Gravity ),
+            ( SA2SurfaceAttributes.TubeAcceleration, SurfaceAttributes.TubeAcceleration ),
+            ( SA2SurfaceAttributes.IncreasedAcceleration, SurfaceAttributes.IncreasedAcceleration ),
+            ( SA2SurfaceAttributes.NoFog, SurfaceAttributes.NoFog ),
+            ( SA2SurfaceAttributes.UseSkyDrawDistance, SurfaceAttributes.UseSkyDrawDistance ),
+            ( SA2SurfaceAttributes.EasyDraw, SurfaceAttributes.EasyDraw ),
+            ( SA2SurfaceAttributes.Unknown25, SurfaceAttributes.SA2_Unknown25 ),
+            ( SA2SurfaceAttributes.Unknown26, SurfaceAttributes.SA2_Unknown26 ),
+            ( SA2SurfaceAttributes.DynamicCollision, SurfaceAttributes.DynamicCollision ),
+            ( SA2SurfaceAttributes.TransformBounds, SurfaceAttributes.TransformBounds ),
+            ( SA2SurfaceAttributes.BoundsRadiusSmall, SurfaceAttributes.BoundsRadiusSmall ),
+            ( SA2SurfaceAttributes.BoundsRadiusTiny, SurfaceAttributes.BoundsRadiusTiny ),
+            ( SA2SurfaceAttributes.Visible, SurfaceAttributes.Visible ),
+        };
+
         /// <summary>
         /// Converts from sa1 surface flags to the combined surface flags
         /// </summary>
@@ -219,28 +374,11 @@ namespace SATools.SAModel.ObjData
         {
             SurfaceAttributes result = 0;
 
-            if (flags.HasFlag(SA1SurfaceAttributes.Solid))
-                result |= SurfaceAttributes.Solid;
-            if (flags.HasFlag(SA1SurfaceAttributes.Water))
-                result |= SurfaceAttributes.Water;
-            if (flags.HasFlag(SA1SurfaceAttributes.NoFriction))
-                result |= SurfaceAttributes.NoFriction;
-            if (flags.HasFlag(SA1SurfaceAttributes.NoAcceleration))
-                result |= SurfaceAttributes.NoAcceleration;
-            if (flags.HasFlag(SA1SurfaceAttributes.CannotLand))
-                result |= SurfaceAttributes.CannotLand;
-            if (flags.HasFlag(SA1SurfaceAttributes.IncreasedAcceleration))
-                result |= SurfaceAttributes.IncreasedAcceleration;
-            if (flags.HasFlag(SA1SurfaceAttributes.Diggable))
-                result |= SurfaceAttributes.Diggable;
-            if (flags.HasFlag(SA1SurfaceAttributes.NotClimbable))
-                result |= SurfaceAttributes.NotClimbable;
-            if (flags.HasFlag(SA1SurfaceAttributes.Hurt))
-                result |= SurfaceAttributes.Hurt;
-            if (flags.HasFlag(SA1SurfaceAttributes.Footprints))
-                result |= SurfaceAttributes.Footprints;
-            if (flags.HasFlag(SA1SurfaceAttributes.Visible))
-                result |= SurfaceAttributes.Visible;
+            foreach ((SA1SurfaceAttributes sa1, SurfaceAttributes universal) in SA1SurfaceAttributeMapping)
+            {
+                if (flags.HasFlag(sa1))
+                    result |= universal;
+            }
 
             return result;
         }
@@ -254,48 +392,11 @@ namespace SATools.SAModel.ObjData
         {
             SurfaceAttributes result = 0;
 
-            if (flags.HasFlag(SA2SurfaceAttributes.Solid))
-                result |= SurfaceAttributes.Solid;
-            if (flags.HasFlag(SA2SurfaceAttributes.Water))
-                result |= SurfaceAttributes.Water;
-            if (flags.HasFlag(SA2SurfaceAttributes.NoFriction))
-                result |= SurfaceAttributes.NoFriction;
-            if (flags.HasFlag(SA2SurfaceAttributes.NoAcceleration))
-                result |= SurfaceAttributes.NoAcceleration;
-            if (flags.HasFlag(SA2SurfaceAttributes.LessAcceleration))
-                result |= SurfaceAttributes.LessAcceleration;
-            if (flags.HasFlag(SA2SurfaceAttributes.Diggable))
-                result |= SurfaceAttributes.Diggable;
-            if (flags.HasFlag(SA2SurfaceAttributes.NotClimbable))
-                result |= SurfaceAttributes.NotClimbable;
-            if (flags.HasFlag(SA2SurfaceAttributes.IgnoreSlope))
-                result |= SurfaceAttributes.IgnoreSlope;
-            if (flags.HasFlag(SA2SurfaceAttributes.Hurt))
-                result |= SurfaceAttributes.Hurt;
-            if (flags.HasFlag(SA2SurfaceAttributes.Footprints))
-                result |= SurfaceAttributes.Footprints;
-            if (flags.HasFlag(SA2SurfaceAttributes.CannotLand))
-                result |= SurfaceAttributes.CannotLand;
-            if (flags.HasFlag(SA2SurfaceAttributes.WaterNoAlpha))
-                result |= SurfaceAttributes.WaterNoAlpha;
-            if (flags.HasFlag(SA2SurfaceAttributes.NoShadows))
-                result |= SurfaceAttributes.NoShadows;
-            if (flags.HasFlag(SA2SurfaceAttributes.IncreasedAcceleration))
-                result |= SurfaceAttributes.IncreasedAcceleration;
-            if (flags.HasFlag(SA2SurfaceAttributes.NoFog))
-                result |= SurfaceAttributes.NoFog;
-            if (flags.HasFlag(SA2SurfaceAttributes.Unknown24))
-                result |= SurfaceAttributes.Unknown24;
-            if (flags.HasFlag(SA2SurfaceAttributes.DynamicCollision))
-                result |= SurfaceAttributes.DynamicCollision;
-            if (flags.HasFlag(SA2SurfaceAttributes.OffsetBoundsCenter))
-                result |= SurfaceAttributes.OffsetBoundsCenter;
-            if (flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusSmall))
-                result |= SurfaceAttributes.BoundsRadiusSmall;
-            if (flags.HasFlag(SA2SurfaceAttributes.BoundsRadiusTiny))
-                result |= SurfaceAttributes.BoundsRadiusTiny;
-            if (flags.HasFlag(SA2SurfaceAttributes.Visible))
-                result |= SurfaceAttributes.Visible;
+            foreach ((SA2SurfaceAttributes sa2, SurfaceAttributes universal) in SA2SurfaceAttributeMapping)
+            {
+                if (flags.HasFlag(sa2))
+                    result |= universal;
+            }
 
             return result;
         }
@@ -309,28 +410,11 @@ namespace SATools.SAModel.ObjData
         {
             SA1SurfaceAttributes result = 0;
 
-            if (flags.HasFlag(SurfaceAttributes.Solid))
-                result |= SA1SurfaceAttributes.Solid;
-            if (flags.HasFlag(SurfaceAttributes.Water))
-                result |= SA1SurfaceAttributes.Water;
-            if (flags.HasFlag(SurfaceAttributes.NoFriction))
-                result |= SA1SurfaceAttributes.NoFriction;
-            if (flags.HasFlag(SurfaceAttributes.NoAcceleration))
-                result |= SA1SurfaceAttributes.NoAcceleration;
-            if (flags.HasFlag(SurfaceAttributes.CannotLand))
-                result |= SA1SurfaceAttributes.CannotLand;
-            if (flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
-                result |= SA1SurfaceAttributes.IncreasedAcceleration;
-            if (flags.HasFlag(SurfaceAttributes.Diggable))
-                result |= SA1SurfaceAttributes.Diggable;
-            if (flags.HasFlag(SurfaceAttributes.NotClimbable))
-                result |= SA1SurfaceAttributes.NotClimbable;
-            if (flags.HasFlag(SurfaceAttributes.Hurt))
-                result |= SA1SurfaceAttributes.Hurt;
-            if (flags.HasFlag(SurfaceAttributes.Footprints))
-                result |= SA1SurfaceAttributes.Footprints;
-            if (flags.HasFlag(SurfaceAttributes.Visible))
-                result |= SA1SurfaceAttributes.Visible;
+            foreach ((SA1SurfaceAttributes sa1, SurfaceAttributes universal) in SA1SurfaceAttributeMapping)
+            {
+                if (flags.HasFlag(universal))
+                    result |= sa1;
+            }
 
             return result;
         }
@@ -344,48 +428,11 @@ namespace SATools.SAModel.ObjData
         {
             SA2SurfaceAttributes result = 0;
 
-            if (flags.HasFlag(SurfaceAttributes.Solid))
-                result |= SA2SurfaceAttributes.Solid;
-            if (flags.HasFlag(SurfaceAttributes.Water))
-                result |= SA2SurfaceAttributes.Water;
-            if (flags.HasFlag(SurfaceAttributes.NoFriction))
-                result |= SA2SurfaceAttributes.NoFriction;
-            if (flags.HasFlag(SurfaceAttributes.NoAcceleration))
-                result |= SA2SurfaceAttributes.NoAcceleration;
-            if (flags.HasFlag(SurfaceAttributes.LessAcceleration))
-                result |= SA2SurfaceAttributes.LessAcceleration;
-            if (flags.HasFlag(SurfaceAttributes.Diggable))
-                result |= SA2SurfaceAttributes.Diggable;
-            if (flags.HasFlag(SurfaceAttributes.NotClimbable))
-                result |= SA2SurfaceAttributes.NotClimbable;
-            if (flags.HasFlag(SurfaceAttributes.IgnoreSlope))
-                result |= SA2SurfaceAttributes.IgnoreSlope;
-            if (flags.HasFlag(SurfaceAttributes.Hurt))
-                result |= SA2SurfaceAttributes.Hurt;
-            if (flags.HasFlag(SurfaceAttributes.Footprints))
-                result |= SA2SurfaceAttributes.Footprints;
-            if (flags.HasFlag(SurfaceAttributes.CannotLand))
-                result |= SA2SurfaceAttributes.CannotLand;
-            if (flags.HasFlag(SurfaceAttributes.WaterNoAlpha))
-                result |= SA2SurfaceAttributes.WaterNoAlpha;
-            if (flags.HasFlag(SurfaceAttributes.NoShadows))
-                result |= SA2SurfaceAttributes.NoShadows;
-            if (flags.HasFlag(SurfaceAttributes.IncreasedAcceleration))
-                result |= SA2SurfaceAttributes.IncreasedAcceleration;
-            if (flags.HasFlag(SurfaceAttributes.NoFog))
-                result |= SA2SurfaceAttributes.NoFog;
-            if (flags.HasFlag(SurfaceAttributes.Unknown24))
-                result |= SA2SurfaceAttributes.Unknown24;
-            if (flags.HasFlag(SurfaceAttributes.DynamicCollision))
-                result |= SA2SurfaceAttributes.DynamicCollision;
-            if (flags.HasFlag(SurfaceAttributes.OffsetBoundsCenter))
-                result |= SA2SurfaceAttributes.OffsetBoundsCenter;
-            if (flags.HasFlag(SurfaceAttributes.BoundsRadiusSmall))
-                result |= SA2SurfaceAttributes.BoundsRadiusSmall;
-            if (flags.HasFlag(SurfaceAttributes.BoundsRadiusTiny))
-                result |= SA2SurfaceAttributes.BoundsRadiusTiny;
-            if (flags.HasFlag(SurfaceAttributes.Visible))
-                result |= SA2SurfaceAttributes.Visible;
+            foreach ((SA2SurfaceAttributes sa2, SurfaceAttributes universal) in SA2SurfaceAttributeMapping)
+            {
+                if (flags.HasFlag(universal))
+                    result |= sa2;
+            }
 
             return result;
         }

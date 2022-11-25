@@ -207,9 +207,9 @@ namespace SATools.SAModel.ObjData
                 if (Scale == Vector3.One)
                     r |= ObjectAttributes.NoScale;
                 if (Attach == null)
-                    r |= ObjectAttributes.NoDisplay;
+                    r |= ObjectAttributes.SkipDraw;
                 if (ChildCount == 0)
-                    r |= ObjectAttributes.NoChildren;
+                    r |= ObjectAttributes.SkipChildren;
                 if (RotateZYX)
                     r |= ObjectAttributes.RotateZYX;
                 if (!Animate)

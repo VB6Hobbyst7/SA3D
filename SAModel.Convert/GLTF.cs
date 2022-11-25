@@ -18,12 +18,13 @@ using Color = SATools.SAModel.Structs.Color;
 namespace SATools.SAModel.Convert
 {
     /// <summary>
-    /// Used to convert from an to the GLTF format
+    /// Used to convert from or to the GLTF format
     /// </summary>
     public static class GLTF
     {
+        #region Reading
 
-        public struct Contents
+        public readonly struct Contents
         {
             public ObjectNode Root { get; }
 
@@ -39,8 +40,9 @@ namespace SATools.SAModel.Convert
             }
         }
 
-        static IColorConverter<LinearRGBColor, RGBColor> converter
+        static readonly IColorConverter<LinearRGBColor, RGBColor> colorConverter
                 = new ConverterBuilder().FromLinearRGB().ToRGB(RGBWorkingSpaces.sRGB).Build();
+
 
         public static Contents Read(string filepath, bool importTextures, float? animationFPS)
             => Read(ModelRoot.Load(filepath), importTextures, animationFPS);
@@ -244,7 +246,7 @@ namespace SATools.SAModel.Convert
                     Vector2 uv = uvArray?[i] ?? default;
                     Vector4 col = colorArray?[i] ?? Vector4.UnitW;
 
-                    var linearCol = converter.Convert(new(col.X, col.Y, col.Z));
+                    var linearCol = colorConverter.Convert(new(col.X, col.Y, col.Z));
 
                     meshCorners[i] = new((ushort)((vertMap != null ? vertMap[i] : i) + vertOffset), new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
                 }
@@ -388,17 +390,17 @@ namespace SATools.SAModel.Convert
                             _ => FilterMode.Trilinear,
                         };
                     }
-                    result.Diffuse = new(c.Parameter.X, c.Parameter.Y, c.Parameter.Z, c.Parameter.W);
+                    result.Diffuse = new((float)c.Parameters[0].Value, (float)c.Parameters[1].Value, (float)c.Parameters[2].Value, (float)c.Parameters[3].Value);
                 }
                 else if (c.Key == "MetallicRoughness")
                 {
-                    result.Specular = Color.Lerp(Color.White, result.Diffuse, c.Parameter.X);
-                    result.SpecularExponent = c.Parameter.Y;
+                    result.Specular = Color.Lerp(Color.White, result.Diffuse, (float)c.Parameters[0].Value);
+                    result.SpecularExponent = (float)c.Parameters[1].Value;
                 }
                 else if (c.Key == "SpecularGlossiness")
                 {
-                    result.Specular = new(c.Parameter.X, c.Parameter.Y, c.Parameter.Z);
-                    result.SpecularExponent = c.Parameter.W;
+                    result.Specular = new((float)c.Parameters[0].Value, (float)c.Parameters[1].Value, (float)c.Parameters[2].Value);
+                    result.SpecularExponent = (float)c.Parameters[3].Value;
                 }
             }
 
@@ -452,6 +454,8 @@ namespace SATools.SAModel.Convert
 
             return result;
         }
+
+        #endregion
 
     }
 }

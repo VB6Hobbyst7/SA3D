@@ -23,6 +23,6 @@
         PointSampled = 0,
         Bilinear = 1,
         Trilinear = 2,
-        Reserved = 3,
+        Blend = 3,
     }
 }

@@ -201,7 +201,7 @@ namespace SATools.SAModel.ObjData
             {
                 unknown = source.ToUInt32(address + 4);
                 blockBit = source.ToUInt32(address + 8);
-                attribs = (SurfaceAttributes)source.ToUInt32(address + 12);
+                attribs = (SurfaceAttributes)source.ToUInt64(address + 12);
             }
             else if (ltblFormat >= LandtableFormat.SA2)
             {
@@ -252,7 +252,7 @@ namespace SATools.SAModel.ObjData
             {
                 writer.WriteUInt32(Unknown);
                 writer.WriteUInt32(BlockBit);
-                writer.WriteUInt32((uint)SurfaceAttributes);
+                writer.WriteUInt64((ulong)SurfaceAttributes);
             }
             else if (format >= LandtableFormat.SA2)
             {

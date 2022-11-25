@@ -104,7 +104,7 @@ namespace SATools.SAModel.WPF.Inspector.XAML
 
             [DisplayName("Object Flags")]
             [Tooltip("Object data flags")]
-            public ObjectAttributes FlagTest { get; set; } = ObjectAttributes.NoMorph | ObjectAttributes.NoAnimate | ObjectAttributes.NoChildren;
+            public ObjectAttributes FlagTest { get; set; } = ObjectAttributes.NoMorph | ObjectAttributes.NoAnimate | ObjectAttributes.SkipChildren;
 
             #endregion
 

@@ -357,7 +357,7 @@
             <ComboBoxItem Content="PointSampled" Tag="{x:Static attachEnums:FilterMode.PointSampled}"/>
             <ComboBoxItem Content="Bilinear" Tag="{x:Static attachEnums:FilterMode.Bilinear}"/>
             <ComboBoxItem Content="Trilinear" Tag="{x:Static attachEnums:FilterMode.Trilinear}"/>
-            <ComboBoxItem Content="Reserved" Tag="{x:Static attachEnums:FilterMode.Reserved}"/>
+            <ComboBoxItem Content="Blend" Tag="{x:Static attachEnums:FilterMode.Blend}"/>
         </sub:EnumComboBox>
     </DataTemplate>
 
@@ -569,14 +569,14 @@
 
     <DataTemplate x:Key="ObjectAttributes" DataType="{x:Type objEnums:ObjectAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList2}">
-            <sub:HexFlagListItem Content="No Position"  Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
-            <sub:HexFlagListItem Content="No Rotation"  Flag="{x:Static objEnums:ObjectAttributes.NoRotation}"    ToolTip="No/Ignore rotation Data"/>
-            <sub:HexFlagListItem Content="No Scale"     Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
-            <sub:HexFlagListItem Content="No Display"   Flag="{x:Static objEnums:ObjectAttributes.NoDisplay}"     ToolTip="No/Ignore display Task"/>
-            <sub:HexFlagListItem Content="No Children"  Flag="{x:Static objEnums:ObjectAttributes.NoChildren}"    ToolTip="No/Ignore children"/>
-            <sub:HexFlagListItem Content="Rotate ZYX"   Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
-            <sub:HexFlagListItem Content="No Animate"   Flag="{x:Static objEnums:ObjectAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
-            <sub:HexFlagListItem Content="No Morph"     Flag="{x:Static objEnums:ObjectAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
+            <sub:HexFlagListItem Content="No Position"   Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
+            <sub:HexFlagListItem Content="No Rotation"   Flag="{x:Static objEnums:ObjectAttributes.NoRotation}"    ToolTip="No/Ignore rotation Data"/>
+            <sub:HexFlagListItem Content="No Scale"      Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
+            <sub:HexFlagListItem Content="Skip Draw"     Flag="{x:Static objEnums:ObjectAttributes.SkipDraw}"      ToolTip="No/Ignore display Task"/>
+            <sub:HexFlagListItem Content="Skip Children" Flag="{x:Static objEnums:ObjectAttributes.SkipChildren}"  ToolTip="No/Ignore children"/>
+            <sub:HexFlagListItem Content="Rotate ZYX"    Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
+            <sub:HexFlagListItem Content="No Animate"    Flag="{x:Static objEnums:ObjectAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
+            <sub:HexFlagListItem Content="No Morph"      Flag="{x:Static objEnums:ObjectAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
         </sub:FlagListBox>
     </DataTemplate>
 
@@ -591,69 +591,124 @@
 
     <DataTemplate x:Key="SurfaceAttributes" DataType="{x:Type objEnums:SurfaceAttributes}">
         <sub:FlagListBox Style="{StaticResource FlagList}">
-            <sub:FlagListItem Content="Visible" 				Flag="{x:Static objEnums:SurfaceAttributes.Visible}"/>
-            <sub:FlagListItem Content="Solid" 					Flag="{x:Static objEnums:SurfaceAttributes.Solid}"/>
-            <sub:FlagListItem Content="Water" 					Flag="{x:Static objEnums:SurfaceAttributes.Water}"/>
-            <sub:FlagListItem Content="Water No Alpha" 			Flag="{x:Static objEnums:SurfaceAttributes.WaterNoAlpha}"/>
-            <sub:FlagListItem Content="No Friction" 			Flag="{x:Static objEnums:SurfaceAttributes.NoFriction}"/>
-            <sub:FlagListItem Content="No Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.NoAcceleration}"/>
-            <sub:FlagListItem Content="Less Acceleration" 		Flag="{x:Static objEnums:SurfaceAttributes.LessAcceleration}"/>
-            <sub:FlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SurfaceAttributes.IncreasedAcceleration}"/>
-            <sub:FlagListItem Content="Cannot Land" 			Flag="{x:Static objEnums:SurfaceAttributes.CannotLand}"/>
-            <sub:FlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SurfaceAttributes.NotClimbable}"/>
-            <sub:FlagListItem Content="Ignore Slope" 			Flag="{x:Static objEnums:SurfaceAttributes.IgnoreSlope}"/>
-            <sub:FlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SurfaceAttributes.Diggable}"/>
-            <sub:FlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SurfaceAttributes.Hurt}"/>
-            <sub:FlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SurfaceAttributes.Footprints}"/>
-            <sub:FlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SurfaceAttributes.NoShadows}"/>
-            <sub:FlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SurfaceAttributes.NoFog}"/>
-            <sub:FlagListItem Content="Unknown 24" 				Flag="{x:Static objEnums:SurfaceAttributes.Unknown24}"/>
-            <sub:FlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SurfaceAttributes.DynamicCollision}"/>
-            <sub:FlagListItem Content="Offset Bounds Center" 	Flag="{x:Static objEnums:SurfaceAttributes.OffsetBoundsCenter}"/>
-            <sub:FlagListItem Content="BoundsRadiusSmall" 		Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusSmall}"/>
-            <sub:FlagListItem Content="BoundsRadiusTiny" 		Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusTiny}"/>
+            <sub:FlagListItem Content="Visible"                 Flag="{x:Static objEnums:SurfaceAttributes.Visible}"/>
+            <sub:FlagListItem Content="Solid"                   Flag="{x:Static objEnums:SurfaceAttributes.Solid}"/>
+            <sub:FlagListItem Content="Water"                   Flag="{x:Static objEnums:SurfaceAttributes.Water}"/>
+            <sub:FlagListItem Content="Water No Alpha"          Flag="{x:Static objEnums:SurfaceAttributes.WaterNoAlpha}"/>
+            <sub:FlagListItem Content="Accelerate"              Flag="{x:Static objEnums:SurfaceAttributes.Accelerate}"/>
+            <sub:FlagListItem Content="Low Acceleration"        Flag="{x:Static objEnums:SurfaceAttributes.LowAcceleration}"/>
+            <sub:FlagListItem Content="No Acceleration"         Flag="{x:Static objEnums:SurfaceAttributes.NoAcceleration}"/>
+            <sub:FlagListItem Content="Increased Acceleration"  Flag="{x:Static objEnums:SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:FlagListItem Content="Tube Acceleration"       Flag="{x:Static objEnums:SurfaceAttributes.TubeAcceleration}"/>
+            <sub:FlagListItem Content="No Friction"             Flag="{x:Static objEnums:SurfaceAttributes.NoFriction}"/>
+            <sub:FlagListItem Content="Cannot Land"             Flag="{x:Static objEnums:SurfaceAttributes.CannotLand}"/>
+            <sub:FlagListItem Content="Unclimbable"             Flag="{x:Static objEnums:SurfaceAttributes.Unclimbable}"/>
+            <sub:FlagListItem Content="Stairs"                  Flag="{x:Static objEnums:SurfaceAttributes.Stairs}"/>
+            <sub:FlagListItem Content="Diggable"                Flag="{x:Static objEnums:SurfaceAttributes.Diggable}"/>
+            <sub:FlagListItem Content="Hurt"                    Flag="{x:Static objEnums:SurfaceAttributes.Hurt}"/>
+            <sub:FlagListItem Content="Dynamic Collision"       Flag="{x:Static objEnums:SurfaceAttributes.DynamicCollision}"/>
+            <sub:FlagListItem Content="Water Collision"         Flag="{x:Static objEnums:SurfaceAttributes.WaterCollision}"/>
+            <sub:FlagListItem Content="Gravity"                 Flag="{x:Static objEnums:SurfaceAttributes.Gravity}"/>
+            <sub:FlagListItem Content="Footprints"              Flag="{x:Static objEnums:SurfaceAttributes.Footprints}"/>
+            <sub:FlagListItem Content="No Shadows"              Flag="{x:Static objEnums:SurfaceAttributes.NoShadows}"/>
+            <sub:FlagListItem Content="No Fog"                  Flag="{x:Static objEnums:SurfaceAttributes.NoFog}"/>
+            <sub:FlagListItem Content="Low Depth"               Flag="{x:Static objEnums:SurfaceAttributes.LowDepth}"/>
+            <sub:FlagListItem Content="Use Sky DrawDistance"    Flag="{x:Static objEnums:SurfaceAttributes.UseSkyDrawDistance}"/>
+            <sub:FlagListItem Content="Easy Draw"               Flag="{x:Static objEnums:SurfaceAttributes.EasyDraw}"/>
+            <sub:FlagListItem Content="No ZWrite"               Flag="{x:Static objEnums:SurfaceAttributes.NoZWrite}"/>
+            <sub:FlagListItem Content="Draw By Mesh"            Flag="{x:Static objEnums:SurfaceAttributes.DrawByMesh}"/>
+            <sub:FlagListItem Content="Enable Manipulation"     Flag="{x:Static objEnums:SurfaceAttributes.EnableManipulation}"/>
+            <sub:FlagListItem Content="Waterfall"               Flag="{x:Static objEnums:SurfaceAttributes.Waterfall}"/>
+            <sub:FlagListItem Content="Chaos0 Land"             Flag="{x:Static objEnums:SurfaceAttributes.Chaos0Land}"/>
+            <sub:FlagListItem Content="Transform Bounds"        Flag="{x:Static objEnums:SurfaceAttributes.TransformBounds}"/>
+            <sub:FlagListItem Content="Bounds Radius Small"     Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusSmall}"/>
+            <sub:FlagListItem Content="Bounds Radius Tiny"      Flag="{x:Static objEnums:SurfaceAttributes.BoundsRadiusTiny}"/>
+            <sub:FlagListItem Content="SA1 Unknown 9"           Flag="{x:Static objEnums:SurfaceAttributes.SA1_Unknown9}"/>
+            <sub:FlagListItem Content="SA1 Unknown 11"          Flag="{x:Static objEnums:SurfaceAttributes.SA1_Unknown11}"/>
+            <sub:FlagListItem Content="SA1 Unknown 15"          Flag="{x:Static objEnums:SurfaceAttributes.SA1_Unknown15}"/>
+            <sub:FlagListItem Content="SA1 Unknown 19"          Flag="{x:Static objEnums:SurfaceAttributes.SA1_Unknown19}"/>
+            <sub:FlagListItem Content="SA2 Unknown 6"           Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown6}"/>
+            <sub:FlagListItem Content="SA2 Unknown 9"           Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown9}"/>
+            <sub:FlagListItem Content="SA2 Unknown 14"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown14}"/>
+            <sub:FlagListItem Content="SA2 Unknown 16"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown16}"/>
+            <sub:FlagListItem Content="SA2 Unknown 17"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown17}"/>
+            <sub:FlagListItem Content="SA2 Unknown 18"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown18}"/>
+            <sub:FlagListItem Content="SA2 Unknown 25"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown25}"/>
+            <sub:FlagListItem Content="SA2 Unknown 26"          Flag="{x:Static objEnums:SurfaceAttributes.SA2_Unknown26}"/>
         </sub:FlagListBox>
     </DataTemplate>
 
     <DataTemplate x:Key="SA2SurfaceAttributes" DataType="{x:Type objEnums:SA2SurfaceAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList8}">
-            <sub:HexFlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Solid}"/>
-            <sub:HexFlagListItem Content="Water" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Water}"/>
-            <sub:HexFlagListItem Content="No Friction" 			    Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFriction}"/>
-            <sub:HexFlagListItem Content="No Acceleration" 		    Flag="{x:Static objEnums:SA2SurfaceAttributes.NoAcceleration}"/>
-            <sub:HexFlagListItem Content="Less Acceleration" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.LessAcceleration}"/>
-            <sub:HexFlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Diggable}"/>
-            <sub:HexFlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.NotClimbable}"/>
-            <sub:HexFlagListItem Content="Ignore Slope" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.IgnoreSlope}"/>
-            <sub:HexFlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Hurt}"/>
-            <sub:HexFlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Footprints}"/>
-            <sub:HexFlagListItem Content="Cannot Land" 			    Flag="{x:Static objEnums:SA2SurfaceAttributes.CannotLand}"/>
-            <sub:HexFlagListItem Content="Water No Alpha" 		    Flag="{x:Static objEnums:SA2SurfaceAttributes.WaterNoAlpha}"/>
-            <sub:HexFlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.NoShadows}"/>
-            <sub:HexFlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.IncreasedAcceleration}"/>
-            <sub:HexFlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFog}"/>
-            <sub:HexFlagListItem Content="Unknown 24" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown24}"/>
-            <sub:HexFlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.DynamicCollision}"/>
-            <sub:HexFlagListItem Content="Offset Bounds Center" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.OffsetBoundsCenter}"/>
-            <sub:HexFlagListItem Content="BoundsRadiusSmall" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusSmall}"/>
-            <sub:HexFlagListItem Content="BoundsRadiusTiny" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusTiny}"/>
-            <sub:HexFlagListItem Content="Visible" 				    Flag="{x:Static objEnums:SA2SurfaceAttributes.Visible}"/>
+            <sub:FlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Solid}"/>
+            <sub:FlagListItem Content="Water" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Water}"/>
+            <sub:FlagListItem Content="No Friction" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFriction}"/>
+            <sub:FlagListItem Content="No Acceleration" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.NoAcceleration}"/>
+            <sub:FlagListItem Content="Low Acceleration" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.LowAcceleration}"/>
+            <sub:FlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Diggable}"/>
+            <sub:FlagListItem Content="Unknown 6" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown6}"/>
+            <sub:FlagListItem Content="Unclimbable" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.Unclimbable}"/>
+            <sub:FlagListItem Content="Stairs" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Stairs}"/>
+            <sub:FlagListItem Content="Unknown 9" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown9}"/>
+            <sub:FlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.Hurt}"/>
+            <sub:FlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Footprints}"/>
+            <sub:FlagListItem Content="Cannot Land" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.CannotLand}"/>
+            <sub:FlagListItem Content="Water No Alpha" 			Flag="{x:Static objEnums:SA2SurfaceAttributes.WaterNoAlpha}"/>
+            <sub:FlagListItem Content="Unknown 14" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown14}"/>
+            <sub:FlagListItem Content="No Shadows" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.NoShadows}"/>
+            <sub:FlagListItem Content="Unknown 16" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown16}"/>
+            <sub:FlagListItem Content="Unknown 17" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown17}"/>
+            <sub:FlagListItem Content="Unknown 18" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown18}"/>
+            <sub:FlagListItem Content="Gravity" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Gravity}"/>
+            <sub:FlagListItem Content="Tube Acceleration" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.TubeAcceleration}"/>
+            <sub:FlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:FlagListItem Content="No Fog" 					Flag="{x:Static objEnums:SA2SurfaceAttributes.NoFog}"/>
+            <sub:FlagListItem Content="Use Sky DrawDistance" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.UseSkyDrawDistance}"/>
+            <sub:FlagListItem Content="Easy Draw" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.EasyDraw}"/>
+            <sub:FlagListItem Content="Unknown 25" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown25}"/>
+            <sub:FlagListItem Content="Unknown 26" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Unknown26}"/>
+            <sub:FlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.DynamicCollision}"/>
+            <sub:FlagListItem Content="Transform Bounds" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.TransformBounds}"/>
+            <sub:FlagListItem Content="Bounds Radius Small" 	Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusSmall}"/>
+            <sub:FlagListItem Content="Bounds Radius Tiny" 		Flag="{x:Static objEnums:SA2SurfaceAttributes.BoundsRadiusTiny}"/>
+            <sub:FlagListItem Content="Visible" 				Flag="{x:Static objEnums:SA2SurfaceAttributes.Visible}"/>
         </sub:FlagListBox>
     </DataTemplate>
 
     <DataTemplate x:Key="SA1SurfaceAttributes" DataType="{x:Type objEnums:SA1SurfaceAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList8}">
-            <sub:HexFlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Solid}"/>
-            <sub:HexFlagListItem Content="Water" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Water}"/>
-            <sub:HexFlagListItem Content="No Friction" 			    Flag="{x:Static objEnums:SA1SurfaceAttributes.NoFriction}"/>
-            <sub:HexFlagListItem Content="No Acceleration" 		    Flag="{x:Static objEnums:SA1SurfaceAttributes.NoAcceleration}"/>
-            <sub:HexFlagListItem Content="Cannot Land" 			    Flag="{x:Static objEnums:SA1SurfaceAttributes.CannotLand}"/>
-            <sub:HexFlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.IncreasedAcceleration}"/>
-            <sub:HexFlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Diggable}"/>
-            <sub:HexFlagListItem Content="Not Climbable" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.NotClimbable}"/>
-            <sub:HexFlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Hurt}"/>
-            <sub:HexFlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Footprints}"/>
-            <sub:HexFlagListItem Content="Visible" 				    Flag="{x:Static objEnums:SA1SurfaceAttributes.Visible}"/>
+            <sub:FlagListItem Content="Solid" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Solid}"/>
+            <sub:FlagListItem Content="Water" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Water}"/>
+            <sub:FlagListItem Content="No Friction" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.NoFriction}"/>
+            <sub:FlagListItem Content="No Acceleration" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.NoAcceleration}"/>
+            <sub:FlagListItem Content="Low Acceleration" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.LowAcceleration}"/>
+            <sub:FlagListItem Content="Use Sky Draw Distance" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.UseSkyDrawDistance}"/>
+            <sub:FlagListItem Content="Cannot Land" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.CannotLand}"/>
+            <sub:FlagListItem Content="Increased Acceleration" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.IncreasedAcceleration}"/>
+            <sub:FlagListItem Content="Diggable" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Diggable}"/>
+            <sub:FlagListItem Content="Unknown 9" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Unknown9}"/>
+            <sub:FlagListItem Content="Waterfall" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Waterfall}"/>
+            <sub:FlagListItem Content="Unknown 11" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Unknown11}"/>
+            <sub:FlagListItem Content="Unclimbable" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.Unclimbable}"/>
+            <sub:FlagListItem Content="Chaos0 Land" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.Chaos0Land}"/>
+            <sub:FlagListItem Content="Stairs" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Stairs}"/>
+            <sub:FlagListItem Content="Unknown 15" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Unknown15}"/>
+            <sub:FlagListItem Content="Hurt" 					Flag="{x:Static objEnums:SA1SurfaceAttributes.Hurt}"/>
+            <sub:FlagListItem Content="Tube Acceleration" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.TubeAcceleration}"/>
+            <sub:FlagListItem Content="Low Depth" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.LowDepth}"/>
+            <sub:FlagListItem Content="Unknown 19" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Unknown19}"/>
+            <sub:FlagListItem Content="Footprints" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Footprints}"/>
+            <sub:FlagListItem Content="Accelerate" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Accelerate}"/>
+            <sub:FlagListItem Content="Water Collision" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.WaterCollision}"/>
+            <sub:FlagListItem Content="Gravity" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Gravity}"/>
+            <sub:FlagListItem Content="No ZWrite" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.NoZWrite}"/>
+            <sub:FlagListItem Content="Draw By Mesh" 			Flag="{x:Static objEnums:SA1SurfaceAttributes.DrawByMesh}"/>
+            <sub:FlagListItem Content="Enable Manipulation" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.EnableManipulation}"/>
+            <sub:FlagListItem Content="Dynamic Collision" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.DynamicCollision}"/>
+            <sub:FlagListItem Content="Transform Bounds" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.TransformBounds}"/>
+            <sub:FlagListItem Content="Bounds Radius Small" 	Flag="{x:Static objEnums:SA1SurfaceAttributes.BoundsRadiusSmall}"/>
+            <sub:FlagListItem Content="Bounds Radius Tiny" 		Flag="{x:Static objEnums:SA1SurfaceAttributes.BoundsRadiusTiny}"/>
+            <sub:FlagListItem Content="Visible" 				Flag="{x:Static objEnums:SA1SurfaceAttributes.Visible}"/>
         </sub:FlagListBox>
     </DataTemplate>
 
