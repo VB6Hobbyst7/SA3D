@@ -158,7 +158,8 @@ namespace SATools.SAArchive
             {
                 list.Add(FolderName + "\\" + item.Name, new PAKIniItem(item.LongPath));
             }
-            IniSerializer.Serialize(list, Path.Combine(Path.GetFileNameWithoutExtension(path), Path.GetFileNameWithoutExtension(path) + ".ini"));
+            string filename = Path.GetFileNameWithoutExtension(path);
+            IniSerialize.Serialize(list, Path.Combine(filename, filename + ".ini"));
         }
 
         public override byte[] GetBytes()

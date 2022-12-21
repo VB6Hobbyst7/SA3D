@@ -5,6 +5,7 @@
 		<RootNamespace>SATools.SAModel.Convert</RootNamespace>
 		<AssemblyName>SAModel.Convert</AssemblyName>
 		<DebugType>embedded</DebugType>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -161,22 +161,7 @@ namespace SATools.SAModel.ObjData
             => _children.Count;
 
         /// <summary>
-        /// Whether the euler order is "inverted"
-        /// </summary>
-        public bool RotateZYX { get; private set; }
-
-        /// <summary>
-        /// Whether the object can be influenced by animations
-        /// </summary>
-        public bool Animate { get; set; } = true;
-
-        /// <summary>
-        /// Whether the object can be influenced by morphs
-        /// </summary>
-        public bool Morph { get; set; } = true;
-
-        /// <summary>
-        /// Whether this
+        /// Whether this node tree has weighted attaches
         /// </summary>
         public bool HasWeight
         {
@@ -191,35 +176,43 @@ namespace SATools.SAModel.ObjData
             }
         }
 
+        #region Object Attributes
+
+
+
+        /// <summary>
+        /// Whether the euler order is "inverted"
+        /// </summary>
+        public bool RotateZYX
+        {
+            get => Attributes.HasFlag(ObjectAttributes.RotateZYX);
+            private set => SetObjectAttribute(ObjectAttributes.RotateZYX, value);
+        }
+
+        /// <summary>
+        /// Whether the object can be influenced by animations
+        /// </summary>
+        public bool Animate
+        {
+            get => !Attributes.HasFlag(ObjectAttributes.NoAnimate);
+            set => SetObjectAttribute(ObjectAttributes.NoAnimate, !value);
+        }
+
+        /// <summary>
+        /// Whether the object can be influenced by morphs
+        /// </summary>
+        public bool Morph
+        {
+            get => !Attributes.HasFlag(ObjectAttributes.NoMorph);
+            set => SetObjectAttribute(ObjectAttributes.NoMorph, !value);
+        }
+
         /// <summary>
         /// Various attributes summarizing the data inside of the object
         /// </summary>
-        public ObjectAttributes Attributes
-        {
-            get
-            {
-                ObjectAttributes r = 0;
+        public ObjectAttributes Attributes { get; private set; }
 
-                if (Position == Vector3.Zero)
-                    r |= ObjectAttributes.NoPosition;
-                if (Rotation == Vector3.Zero)
-                    r |= ObjectAttributes.NoRotation;
-                if (Scale == Vector3.One)
-                    r |= ObjectAttributes.NoScale;
-                if (Attach == null)
-                    r |= ObjectAttributes.SkipDraw;
-                if (ChildCount == 0)
-                    r |= ObjectAttributes.SkipChildren;
-                if (RotateZYX)
-                    r |= ObjectAttributes.RotateZYX;
-                if (!Animate)
-                    r |= ObjectAttributes.NoAnimate;
-                if (!Morph)
-                    r |= ObjectAttributes.NoMorph;
-
-                return r;
-            }
-        }
+        #endregion
 
         /// <summary>
         /// Returns a child by the index
@@ -253,6 +246,14 @@ namespace SATools.SAModel.ObjData
 
         private void UpdateMatrix()
             => LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
+
+        private void SetObjectAttribute(ObjectAttributes attribute, bool state)
+        {
+            if (state)
+                Attributes |= attribute;
+            else
+                Attributes &= ~attribute;
+        }
 
         /// <summary>
         /// Sets the rotation order
@@ -340,6 +341,7 @@ namespace SATools.SAModel.ObjData
 
             return result;
         }
+        
         /// <summary>
         /// Writes object (not its children) to a byte stream
         /// </summary>

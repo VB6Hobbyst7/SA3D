@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using IniDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, string>>;
-using IniGroup = System.Collections.Generic.Dictionary<string, string>;
-using IniNameGroup = System.Collections.Generic.KeyValuePair<string, System.Collections.Generic.Dictionary<string, string>>;
-using IniNameValue = System.Collections.Generic.KeyValuePair<string, string>;
-
-namespace SATools.SACommon.Ini
+﻿namespace SATools.SACommon.Ini
 {
     /// <summary>
     /// Used to write and read Ini dictionaries from strings
@@ -119,7 +110,7 @@ namespace SATools.SACommon.Ini
             List<string> data = new();
             using StreamReader reader = new(stream);
 
-            string line;
+            string? line;
             while ((line = reader.ReadLine()) != null)
                 data.Add(line);
 
@@ -138,12 +129,12 @@ namespace SATools.SACommon.Ini
         public static string[] Write(IniDictionary Ini)
         {
             bool first = true;
-            List<string> result = new List<string>();
+            List<string> result = new();
             foreach (IniNameGroup group in Ini)
             {
                 string add = "";
                 if (!first)
-                    add += System.Environment.NewLine;
+                    add += Environment.NewLine;
                 else
                     first = false;
                 if (!string.IsNullOrEmpty(group.Key))
@@ -199,9 +190,9 @@ namespace SATools.SACommon.Ini
 
             foreach (IniNameGroup group in dictB)
             {
-                if (result.ContainsKey(group.Key))
+                if (result.TryGetValue(group.Key, out IniGroup? value))
                     foreach (IniNameValue item in group.Value)
-                        result[group.Key][item.Key] = item.Value;
+                        value[item.Key] = item.Value;
                 else
                     result.Add(group.Key, new IniGroup(group.Value));
             }

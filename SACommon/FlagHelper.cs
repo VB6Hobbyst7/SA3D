@@ -129,4 +129,5 @@ namespace SATools.SACommon
         B62 = 1ul << 62,
         B63 = 1ul << 63,
     }
+
 }

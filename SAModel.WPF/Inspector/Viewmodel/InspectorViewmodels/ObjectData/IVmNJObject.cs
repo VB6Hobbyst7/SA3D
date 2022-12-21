@@ -131,23 +131,13 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         public Matrix4x4 WorldMatrix
             => NJObject.GetWorldMatrix();
 
-        [Tooltip("Whether the object is animatable")]
-        public bool Animate
-        {
-            get => NJObject.Animate;
-            set => NJObject.Animate = value;
-        }
-
-        [Tooltip("Whether the object is morphable")]
-        public bool Morph
-        {
-            get => NJObject.Morph;
-            set => NJObject.Morph = value;
-        }
 
         [Tooltip("The written object attributes, which are determined by the other properties")]
         public ObjectAttributes Attributes
-            => NJObject.Attributes;
+        {
+            get => NJObject.Attributes;
+            set => NJObject.Attributes = value;
+        }
 
         public IVmNJObject() : base() { }
 

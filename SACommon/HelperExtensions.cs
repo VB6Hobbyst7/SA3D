@@ -56,9 +56,9 @@ namespace SATools.SACommon
             return result;
         }
 
-        public static int[] CreateIndexMap<T>(T[] oldArray, T[] newArray) where T : IEquatable<T>
+        public static int[]? CreateIndexMap<T>(T[] oldArray, T[] newArray) where T : IEquatable<T>
         {
-            int[] result = null;
+            int[]? result = null;
             if (oldArray.Length > newArray.Length)
             {
                 result = new int[oldArray.Length];
@@ -78,7 +78,7 @@ namespace SATools.SACommon
             return result;
         }
 
-        public static (T[] distinct, int[] map) CreateDistinctMap<T>(this IList<T> collection) where T : IEquatable<T>
+        public static (T[]? distinct, int[]? map) CreateDistinctMap<T>(this IList<T> collection) where T : IEquatable<T>
         {
             if (collection == null)
                 return (null, null);

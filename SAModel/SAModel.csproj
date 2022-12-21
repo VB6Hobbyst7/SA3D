@@ -5,6 +5,7 @@
 		<RootNamespace>SATools.SAModel</RootNamespace>
 		<AssemblyName>SAModel</AssemblyName>
 		<DebugType>embedded</DebugType>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace SATools.SACommon.Ini
 {
@@ -35,19 +34,19 @@ namespace SATools.SACommon.Ini
         /// <summary>
         /// The <see cref="Type"/> of a <see cref="TypeConverter"/> used to convert indexes/keys to and from <see cref="string"/>.
         /// </summary>
-        public Type KeyConverter
+        public Type? KeyConverter
         {
-            get => Settings.KeyConverter?.GetType();
-            set => Settings.KeyConverter = (TypeConverter)Activator.CreateInstance(value);
+            get => Settings.KeyConverter?.GetType() ?? throw new NullReferenceException("Key converter is null!");
+            set => Settings.KeyConverter = (TypeConverter?)Activator.CreateInstance(value ?? throw new NullReferenceException("Type cant be null!"));
         }
 
         /// <summary>
         /// The <see cref="Type"/> of a <see cref="TypeConverter"/> used to convert values to and from <see cref="string"/>.
         /// </summary>
-        public Type ValueConverter
+        public Type? ValueConverter
         {
-            get => Settings.ValueConverter?.GetType();
-            set => Settings.ValueConverter = (TypeConverter)Activator.CreateInstance(value);
+            get => Settings.ValueConverter?.GetType() ?? throw new NullReferenceException("Value converter is null!");
+            set => Settings.ValueConverter = (TypeConverter?)Activator.CreateInstance(value ?? throw new NullReferenceException("Type cant be null!"));
         }
 
         /// <param name="mode">Collection mode to use</param>

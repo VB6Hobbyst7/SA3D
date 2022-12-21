@@ -5,13 +5,7 @@
 		<RootNamespace>SATools.SAArchive</RootNamespace>
 		<AssemblyName>SAArchive</AssemblyName>
 		<DebugType>embedded</DebugType>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
@@ -35,6 +29,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SACommon\SACommon.csproj" />
+		<ProjectReference Include="..\SAIni\SAIni.csproj" />
 	</ItemGroup>
 
 </Project>
