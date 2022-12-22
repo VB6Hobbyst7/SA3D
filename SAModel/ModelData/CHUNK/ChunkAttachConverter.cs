@@ -37,7 +37,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 this.color = color;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is BinaryWeightColorVertex vertex &&
                        nodeIndex == vertex.nodeIndex &&
@@ -185,8 +185,10 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                     foreach (ChunkAttach atc in chunks)
                     {
-                        vertexChunks.AddRange(atc.VertexChunks);
-                        polyChunks.AddRange(atc.PolyChunks);
+                        if(atc.VertexChunks != null)
+                            vertexChunks.AddRange(atc.VertexChunks);
+                        if(atc.PolyChunks != null)
+                            polyChunks.AddRange(atc.PolyChunks);
                     }
 
                     node._attach = new ChunkAttach(vertexChunks.ToArray(), polyChunks.ToArray());
@@ -197,26 +199,32 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
 
-                foreach (VertexChunk vtx in ((ChunkAttach)node.Attach).VertexChunks)
+                ChunkAttach chunkAttach = (ChunkAttach)node._attach;
+                
+                if(chunkAttach.VertexChunks != null)
                 {
-                    if (vtx.Type.VertexHasNormal())
+                    foreach (VertexChunk vtx in chunkAttach.VertexChunks)
                     {
-                        for (int j = 0; j < vtx.Vertices.Length; j++)
+                        if (vtx.Type.VertexHasNormal())
                         {
-                            ChunkVertex vert = vtx.Vertices[j];
-                            vtx.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
-                            vtx.Vertices[j].Normal = Vector3.TransformNormal(vert.Normal, invertedWorldMatrix);
+                            for (int j = 0; j < vtx.Vertices.Length; j++)
+                            {
+                                ChunkVertex vert = vtx.Vertices[j];
+                                vtx.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
+                                vtx.Vertices[j].Normal = Vector3.TransformNormal(vert.Normal, invertedWorldMatrix);
+                            }
                         }
-                    }
-                    else
-                    {
-                        for (int j = 0; j < vtx.Vertices.Length; j++)
+                        else
                         {
-                            ChunkVertex vert = vtx.Vertices[j];
-                            vtx.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
+                            for (int j = 0; j < vtx.Vertices.Length; j++)
+                            {
+                                ChunkVertex vert = vtx.Vertices[j];
+                                vtx.Vertices[j].Position = Vector3.Transform(vert.Position, invertedWorldMatrix);
+                            }
                         }
                     }
                 }
+                    
             }
 
             ConvertModelFromChunk(model, optimize);
@@ -252,17 +260,24 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
 
                 // first, get rid of all duplicate vertices
-                var (distinctVerts, vertMap) = colorVertices.CreateDistinctMap();
-                vertices = distinctVerts.ToArray();
-
-                for (int i = 0; i < cornerSets.Length; i++)
+                if(colorVertices.CreateDistinctMap(out ChunkVertex[]? distinctVerts, out int[]? vertMap))
                 {
-                    var corners = cornerSets[i];
-                    for (int j = 0; j < corners.Length; j++)
+                    vertices = distinctVerts;
+
+                    for (int i = 0; i < cornerSets.Length; i++)
                     {
-                        corners[i].Index = (ushort)vertMap[corners[i].Index];
+                        var corners = cornerSets[i];
+                        for (int j = 0; j < corners.Length; j++)
+                        {
+                            corners[i].Index = (ushort)vertMap[corners[i].Index];
+                        }
                     }
                 }
+                else
+                {
+                    vertices = colorVertices.ToArray();
+                }
+
             }
             else
             {
@@ -325,24 +340,34 @@ namespace SATools.SAModel.ModelData.CHUNK
                         }
                     }
 
-
-                    Vector3 position = new(vertex.Position.X, vertex.Position.Y, vertex.Position.Z);
-
-                    vertices.Add(new(nodeIndex, position, bc.Color));
+                    vertices.Add(new(nodeIndex, vertex.Position, bc.Color));
                 }
                 cornerSets[i] = corners;
             }
 
             // first, get rid of all duplicate vertices
-            var (distinctVerts, vertMap) = vertices.CreateDistinctMap();
-
-            // now sort the vertices by node index
-            (int index, BinaryWeightColorVertex vert)[] sortedVertices = new (int index, BinaryWeightColorVertex)[distinctVerts.Length];
-            for (int i = 0; i < sortedVertices.Length; i++)
+            (int index, BinaryWeightColorVertex vert)[] sortedVertices;
+            if (vertices.CreateDistinctMap(out BinaryWeightColorVertex[]? distinctVerts, out int[]? vertMap))
             {
-                sortedVertices[i] = (i, distinctVerts[i]);
+                sortedVertices = new (int index, BinaryWeightColorVertex)[distinctVerts.Length];
+
+                for (int i = 0; i < sortedVertices.Length; i++)
+                {
+                    sortedVertices[i] = (i, distinctVerts[i]);
+                }
+
+            }
+            else
+            {
+                sortedVertices = new (int index, BinaryWeightColorVertex)[vertices.Count];
+
+                for (int i = 0; i < sortedVertices.Length; i++)
+                {
+                    sortedVertices[i] = (i, vertices[i]);
+                }
             }
 
+            // now sort the vertices by node index
             sortedVertices = sortedVertices.OrderBy(x => x.vert.nodeIndex).ToArray();
 
             // Create a vertex chunk per node index
@@ -388,7 +413,10 @@ namespace SATools.SAModel.ModelData.CHUNK
                 var corners = cornerSets[i];
                 for (int j = 0; j < corners.Length; j++)
                 {
-                    corners[j].Index = (ushort)sortedVertMap[vertMap[corners[j].Index]];
+                    int index = corners[j].Index;
+                    if(vertMap != null)
+                        index = vertMap[index];
+                    corners[j].Index = (ushort)sortedVertMap[index];
                 }
 
                 polyChunks.AddRange(CreateStripChunk(corners, wba.Materials[i]));
@@ -409,7 +437,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             nodeAttachIndices.Add(lastNodeindex);
             attaches.Add(new(new[] { lastVertexChunk }, polyChunks.ToArray()));
 
-            return new(distinctVerts.Length, nodeAttachIndices.ToArray(), attaches.ToArray());
+            return new(sortedVertices.Length, nodeAttachIndices.ToArray(), attaches.ToArray());
         }
 
         private static ChunkResult ConvertWeighted(WeightedBufferAttach wba)
@@ -587,23 +615,47 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         private static PolyChunk[] CreateStripChunk(PolyChunkStrip.Strip.Corner[] corners, BufferMaterial material)
         {
-            (PolyChunkStrip.Strip.Corner[] distinct, int[] map) = corners.CreateDistinctMap();
-
-            int[][] stripMaps;
-            if (map == null)
+            PolyChunkStrip.Strip[] strips;
+            if(corners.CreateDistinctMap(out PolyChunkStrip.Strip.Corner[]? distinct, out int[]? map))
             {
-                stripMaps = new int[distinct.Length / 3][];
-                for (int i = 0; i < distinct.Length; i += 3)
+                int[][] stripMaps = Strippifier.Strip(map);
+                strips = new PolyChunkStrip.Strip[stripMaps.Length];
+
+                for (int i = 0; i < stripMaps.Length; i++)
                 {
-                    stripMaps[i] = new[] { i, i + 1, i + 2 };
+                    int[] stripMap = stripMaps[i];
+                    bool reversed = stripMap[0] == stripMap[1];
+                    int stripLength = stripMap.Length;
+                    if (reversed)
+                    {
+                        stripLength--;
+                    }
+
+                    PolyChunkStrip.Strip.Corner[] stripCorners = new PolyChunkStrip.Strip.Corner[stripLength];
+                    int offset = stripMap.Length - stripLength;
+
+                    for (int k = offset; k < stripMap.Length; k++)
+                        stripCorners[k - offset] = distinct[stripMap[k]];
+
+                    strips[i] = new PolyChunkStrip.Strip(stripCorners, reversed);
                 }
             }
             else
             {
-                stripMaps = Strippifier.Strip(map);
+                int triangleCount = corners.Length / 3;
+                strips = new PolyChunkStrip.Strip[triangleCount];
+
+                for (int i = 0; i < corners.Length; i += 3)
+                {
+                    strips[i] = new(new[] {
+                        corners[i],
+                        corners[i + 1],
+                        corners[i + 2]
+                    }, false);
+                }
             }
 
-            PolyChunkStrip stripchunk = new((ushort)(corners.Length / 3), 0)
+            PolyChunkStrip stripchunk = new(strips, 0)
             {
                 HasUV = true,
                 FlatShading = material.HasAttribute(MaterialAttributes.Flat),
@@ -615,29 +667,6 @@ namespace SATools.SAModel.ModelData.CHUNK
                 DoubleSide = !material.Culling
             };
 
-            for (int i = 0; i < corners.Length; i += 3)
-            {
-                stripchunk.Strips[i / 3] = new PolyChunkStrip.Strip(new[] { corners[i], corners[i + 1], corners[i + 2] }, false);
-            }
-
-            /*for (int j = 0; j < stripMaps.Length; j++)
-            {
-                int[] strip = stripMaps[j];
-                bool reversed = strip[0] == strip[1];
-                int stripLength = strip.Length;
-                if (reversed)
-                {
-                    stripLength--;
-                }
-
-                PolyChunkStrip.Strip.Corner[] stripCorners = new PolyChunkStrip.Strip.Corner[stripLength];
-                int offset = strip.Length - stripLength;
-
-                for (int k = offset; k < strip.Length; k++)
-                    stripCorners[k - offset] = distinct[strip[k]];
-
-                stripchunk.Strips[j] = new PolyChunkStrip.Strip(stripCorners, reversed);
-            }*/
 
             return new PolyChunk[]
             {
@@ -694,7 +723,7 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 List<BufferMesh> meshes = new();
 
-                BufferVertex[] vertices = null;
+                BufferVertex[]? vertices = null;
                 bool continueWeight = false;
 
                 if (atc.VertexChunks != null)

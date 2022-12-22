@@ -96,7 +96,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Texture file name
         /// </summary>
-        public string TextureFileName { get; set; }
+        public string? TextureFileName { get; set; }
 
         /// <summary>
         /// Texture list pointer
@@ -274,7 +274,8 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="filename">Path to the file to read</param>
         /// <returns></returns>
-        public static LandTable ReadFile(string filename) => ReadFile(File.ReadAllBytes(filename));
+        public static LandTable? ReadFile(string filename) 
+            => ReadFile(File.ReadAllBytes(filename));
 
         /// <summary>
         /// Reads a landtable from a file <br/>
@@ -282,7 +283,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="filename">Path to the file to read</param>
         /// <returns></returns>
-        public static LandTable ReadFile(byte[] source)
+        public static LandTable? ReadFile(byte[] source)
         {
             PushBigEndian(false);
 

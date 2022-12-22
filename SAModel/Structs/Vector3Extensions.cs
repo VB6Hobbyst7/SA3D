@@ -1,5 +1,6 @@
 ﻿using SATools.SACommon;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using static SATools.SACommon.MathHelper;
@@ -196,13 +197,20 @@ namespace SATools.SAModel.Structs
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static Vector3 Center(Vector3[] points)
+        public static Vector3 Center(IEnumerable<Vector3> points)
         {
-            if (points == null || points.Length == 0)
-                return new Vector3();
+            Vector3? first = null;
+            foreach(Vector3 point in points)
+            {
+                first = point;
+                break;
+            }
 
-            Vector3 Positive = points[0];
-            Vector3 Negative = points[0];
+            if (first == null)
+                return default;
+
+            Vector3 Positive = first.Value;
+            Vector3 Negative = first.Value;
 
             static void boundsCheck(float i, ref float p, ref float n)
             {

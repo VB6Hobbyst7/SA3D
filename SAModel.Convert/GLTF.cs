@@ -230,17 +230,29 @@ namespace SATools.SAModel.Convert
                     vertexSet[i] = vert;
                 }
 
-                var (vertsDistinct, vertMap) = vertexSet.CreateDistinctMap();
 
                 // Polygon corners
-                primitive.VertexAccessors.TryGetValue("TEXCOORD_0", /**/ out Accessor uvs);
-                primitive.VertexAccessors.TryGetValue("COLOR_0", /*****/ out Accessor colors);
+                primitive.VertexAccessors.TryGetValue("TEXCOORD_0", /**/ out Accessor? uvs);
+                primitive.VertexAccessors.TryGetValue("COLOR_0", /*****/ out Accessor? colors);
 
                 var uvArray = uvs?.AsVector2Array();
                 var colorArray = colors?.AsColorArray();
                 int vertOffset = vertices.Count;
 
                 BufferCorner[] meshCorners = new BufferCorner[vertCount];
+
+                Func<int, int> GetIndex;
+
+                if(vertexSet.CreateDistinctMap(out WeightedVertex[]? vertsDistinct, out int[]? vertMap))
+                {
+                    vertexSet = vertsDistinct;
+                    GetIndex = (i) => vertMap[i];
+                }
+                else
+                {
+                    GetIndex = (i) => i;
+                }
+
                 for (int i = 0; i < meshCorners.Length; i++)
                 {
                     Vector2 uv = uvArray?[i] ?? default;
@@ -248,7 +260,12 @@ namespace SATools.SAModel.Convert
 
                     var linearCol = colorConverter.Convert(new(col.X, col.Y, col.Z));
 
-                    meshCorners[i] = new((ushort)((vertMap != null ? vertMap[i] : i) + vertOffset), new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), uv);
+                    int index = GetIndex(i);
+
+                    meshCorners[i] = new(
+                        (ushort)(GetIndex(i) + vertOffset), 
+                        new((float)linearCol.R, (float)linearCol.G, (float)linearCol.B, col.W), 
+                        uv);
                 }
 
                 // Read indices
@@ -264,7 +281,7 @@ namespace SATools.SAModel.Convert
                     meshCorners = unwrappedCorners;
                 }
 
-                vertices.AddRange(vertsDistinct);
+                vertices.AddRange(vertexSet);
                 corners.Add(meshCorners);
                 materials.Add(GetMaterial(primitive.Material));
             }

@@ -135,7 +135,8 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static ModelFile Read(string filename) => Read(File.ReadAllBytes(filename), filename);
+        public static ModelFile? Read(string filename) 
+            => Read(File.ReadAllBytes(filename), filename);
 
         /// <summary>
         /// Reads a model file from a byte source and its file path (for relative located files) <br/>
@@ -144,7 +145,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="source">Source of the file</param>
         /// <param name="filename">File path of the read file. Used if the model uses more files outside of the byte source</param>
         /// <returns></returns>
-        public static ModelFile Read(byte[] source, string filename = null)
+        public static ModelFile? Read(byte[] source, string? filename = null)
         {
             PushBigEndian(false);
 
@@ -198,6 +199,9 @@ namespace SATools.SAModel.ObjData
                         goto texlistRetry;
                 }
 
+                if (format == null)
+                    throw new NullReferenceException("Attach format is null");
+
                 PushBigEndian(fileEndian);
 
                 // the addresses start 8 bytes ahead, and since we always subtract the image base from the addresses,
@@ -245,11 +249,16 @@ namespace SATools.SAModel.ObjData
                 // reading animations
                 if (filename != null)
                 {
-                    string path = Path.GetDirectoryName(filename);
+                    string path = Path.GetDirectoryName(filename) ?? throw new InvalidOperationException("File path invalid");
                     try
                     {
                         foreach (string item in metaData.AnimFiles)
-                            Animations.Add(Motion.ReadFile(Path.Combine(path, item), model.CountAnimated()));
+                        {
+                            Motion? motion = Motion.ReadFile(Path.Combine(path, item), model.CountAnimated());
+                            if (motion == null)
+                                continue;
+                            Animations.Add(motion);
+                        }
                     }
                     catch
                     {
@@ -384,12 +393,12 @@ namespace SATools.SAModel.ObjData
         /// <param name="DX">Whether the file is for SADX</param>
         /// <param name="model">Top level object to write</param>
         /// <param name="textures">Texture list</param>
-        public static void WriteNJA(string outputPath, bool DX, ObjectNode model, string[] textures = null)
+        public static void WriteNJA(string outputPath, bool DX, ObjectNode model, string[]? textures = null)
         {
             ObjectNode[] objects = model.GetObjects();
-            Attach[] attaches = objects.Select(x => x.Attach).Distinct().ToArray();
+            Attach[] attaches = model.GetAttaches();
 
-            AttachFormat fmt = AttachFormat.Buffer;
+            AttachFormat fmt;
             if (attaches.Length > 0)
             {
                 fmt = attaches[0].Format;

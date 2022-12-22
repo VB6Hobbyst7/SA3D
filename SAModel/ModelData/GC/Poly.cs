@@ -30,12 +30,14 @@ namespace SATools.SAModel.ModelData.GC
         /// </summary>
         public ushort UV0Index { get; set; }
 
-        public override bool Equals(object obj)
-            => obj is Corner corner
-            && PositionIndex == corner.PositionIndex
-            && NormalIndex == corner.NormalIndex
-            && Color0Index == corner.Color0Index
-            && UV0Index == corner.UV0Index;
+        public override bool Equals(object? obj)
+        {
+            return obj is Corner corner &&
+                   PositionIndex == corner.PositionIndex &&
+                   NormalIndex == corner.NormalIndex &&
+                   Color0Index == corner.Color0Index &&
+                   UV0Index == corner.UV0Index;
+        }
 
         public override int GetHashCode() => HashCode.Combine(PositionIndex, NormalIndex, Color0Index, UV0Index);
         public override string ToString() => $"({PositionIndex}, {NormalIndex}, {Color0Index}, {UV0Index})";

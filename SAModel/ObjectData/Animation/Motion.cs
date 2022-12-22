@@ -119,7 +119,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="labels">C struct labels</param>
         /// <param name="shortrot">Whether the rotations are 16bit</param>
         /// <returns></returns>
-        public static Motion Read(byte[] source, ref uint address, uint imageBase, uint modelCount, Dictionary<uint, string> labels, bool shortrot = false)
+        public static Motion Read(byte[] source, ref uint address, uint imageBase, uint modelCount, Dictionary<uint, string>? labels, bool shortrot = false)
         {
             string name = labels?.ContainsKey(address) == true ? labels[address] : "animation_" + address.ToString("X8");
             uint Frames = source.ToUInt32(address + 4);
@@ -154,7 +154,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="path">Path to the file</param>
         /// <param name="modelCount">Model count (can be left untouched, unless file version is 0)</param>
         /// <returns></returns>
-        public static Motion ReadFile(string path, int modelCount = -1)
+        public static Motion? ReadFile(string path, int modelCount = -1)
             => ReadFile(File.ReadAllBytes(path), modelCount);
 
         /// <summary>
@@ -164,10 +164,10 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="source">Byte source</param>
         /// <param name="modelCount">Model count (can be left untouched, unless file version is 0)</param>
         /// <returns></returns>
-        public static Motion ReadFile(byte[] source, int modelCount = -1)
+        public static Motion? ReadFile(byte[] source, int modelCount = -1)
         {
             PushBigEndian(false);
-            Motion result = null;
+            Motion? result = null;
 
             if (source.ToUInt32(0) == NMDM)
             {

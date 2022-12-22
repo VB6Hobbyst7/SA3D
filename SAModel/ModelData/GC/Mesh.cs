@@ -29,7 +29,7 @@ namespace SATools.SAModel.ModelData.GC
         {
             get
             {
-                IParameter p = Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
+                IParameter? p = Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
                 return p == null ? null : ((IndexAttributeParameter)p).IndexAttributes;
             }
         }

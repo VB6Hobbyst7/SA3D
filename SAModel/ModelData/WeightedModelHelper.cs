@@ -27,7 +27,7 @@ namespace SATools.SAModel.ModelData
             Weights = new();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is WeightedVertex other
                 && Position == other.Position
@@ -361,7 +361,7 @@ namespace SATools.SAModel.ModelData
                             bufferMesh.TriangleList != null
                             ? bufferMesh.TriangleList.Select(x => meshCorners[(int)x]).ToArray()
                             : meshCorners.ToArray());
-                        materials.Add(bufferMesh.Material);
+                        materials.Add(bufferMesh.Material ?? throw new NullReferenceException("Mesh with polygons has no material"));
                     }
                 }
 
@@ -502,7 +502,7 @@ namespace SATools.SAModel.ModelData
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
 
-                foreach (BufferMesh mesh in node.Attach.MeshData)
+                foreach (BufferMesh mesh in node._attach.MeshData)
                 {
                     if (mesh.Vertices == null)
                         continue;
@@ -609,14 +609,19 @@ namespace SATools.SAModel.ModelData
 
             if (optimize)
             {
-                var (distinctVerts, vertMap) = vertices.CreateDistinctMap();
-                vertices = distinctVerts;
-
-                foreach (BufferMesh polyMesh in polygonMeshes)
+                if(vertices.CreateDistinctMap(out BufferVertex[]? distinctVerts, out int[]? vertMap))
                 {
-                    for (int i = 0; i < polyMesh.Corners.Length; i++)
+                    vertices = distinctVerts;
+
+                    foreach (BufferMesh polyMesh in polygonMeshes)
                     {
-                        polyMesh.Corners[i].VertexIndex = (ushort)vertMap[polyMesh.Corners[i].VertexIndex];
+                        if (polyMesh.Corners == null)
+                            continue;
+
+                        for (int i = 0; i < polyMesh.Corners.Length; i++)
+                        {
+                            polyMesh.Corners[i].VertexIndex = (ushort)vertMap[polyMesh.Corners[i].VertexIndex];
+                        }
                     }
                 }
             }
@@ -637,8 +642,17 @@ namespace SATools.SAModel.ModelData
 
             for (int i = 0; i < wba.Corners.Length; i++)
             {
-                var (distinctCorners, cornerMap) = wba.Corners[i].CreateDistinctMap();
-                result.Add(new(distinctCorners, (uint[])(object)cornerMap, wba.Materials[i], 0));
+                BufferCorner[] corners = wba.Corners[i];
+                if (corners.CreateDistinctMap(out BufferCorner[]? distinctCorners, out int[]? cornerMap))
+                {
+                    result.Add(new(distinctCorners, (uint[])(object)cornerMap, wba.Materials[i], 0));
+                }
+                else
+                {
+                    uint[] triangleList = new uint[corners.Length];
+                    for (uint j = 0; j < triangleList.Length; j++) triangleList[j] = j;
+                    result.Add(new(corners, triangleList, wba.Materials[i], 0));
+                }
             }
 
             return result.ToArray();
@@ -657,7 +671,7 @@ namespace SATools.SAModel.ModelData
 
             foreach (int i in indices)
             {
-                ObjectNode node = nodes[i];
+                ObjectNode? node = nodes[i];
                 while (node != null)
                 {
                     parentIndices[indexMap[node]]++;

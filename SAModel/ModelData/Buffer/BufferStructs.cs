@@ -104,7 +104,7 @@ namespace SATools.SAModel.ModelData.Buffer
             return Weight != 1 ? $"{Index}: \t{Position}; \t{Normal}" : $"{Index}: \t{Position}; \t{Normal}; \t{Weight}";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BufferVertex vertex &&
                    Position.Equals(vertex.Position) &&
@@ -209,7 +209,7 @@ namespace SATools.SAModel.ModelData.Buffer
             return $"{VertexIndex}: \t{Color}; \t{Texcoord}";
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BufferCorner corner &&
                    VertexIndex == corner.VertexIndex &&

@@ -38,7 +38,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public Attach Attach
         {
-            get => _model.Attach;
+            get => _model.Attach ?? throw new NullReferenceException("Landentry attach is null");
             set
             {
                 if (value == null)

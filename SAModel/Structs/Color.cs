@@ -432,7 +432,7 @@ namespace SATools.SAModel.Structs
 
         #region Logical Operators/Methods
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Color color &&
                    R == color.R &&

@@ -18,11 +18,11 @@ namespace SATools.SAModel.ModelData.BASIC
     [Serializable]
     public class Mesh : ICloneable
     {
-        private Vector3[] _normals;
+        private Vector3[]? _normals;
 
-        private Color[] _colors;
+        private Color[]? _colors;
 
-        private Vector2[] _texcoords;
+        private Vector2[]? _texcoords;
 
         /// <summary>
         /// Material ID
@@ -57,12 +57,12 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Additional Normal data name
         /// </summary>
-        public string NormalName { get; set; }
+        public string? NormalName { get; set; }
 
         /// <summary>
         /// Additional normal data (used for morphs)
         /// </summary>
-        public Vector3[] Normals
+        public Vector3[]? Normals
         {
             get => _normals;
             set
@@ -76,12 +76,12 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Vertex color data name
         /// </summary>
-        public string ColorName { get; set; }
+        public string? ColorName { get; set; }
 
         /// <summary>
         /// Vertex color data
         /// </summary>
-        public Color[] Colors
+        public Color[]? Colors
         {
             get => _colors;
             set
@@ -95,12 +95,12 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Texture coordinate data name
         /// </summary>
-        public string TexcoordName { get; set; }
+        public string? TexcoordName { get; set; }
 
         /// <summary>
         /// Texture coordinate data
         /// </summary>
-        public Vector2[] Texcoords
+        public Vector2[]? Texcoords
         {
             get => _texcoords;
             set
@@ -111,8 +111,9 @@ namespace SATools.SAModel.ModelData.BASIC
             }
         }
 
-        private Mesh(BASICPolyType polyType, IPoly[] polys, Vector3[] normals, Color[] colors, Vector2[] texcoords)
+        private Mesh(BASICPolyType polyType, IPoly[] polys, Vector3[]? normals, Color[]? colors, Vector2[]? texcoords)
         {
+            PolyName = "poly_" + GenerateIdentifier();
             PolyType = polyType;
             Polys = new ReadOnlyCollection<IPoly>(polys);
             Normals = normals;
@@ -171,7 +172,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="colorName">Name of color data <br/> null if data doesnt exist</param>
         /// <param name="texcoordName">Name of texcoord data <br/> null if data doesnt exist</param>
         /// <param name="materialID">Material index</param>
-        public Mesh(BASICPolyType polyType, string polyName, IPoly[] polys, string normalName, string colorName, string texcoordName, ushort materialID)
+        public Mesh(BASICPolyType polyType, string polyName, IPoly[] polys, string? normalName, string? colorName, string? texcoordName, ushort materialID)
             : this(polyType, polys, normalName != null, colorName != null, texcoordName != null, materialID)
         {
             PolyName = polyName;
@@ -196,22 +197,38 @@ namespace SATools.SAModel.ModelData.BASIC
             BASICPolyType polyType = (BASICPolyType)(header >> 14);
             ushort polyCount = source.ToUInt16(address + 2);
 
+            string? GetLabel(ref uint addr, string prefix)
+            {
+                if (addr == 0)
+                    return null;
+
+                addr -= imageBase;
+                if(labels.TryGetValue(addr, out string? result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return prefix + addr.ToString("X8");
+                }
+            }
+
             // getting the addresses
             // polys
             uint polyAddr = source.ToUInt32(address + 4);
-            string polyName = polyAddr == 0 ? null : labels.ContainsKey(polyAddr -= imageBase) ? labels[polyAddr] : "poly_" + polyAddr.ToString("X8");
+            string polyName = GetLabel(ref polyAddr, "poly_") ?? "poly_" + GenerateIdentifier();
 
             // additional normals
             uint normalAddr = source.ToUInt32(address + 12);
-            string normalName = normalAddr == 0 ? null : labels.ContainsKey(normalAddr -= imageBase) ? labels[normalAddr] : "polynormal_" + normalAddr.ToString("X8");
+            string? normalName = GetLabel(ref normalAddr, "polynormal_");
 
             // colors
             uint colorAddr = source.ToUInt32(address + 16);
-            string colorName = colorAddr == 0 ? null : labels.ContainsKey(colorAddr -= imageBase) ? labels[colorAddr] : "vcolor_" + colorAddr.ToString("X8");
+            string? colorName = GetLabel(ref colorAddr, "vcolor_");
 
             // texcoords
             uint texcoordAddr = source.ToUInt32(address + 20);
-            string texcoordName = texcoordAddr == 0 ? null : labels.ContainsKey(texcoordAddr -= imageBase) ? labels[texcoordAddr] : "uv_" + texcoordAddr.ToString("X8");
+            string? texcoordName = GetLabel(ref texcoordAddr, "uv_");
 
             // reading polygons
             IPoly[] polys = Array.Empty<IPoly>();
@@ -232,17 +249,17 @@ namespace SATools.SAModel.ModelData.BASIC
             // reading the remaining data
             // reading additional normals
             if (normalAddr != 0)
-                for (int i = 0; i < result.Normals.Length; i++)
+                for (int i = 0; i < (result.Normals?.Length ?? throw new NullReferenceException("Normal array not created")); i++)
                     result.Normals[i] = Vector3Extensions.Read(source, ref normalAddr, IOType.Float);
 
             // reading colors
             if (colorAddr != 0)
-                for (int i = 0; i < result.Colors.Length; i++)
+                for (int i = 0; i < (result.Colors?.Length ?? throw new NullReferenceException("Color array not created")); i++)
                     result.Colors[i] = Color.Read(source, ref colorAddr, IOType.ARGB8_32);
 
             // reading texcoords
             if (texcoordAddr != 0)
-                for (int i = 0; i < result.Texcoords.Length; i++)
+                for (int i = 0; i < (result.Texcoords?.Length ?? throw new NullReferenceException("Texcoord array not created")); i++)
                     result.Texcoords[i] = Vector2Extensions.Read(source, ref texcoordAddr, IOType.Short) / 256f;
 
             address += 24;
@@ -258,7 +275,7 @@ namespace SATools.SAModel.ModelData.BASIC
         public void WriteDataNJA(TextWriter writer, List<string> labels)
         {
             // writing polygons
-            if (!labels.Contains(PolyName) && Polys != null)
+            if (PolyName != null && !labels.Contains(PolyName) && Polys != null)
             {
                 writer.Write("POLYGON ");
                 writer.Write(PolyName);
@@ -280,7 +297,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(PolyName);
             }
 
-            if (!labels.Contains(NormalName) && Normals != null)
+            if (NormalName != null && !labels.Contains(NormalName) && Normals != null)
             {
                 writer.Write("POLYNORMAL ");
                 writer.Write(NormalName);
@@ -302,7 +319,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(NormalName);
             }
 
-            if (!labels.Contains(ColorName) && Colors != null)
+            if (ColorName != null && !labels.Contains(ColorName) && Colors != null)
             {
                 writer.Write("VERTCOLOR ");
                 writer.Write(ColorName);
@@ -323,7 +340,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 labels.Add(ColorName);
             }
 
-            if (!labels.Contains(TexcoordName) && Texcoords != null)
+            if (TexcoordName != null && !labels.Contains(TexcoordName) && Texcoords != null)
             {
                 writer.Write("VERTUV ");
                 writer.Write(TexcoordName);
@@ -362,21 +379,21 @@ namespace SATools.SAModel.ModelData.BASIC
                     p.Write(writer);
             }
 
-            if (Normals != null && !labels.ContainsKey(NormalName))
+            if (NormalName != null && Normals != null && !labels.ContainsKey(NormalName))
             {
                 labels.AddLabel(NormalName, writer.Position + imageBase);
                 foreach (Vector3 n in Normals)
                     n.Write(writer, IOType.Float);
             }
 
-            if (Colors != null && !labels.ContainsKey(ColorName))
+            if (ColorName != null && Colors != null && !labels.ContainsKey(ColorName))
             {
                 labels.AddLabel(ColorName, writer.Position + imageBase);
                 foreach (Color c in Colors)
                     c.Write(writer, IOType.ARGB8_32);
             }
 
-            if (Texcoords != null && !labels.ContainsKey(TexcoordName))
+            if (TexcoordName != null && Texcoords != null && !labels.ContainsKey(TexcoordName))
             {
                 labels.AddLabel(TexcoordName, writer.Position + imageBase);
                 foreach (Vector2 texcoord in Texcoords)
@@ -446,9 +463,9 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt16((ushort)Polys.Count);
             writer.WriteUInt32(labels[PolyName]);
             writer.WriteUInt32(PolyAttributes);
-            writer.WriteUInt32(Normals == null ? 0 : labels[NormalName]);
-            writer.WriteUInt32(Colors == null ? 0 : labels[ColorName]);
-            writer.WriteUInt32(Texcoords == null ? 0 : labels[TexcoordName]);
+            writer.WriteUInt32((Normals == null || NormalName == null) ? 0 : labels[NormalName]);
+            writer.WriteUInt32((Colors == null || ColorName == null) ? 0 : labels[ColorName]);
+            writer.WriteUInt32((Texcoords == null || TexcoordName == null) ? 0 : labels[TexcoordName]);
             if (DX)
                 writer.WriteUInt32(0);
         }
@@ -457,7 +474,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
         public Mesh Clone()
         {
-            return new Mesh(PolyType, Polys.ToArray().ContentClone(), (Vector3[])Normals?.Clone(), (Color[])Colors?.Clone(), (Vector2[])Texcoords?.Clone())
+            return new Mesh(PolyType, Polys.ToArray().ContentClone(), (Vector3[]?)Normals?.Clone(), (Color[]?)Colors?.Clone(), (Vector2[]?)Texcoords?.Clone())
             {
                 MaterialID = MaterialID,
                 PolyName = PolyName,

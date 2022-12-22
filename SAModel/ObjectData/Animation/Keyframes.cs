@@ -2,6 +2,7 @@
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
@@ -201,19 +202,20 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="before">Last Keyframe before given frame</param>
         /// <param name="next">Next Keyframe after given frame</param>
         /// <returns></returns>
-        public static float GetNearestFrames<T>(SortedDictionary<uint, T> keyframes, float frame, out T before, out T next)
+        public static bool GetNearestFrames<T>(SortedDictionary<uint, T> keyframes, float frame, out float interpolation, out T before, [MaybeNullWhen(false)] out T next)
         {
             if (frame < 0)
                 frame = 0;
 
             // if there is only one frame, we can take that one
             next = default;
+            interpolation = 0;
 
             if (keyframes.Count == 1)
                 foreach (T val in keyframes.Values) // faster than converting to an array and accessing the first index
                 {
                     before = val;
-                    return 0;
+                    return false;
                 }
 
             // if the given frame is spot on and exists, then we can use it
@@ -221,7 +223,7 @@ namespace SATools.SAModel.ObjData.Animation
             if (frame == baseFrame && keyframes.ContainsKey(baseFrame))
             {
                 before = keyframes[baseFrame];
-                return 0;
+                return false;
             }
 
             // we gotta find the frames that the given frame is between
@@ -241,7 +243,7 @@ namespace SATools.SAModel.ObjData.Animation
             if (nextSmallestFrame > baseFrame)
             {
                 before = keyframes[nextSmallestFrame];
-                return 0;
+                return false;
             }
 
             // getting the actual next smallest and biggest frames
@@ -261,20 +263,20 @@ namespace SATools.SAModel.ObjData.Animation
             // if the next biggest frame hasnt changed, then that means we are past the last frame
             before = keyframes[nextSmallestFrame];
             if (nextBiggestFrame == baseFrame)
-                return 0;
+                return false;
 
             // the regular result
             next = keyframes[nextBiggestFrame];
 
             // getting the interpolation between the two frames
             float duration = nextBiggestFrame - nextSmallestFrame;
-            return (frame - nextSmallestFrame) / duration;
+            interpolation = (frame - nextSmallestFrame) / duration;
+            return true;
         }
 
         private static Vector3 ValueAtFrame(SortedDictionary<uint, Vector3> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Vector3 before, out Vector3 next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Vector3 before, out Vector3 next))
                 return before;
             else
                 return Vector3.Lerp(before, next, interpolation);
@@ -296,8 +298,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static Vector3[] ValueAtFrame(SortedDictionary<uint, Vector3[]> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Vector3[] before, out Vector3[] next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Vector3[] before, out Vector3[]? next))
                 return (Vector3[])before.Clone();
 
             Vector3[] result = new Vector3[before.Length];
@@ -310,8 +311,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static Vector2 ValueAtFrame(SortedDictionary<uint, Vector2> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Vector2 before, out Vector2 next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Vector2 before, out Vector2 next))
                 return before;
             else
                 return Vector2.Lerp(before, next, interpolation);
@@ -319,8 +319,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static Color ValueAtFrame(SortedDictionary<uint, Color> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Color before, out Color next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Color before, out Color next))
                 return before;
             else
                 return Color.Lerp(before, next, interpolation);
@@ -328,8 +327,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static float ValueAtFrame(SortedDictionary<uint, float> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out float before, out float next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out float before, out float next))
                 return before;
             else
                 return next * interpolation + before * (1 - interpolation);
@@ -337,8 +335,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static Spotlight ValueAtFrame(SortedDictionary<uint, Spotlight> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Spotlight before, out Spotlight next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Spotlight before, out Spotlight next))
                 return before;
             else
                 return Spotlight.Lerp(before, next, interpolation);
@@ -346,8 +343,7 @@ namespace SATools.SAModel.ObjData.Animation
 
         private static Quaternion ValueAtFrame(SortedDictionary<uint, Quaternion> keyframes, float frame)
         {
-            float interpolation = GetNearestFrames(keyframes, frame, out Quaternion before, out Quaternion next);
-            if (interpolation == 0)
+            if (!GetNearestFrames(keyframes, frame, out float interpolation, out Quaternion before, out Quaternion next))
                 return before;
             else
                 return System.Numerics.Quaternion.Lerp(before, next, interpolation);

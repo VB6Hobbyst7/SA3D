@@ -15,30 +15,30 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Materialdata <br/>
         /// Null if no surface data exists
         /// </summary>
-        public BufferMaterial Material { get; }
+        public BufferMaterial? Material { get; private init; }
 
         /// <summary>
         /// Vertex storage <br/>
         /// Can't be null
         /// </summary>
-        public BufferVertex[] Vertices { get; }
+        public BufferVertex[]? Vertices { get; private init; }
 
         /// <summary>
         /// Polygon corners <br/>
         /// Null if no corners exist
         /// </summary>
-        public BufferCorner[] Corners { get; private set; }
+        public BufferCorner[]? Corners { get; private set; }
 
         /// <summary>
         /// Index list for all triangles, which refer to the <see cref="Corners"/> <br/>
         /// If null, use the corners in order
         /// </summary>
-        public uint[] TriangleList { get; private set; }
+        public uint[]? TriangleList { get; private set; }
 
         /// <summary>
         /// If true, the vertices will be added onto the existing buffered vertices
         /// </summary>
-        public bool ContinueWeight { get; }
+        public bool ContinueWeight { get; private init; }
 
         /// <summary>
         /// Vertex offset for when writing vertices into the buffer
@@ -49,6 +49,8 @@ namespace SATools.SAModel.ModelData.Buffer
         /// Vertex offset for the polycorners' vertex indices
         /// </summary>
         public ushort VertexReadOffset { get; set; }
+
+        private BufferMesh() { }
 
         /// <summary>
         /// Creates a new Buffermesh from only vertex data (used for deforming models)
@@ -129,11 +131,17 @@ namespace SATools.SAModel.ModelData.Buffer
             }
             Array.Resize(ref corners, newArraySize);
 
-            // get the triangle mapping
-            (BufferCorner[] distinct, int[] map) = corners.CreateDistinctMap();
+            if(corners.CreateDistinctMap(out BufferCorner[]? distinct, out int[]? map))
+            { 
+                Corners = distinct;
+                TriangleList = (uint[])(object)map; // i cant believe this case works lol
+            }
+            else
+            {
+                Corners = corners;
+                TriangleList = null;
+            }
 
-            Corners = distinct;
-            TriangleList = (uint[])(object)map; // i cant believe this works lol
         }
 
         /// <summary>
@@ -225,7 +233,16 @@ namespace SATools.SAModel.ModelData.Buffer
 
         object ICloneable.Clone() => Clone();
 
-        public BufferMesh Clone() => new((BufferVertex[])Vertices.Clone(), ContinueWeight, (BufferCorner[])Corners.Clone(), (uint[])TriangleList.Clone(), Material.Clone());
+        public BufferMesh Clone()
+        {
+            return new() {
+                ContinueWeight = ContinueWeight,
+                Vertices = (BufferVertex[]?)Vertices?.Clone(),
+                Corners = (BufferCorner[]?)Corners?.Clone(),
+                TriangleList = (uint[]?)TriangleList?.Clone(),
+                Material = Material?.Clone()
+            };
+        }
 
     }
 }

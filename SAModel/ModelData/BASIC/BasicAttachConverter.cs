@@ -46,7 +46,7 @@ namespace SATools.SAModel.ModelData.BASIC
                 Matrix4x4.Invert(normalMtx, out Matrix4x4 invertedNormalMtx);
 
                 Vector3[] positions = new Vector3[weightedAttach.Vertices.Length];
-                Vector3[] normals = new Vector3[positions.Length];
+                Vector3[]? normals = new Vector3[positions.Length];
                 bool hasNormals = false;
 
                 for (int i = 0; i < positions.Length; i++)

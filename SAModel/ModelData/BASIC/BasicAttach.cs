@@ -29,12 +29,12 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <summary>
         /// Name of the normal data
         /// </summary>
-        public string NormalName { get; set; }
+        public string? NormalName { get; set; }
 
         /// <summary>
         /// Normal data
         /// </summary>
-        public Vector3[] Normals { get; }
+        public Vector3[]? Normals { get; }
 
         /// <summary>
         /// Name of the mesh data
@@ -68,7 +68,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// <param name="normals">Vertex normal data</param>
         /// <param name="meshes">Mesh data</param>
         /// <param name="materials">Material data for the meshes</param>
-        public BasicAttach(Vector3[] positions, Vector3[] normals, Mesh[] meshes, Material[] materials)
+        public BasicAttach(Vector3[] positions, Vector3[]? normals, Mesh[] meshes, Material[] materials)
         {
             Positions = positions;
             Normals = normals;
@@ -115,7 +115,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
             // creating the data sets
             Vector3[] positions = new Vector3[source.ToUInt32(address + 8)];
-            Vector3[] normals;
+            Vector3[]? normals;
             Mesh[] meshes = new Mesh[source.ToUInt16(address + 20)];
 
             // reading positions
@@ -133,7 +133,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
             // reading normals
             uint nrmAddr = source.ToUInt32(address + 4);
-            string nrmName = null;
+            string? nrmName = null;
             if (nrmAddr != 0)
             {
                 normals = new Vector3[positions.Length];
@@ -214,6 +214,9 @@ namespace SATools.SAModel.ModelData.BASIC
             uint nrmAddress = 0;
             if (Normals != null)
             {
+                if (NormalName == null)
+                    throw new NullReferenceException("Normal name is null!");
+
                 if (labels.ContainsKey(NormalName))
                     nrmAddress = labels[NormalName];
                 else
@@ -272,7 +275,7 @@ namespace SATools.SAModel.ModelData.BASIC
             return outAddress;
         }
 
-        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[] textures)
+        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[]? textures)
         {
             // write position data
             if (!labels.Contains(PositionName))
@@ -298,7 +301,7 @@ namespace SATools.SAModel.ModelData.BASIC
             }
 
             // write normal data
-            if (!labels.Contains(NormalName))
+            if (NormalName != null && !labels.Contains(NormalName))
             {
                 writer.Write("NORMAL ");
                 writer.Write(NormalName);
@@ -306,6 +309,9 @@ namespace SATools.SAModel.ModelData.BASIC
 
                 writer.WriteLine("START");
                 writer.WriteLine();
+
+                if (Normals == null)
+                    throw new NullReferenceException("Normals are null!");
 
                 foreach (Vector3 p in Normals)
                 {
@@ -413,7 +419,7 @@ namespace SATools.SAModel.ModelData.BASIC
 
         public override Attach Clone()
         {
-            return new BasicAttach((Vector3[])Positions.Clone(), (Vector3[])Normals.Clone(), Meshes.ContentClone(), (Material[])Materials.Clone())
+            return new BasicAttach((Vector3[])Positions.Clone(), (Vector3[]?)Normals?.Clone() ?? null, Meshes.ContentClone(), (Material[])Materials.Clone())
             {
                 Name = Name,
                 PositionName = PositionName,

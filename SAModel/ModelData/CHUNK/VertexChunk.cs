@@ -2,6 +2,7 @@
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
@@ -90,7 +91,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         public override string ToString()
             => $"{{ {Position.X: 0.000;-0.000}, {Position.Y: 0.000;-0.000}, {Position.Z: 0.000;-0.000} }}, {{ {Normal.X: 0.000;-0.000}, {Normal.Y: 0.000;-0.000}, {Normal.Z: 0.000;-0.000} }} : {Index}, {Weight:F3}";
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ChunkVertex vertex &&
                    Position.Equals(vertex.Position) &&
@@ -180,7 +181,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <param name="source">Byte source</param>
         /// <param name="address">Address at which the chunk is located</param>
         /// <returns></returns>
-        public static VertexChunk Read(byte[] source, ref uint address)
+        public static VertexChunk? Read(byte[] source, ref uint address)
         {
             uint header1 = source.ToUInt32(address);
             uint header2 = source.ToUInt32(address + 4);

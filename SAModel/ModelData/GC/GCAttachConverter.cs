@@ -129,7 +129,7 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // stitching polygons together
-                BufferMaterial currentMaterial = null;
+                BufferMaterial? currentMaterial = null;
                 Mesh ProcessBufferMesh(int index)
                 {
                     // generating parameter info
@@ -366,10 +366,10 @@ namespace SATools.SAModel.ModelData.GC
             {
                 List<BufferMesh> meshes = new();
 
-                Vector3[] positions = null;
-                Vector3[] normals = null;
-                Color[] colors = null;
-                Vector2[] uvs = null;
+                Vector3[]? positions = null;
+                Vector3[]? normals = null;
+                Color[]? colors = null;
+                Vector2[]? uvs = null;
 
                 if (atc.VertexData.TryGetValue(VertexAttribute.Position, out VertexSet tmp))
                     positions = tmp.Vector3Data;
@@ -382,6 +382,9 @@ namespace SATools.SAModel.ModelData.GC
 
                 if (atc.VertexData.TryGetValue(VertexAttribute.Color0, out tmp))
                     colors = tmp.ColorData;
+
+                if (positions == null)
+                    throw new NullReferenceException("Mandatory positions dont exit");
 
                 BufferMaterial material = new()
                 {
@@ -538,6 +541,10 @@ namespace SATools.SAModel.ModelData.GC
                 for (int i = 0; i < meshes.Count; i++)
                 {
                     BufferMesh vtxMesh = meshes[i];
+
+                    if (vtxMesh.Corners == null || vtxMesh.TriangleList == null || vtxMesh.Material == null)
+                        throw new NullReferenceException("First mesh data invalid");
+
                     meshes[i] = new(bufferVertices.ToArray(), false, vtxMesh.Corners, vtxMesh.TriangleList, vtxMesh.Material);
 
                 }

@@ -3,6 +3,7 @@ using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -64,7 +65,7 @@ namespace SATools.SAModel.ModelData
         public BufferMesh[] MeshData
         {
             get => _meshData;
-            set
+            [MemberNotNull(nameof(_meshData))] set
             {
                 _meshData = value;
                 BufferHasOpaque = _meshData.Any(x => !x.Material?.UseAlpha == true);
@@ -88,7 +89,11 @@ namespace SATools.SAModel.ModelData
         public virtual bool HasWeight
             => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
 
-        protected Attach() { }
+        protected Attach() 
+        {
+            _meshData = Array.Empty<BufferMesh>();
+            Name = string.Empty;
+        }
 
         /// <summary>
         /// Create a new attach using existing meshdata
@@ -196,7 +201,7 @@ namespace SATools.SAModel.ModelData
         /// </summary>
         /// <param name="writer">Output stream</param>
         /// <param name="DX">Whether the model is in DX format</param>
-        public virtual void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[] textures)
+        public virtual void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[]? textures)
         {
             throw new NotSupportedException("Standard attach doesnt have an available NJA format");
         }
@@ -233,8 +238,7 @@ namespace SATools.SAModel.ModelData
 
         public virtual void RecalculateBounds()
         {
-            Vector3[] points = MeshData.Where(x => x.Vertices != null).SelectMany(x => x.Vertices.Select(y => y.Position)).ToArray();
-            MeshBounds = Bounds.FromPoints(points);
+            MeshBounds = Bounds.FromPoints(MeshData.SelectManyIgnoringNull(x => x.Vertices).Select(x => x.Position));
         }
 
         object ICloneable.Clone()

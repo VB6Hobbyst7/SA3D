@@ -1,4 +1,6 @@
 ﻿using SATools.SACommon;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
@@ -68,7 +70,7 @@ namespace SATools.SAModel.Structs
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        public static Bounds FromPoints(Vector3[] points)
+        public static Bounds FromPoints(IEnumerable<Vector3> points)
         {
             Vector3 position = Vector3Extensions.Center(points);
             float radius = 0;

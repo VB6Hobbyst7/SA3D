@@ -18,7 +18,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Vertex data of the model
         /// </summary>
-        public VertexChunk[] VertexChunks { get; }
+        public VertexChunk[]? VertexChunks { get; }
 
         /// <summary>
         /// C struct name of the vertex chunk array
@@ -28,7 +28,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         /// <summary>
         /// Polygon data of the model
         /// </summary>
-        public PolyChunk[] PolyChunks { get; }
+        public PolyChunk[]? PolyChunks { get; }
 
         /// <summary>
         /// C struct name for the polygon chunk array
@@ -37,24 +37,22 @@ namespace SATools.SAModel.ModelData.CHUNK
 
         public override AttachFormat Format => AttachFormat.CHUNK;
 
-        private bool hasWeight;
+        private bool _hasWeight;
 
-        public override bool HasWeight => hasWeight;
+        public override bool HasWeight => _hasWeight;
 
-        public ChunkAttach(VertexChunk[] vertexChunks, PolyChunk[] polyChunks)
+        public ChunkAttach(VertexChunk[]? vertexChunks, PolyChunk[]? polyChunks)
         {
             VertexChunks = vertexChunks;
             PolyChunks = polyChunks;
-            Initialize();
-        }
-
-        private void Initialize()
-        {
+            
             List<Vector3> pos = new();
             if (VertexChunks != null)
+            {
                 foreach (VertexChunk cnk in VertexChunks)
                     foreach (ChunkVertex vtx in cnk.Vertices)
                         pos.Add(vtx.Position);
+            }
             MeshBounds = Bounds.FromPoints(pos.ToArray());
             UpdateWeight();
 
@@ -64,6 +62,16 @@ namespace SATools.SAModel.ModelData.CHUNK
             PolyName = "poly_" + identifier;
         }
 
+        private ChunkAttach(VertexChunk[]? vertexChunks, string vertexName, PolyChunk[]? polyChunks, string polyName, bool hasWeight, Bounds meshBounds)
+        {
+            VertexChunks = vertexChunks;
+            VertexName = vertexName;
+            PolyChunks = polyChunks;
+            PolyName = polyName;
+            _hasWeight = hasWeight;
+            MeshBounds = meshBounds;
+        }
+
         /// <summary>
         /// Updates the <see cref="HasWeight"/> property, since calculating it might take longer
         /// </summary>
@@ -71,7 +79,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             if (PolyChunks == null || !PolyChunks.Any(a => a is PolyChunkStrip))
             {
-                hasWeight = VertexChunks != null && VertexChunks.Any(a => a.HasWeight);
+                _hasWeight = VertexChunks != null && VertexChunks.Any(a => a.HasWeight);
                 return;
             }
             List<int> ids = new();
@@ -80,12 +88,12 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     if (vc.HasWeight)
                     {
-                        hasWeight = true;
+                        _hasWeight = true;
                         return;
                     }
                     ids.AddRange(Enumerable.Range(vc.IndexOffset, vc.Vertices.Length));
                 }
-            hasWeight = PolyChunks.OfType<PolyChunkStrip>().SelectMany(a => a.Strips).SelectMany(a => a.Corners).Any(a => !ids.Contains(a.Index));
+            _hasWeight = PolyChunks.OfType<PolyChunkStrip>().SelectMany(a => a.Strips).SelectMany(a => a.Corners).Any(a => !ids.Contains(a.Index));
         }
 
         /// <summary>
@@ -103,14 +111,14 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             uint vertexAddress = source.ToUInt32(address);
             string vertexName = "vertex_" + identifier;
-            VertexChunk[] vertexChunks = null;
+            VertexChunk[]? vertexChunks = null;
             if (vertexAddress != 0)
             {
                 vertexAddress -= imagebase;
                 vertexName = labels.ContainsKey(vertexAddress) ? labels[vertexAddress] : "vertex_" + vertexAddress.ToString("X8");
 
                 List<VertexChunk> chunks = new();
-                VertexChunk cnk = VertexChunk.Read(source, ref vertexAddress);
+                VertexChunk? cnk = VertexChunk.Read(source, ref vertexAddress);
                 while (cnk != null)
                 {
                     chunks.Add(cnk);
@@ -121,7 +129,7 @@ namespace SATools.SAModel.ModelData.CHUNK
 
             uint polyAddress = source.ToUInt32(address += 4);
             string polyName = "poly_" + identifier;
-            PolyChunk[] polyChunks = null;
+            PolyChunk[]? polyChunks = null;
             if (polyAddress != 0)
             {
                 polyAddress -= imagebase;
@@ -195,20 +203,14 @@ namespace SATools.SAModel.ModelData.CHUNK
             return address;
         }
 
-        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[] textures)
+        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[]? textures)
         {
             base.WriteNJA(writer, DX, labels, textures);
         }
 
         public override Attach Clone()
         {
-            return new ChunkAttach(VertexChunks.ContentClone(), PolyChunks.ContentClone())
-            {
-                Name = Name,
-                MeshBounds = MeshBounds,
-                VertexName = VertexName,
-                PolyName = PolyName,
-            };
+            return new ChunkAttach(VertexChunks?.ContentClone(), VertexName, PolyChunks?.ContentClone(), PolyName, _hasWeight, MeshBounds);
         }
 
         public override string ToString() => $"ChunkAttach - {Name} - {(VertexChunks == null ? 0 : VertexChunks.Length)} - {(PolyChunks == null ? 0 : PolyChunks.Length)}";

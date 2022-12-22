@@ -26,7 +26,7 @@ namespace SATools.SAModel.ObjData
 
         private Vector3 _scale = Vector3.One;
 
-        internal Attach _attach;
+        internal Attach? _attach;
 
         public const uint Size = 0x34;
 
@@ -38,17 +38,20 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Model data of the object
         /// </summary>
-        public Attach Attach
+        public Attach? Attach
         {
             get => _attach;
             set
             {
-                foreach (ObjectNode o in GetObjects())
+                if(value != null)
                 {
-                    if (o == this || o.Attach == null)
-                        continue;
-                    if (o.Attach.Format != _attach.Format)
-                        throw new FormatException($"Format of the attach doesnt match! Model is {o.Attach.Format}, while the new attach is {_attach.Format}");
+                    foreach (ObjectNode o in GetObjects())
+                    {
+                        if (o == this || o.Attach == null)
+                            continue;
+                        if (o.Attach.Format != value.Format)
+                            throw new FormatException($"Format of the attach doesnt match! Model is {o.Attach.Format}, while the new attach is {value.Format}");
+                    }
                 }
                 _attach = value;
             }
@@ -131,12 +134,12 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// The objects parent in the hierarchy
         /// </summary>
-        public ObjectNode Parent { get; private set; }
+        public ObjectNode? Parent { get; private set; }
 
         /// <summary>
         /// Returns the Sibling of this object. returns null if it has no sibling
         /// </summary>
-        private ObjectNode Sibling
+        private ObjectNode? Sibling
         {
             get
             {
@@ -236,7 +239,7 @@ namespace SATools.SAModel.ObjData
         /// Creates an empty object and sets its parent
         /// </summary>
         /// <param name="Parent"></param>
-        public ObjectNode(ObjectNode Parent) : this()
+        public ObjectNode(ObjectNode? Parent) : this()
         {
             if (Parent == null)
                 return;
@@ -284,7 +287,7 @@ namespace SATools.SAModel.ObjData
         public static ObjectNode Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
             => Read(source, address, imageBase, format, DX, null, labels, attaches);
 
-        private static ObjectNode Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, ObjectNode parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
+        private static ObjectNode Read(byte[] source, uint address, uint imageBase, AttachFormat format, bool DX, ObjectNode? parent, Dictionary<uint, string> labels, Dictionary<uint, Attach> attaches)
         {
             string name = labels.ContainsKey(address) ? labels[address] : "object_" + address.ToString("X8");
 
@@ -295,7 +298,7 @@ namespace SATools.SAModel.ObjData
             bool morph = !attribs.HasFlag(ObjectAttributes.NoMorph);
 
             // reading the attach
-            Attach atc = null;
+            Attach? atc = null;
             uint tmpaddr = source.ToUInt32(address += 4);
             if (tmpaddr != 0)
             {
@@ -362,7 +365,7 @@ namespace SATools.SAModel.ObjData
             Scale.Write(writer, IOType.Float);
 
             writer.WriteUInt32(_children.Count == 0 ? 0 : labels.ContainsKey(_children[0].Name) ? labels[_children[0].Name] : throw new NullReferenceException($"Child \"{_children[0].Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
-            ObjectNode sibling = Sibling;
+            ObjectNode? sibling = Sibling;
             writer.WriteUInt32(sibling == null ? 0 : labels.ContainsKey(sibling.Name) ? labels[sibling.Name] : throw new NullReferenceException($"Sibling \"{sibling.Name}\" of \"{Name}\" has not been written yet / cannot be found in labels!"));
 
             labels.AddLabel(Name, address);
@@ -386,11 +389,13 @@ namespace SATools.SAModel.ObjData
             writer.Write(new byte[models.Length * Size]);
             uint modelsEnd = writer.Position;
 
-            Attach[] attaches = models.Where(x => x.Attach != null).Select(x => x.Attach).ToArray();
-
             // write attaches
-            foreach (var atc in attaches)
+            foreach (var model in models)
             {
+                if (model.Attach == null)
+                    continue;
+
+                Attach atc = model.Attach;
                 if (labels.ContainsKey(atc.Name))
                     continue;
 
@@ -452,7 +457,7 @@ namespace SATools.SAModel.ObjData
             writer.Write(ChildCount == 0 ? "NULL" : _children[0].Name);
             writer.WriteLine(",");
 
-            ObjectNode sibling = Sibling;
+            ObjectNode? sibling = Sibling;
             writer.Write("Sibling \t");
             writer.WriteLine(sibling == null ? "NULL" : sibling.Name);
 
@@ -525,6 +530,13 @@ namespace SATools.SAModel.ObjData
             return result.ToArray();
         }
 
+        public Attach[] GetAttaches()
+        {
+            List<Attach> result = new();
+
+            return result.ToArray();
+        }
+
         /// <summary>
         /// Returns the amount of objects in the hierarchy starting at this objec
         /// </summary>
@@ -582,7 +594,15 @@ namespace SATools.SAModel.ObjData
         {
             result.Add(this);
             foreach (ObjectNode item in _children)
-                result.AddRange(item.GetObjects());
+                item.GetObjects(result);
+        }
+
+        private void GetAttaches(List<Attach> result)
+        {
+            if (Attach != null)
+                result.Add(Attach);
+            foreach (ObjectNode item in _children)
+                item.GetAttaches(result);
         }
 
         /// <summary>

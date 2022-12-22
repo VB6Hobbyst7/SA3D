@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
@@ -91,12 +92,13 @@ namespace SATools.SAModel.ModelData.GC
             VertexSet? colors = GetSet(VertexAttribute.Color0);
             VertexSet? uvs = GetSet(VertexAttribute.Tex0);
 
-            (Vector3[] distinctPositions, int[] positionMap) = (positions?.Vector3Data).CreateDistinctMap();
-            (Vector3[] distinctNormals, int[] normalMap) = (normals?.Vector3Data).CreateDistinctMap();
-            (Vector2[] distinctUvs, int[] uvMap) = (uvs?.UVData).CreateDistinctMap();
-            (Color[] distinctcolors, int[] colorMap) = (colors?.ColorData).CreateDistinctMap();
+            bool useDistinct = false;
+            useDistinct |= (positions?.Vector3Data).CreateDistinctMap(out Vector3[]? distinctPositions, out int[]? positionMap);
+            useDistinct |= (normals?.Vector3Data).CreateDistinctMap(out Vector3[]? distinctNormals, out int[]? normalMap);
+            useDistinct |= (uvs?.UVData).CreateDistinctMap(out Vector2[]? distinctUvs, out int[]? uvMap);
+            useDistinct |= (colors?.ColorData).CreateDistinctMap(out Color[]? distinctcolors, out int[]? colorMap);
 
-            if (positionMap == null && normalMap == null && uvMap == null && colorMap == null)
+            if (!useDistinct)
                 return;
 
             // adjust the indices of the polygon corners
@@ -130,35 +132,36 @@ namespace SATools.SAModel.ModelData.GC
             }
 
             // replace the vertex data
-            IndexAttributeParameter indexParam;
             Mesh[] source = OpaqueMeshes;
             if (source == null || source.Length == 0)
                 source = TransparentMeshes;
 
-            indexParam = (IndexAttributeParameter)source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
+            IParameter? parameter = source[0].Parameters.FirstOrDefault(x => x.Type == ParameterType.IndexAttributes);
+            if (parameter is not IndexAttributeParameter indexParam)
+                throw new NullReferenceException("No index parameter in mesh");
 
-            if (positionMap != null)
+            if (distinctPositions != null)
             {
                 VertexData[VertexAttribute.Position] = new(distinctPositions, false);
                 if (distinctPositions.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.Position16BitIndex;
             }
 
-            if (normalMap != null)
+            if (distinctNormals != null)
             {
                 VertexData[VertexAttribute.Normal] = new(distinctNormals, true);
                 if (distinctNormals.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.Normal16BitIndex;
             }
 
-            if (uvMap != null)
+            if (distinctUvs != null)
             {
                 VertexData[VertexAttribute.Tex0] = new(distinctUvs);
                 if (distinctUvs.Length <= 256)
                     indexParam.IndexAttributes &= ~IndexAttributes.UV16BitIndex;
             }
 
-            if (colorMap != null)
+            if (distinctcolors != null)
             {
                 VertexData[VertexAttribute.Color0] = new(distinctcolors);
                 if (distinctcolors.Length <= 256)
@@ -201,9 +204,10 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // getting the distinct corners and generating strip information with them
-                var (distinct, map) = triangles.CreateDistinctMap();
-                if (map == null)
+                if(!triangles.CreateDistinctMap(out Corner[]? distinct, out int[]? map))
+                {
                     return mesh;
+                }
 
                 int[][] strips = Strippifier.Strip(map);
 
@@ -298,7 +302,7 @@ namespace SATools.SAModel.ModelData.GC
             };
         }
 
-        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[] textures)
+        public override void WriteNJA(TextWriter writer, bool DX, List<string> labels, string[]? textures)
         {
             throw new NotSupportedException("GC attach doesnt have an available NJA format");
         }

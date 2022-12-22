@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 
 namespace SATools.SACommon
 {
@@ -78,13 +80,19 @@ namespace SATools.SACommon
             return result;
         }
 
-        public static (T[]? distinct, int[]? map) CreateDistinctMap<T>(this IList<T> collection) where T : IEquatable<T>
+        public static bool CreateDistinctMap<T>(
+            this IList<T>? collection, 
+            [MaybeNullWhen(false)] out T[] distinct, 
+            [MaybeNullWhen(false)] out int[] map
+            ) where T : IEquatable<T>
         {
+            distinct = null;
+            map = null;
             if (collection == null)
-                return (null, null);
+                return false;
 
-            int[] map = new int[collection.Count];
-            T[] distinct = new T[collection.Count];
+            int[] resultMap = new int[collection.Count];
+            T[] resultDistinct = new T[collection.Count];
             int distinctCount = 0;
 
             int i = 0;
@@ -93,15 +101,15 @@ namespace SATools.SACommon
 
                 for (int j = 0; j < distinctCount; j++)
                 {
-                    if (distinct[j].Equals(c))
+                    if (resultDistinct[j].Equals(c))
                     {
-                        map[i] = j;
+                        resultMap[i] = j;
                         goto found;
                     }
                 }
 
-                map[i] = distinctCount;
-                distinct[distinctCount] = c;
+                resultMap[i] = distinctCount;
+                resultDistinct[distinctCount] = c;
                 distinctCount++;
 
             found:
@@ -109,11 +117,14 @@ namespace SATools.SACommon
                 i++;
             }
 
-            if (distinctCount == map.Length)
-                return (distinct, null);
+            if (distinctCount == resultMap.Length)
+                return false;
 
-            Array.Resize(ref distinct, distinctCount);
-            return (distinct, map);
+            map = resultMap;
+            distinct = new T[distinctCount];
+            Array.Copy(resultDistinct, distinct, distinctCount);
+
+            return true;
         }
 
         public static void AddLabel(this Dictionary<string, uint> labels, string label, uint address)
@@ -152,6 +163,17 @@ namespace SATools.SACommon
             while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
                 ms.Write(buffer, 0, read);
             return ms.ToArray();
+        }
+
+        public static IEnumerable<TResult> SelectManyIgnoringNull<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, IEnumerable<TResult>?> selector)
+        {
+#pragma warning disable CS8603 // We can manually ignore the possible null return this here
+            return source.Select(selector)
+                .Where(e => e != null)
+                .SelectMany(e => e);
+#pragma warning restore CS8603
         }
     }
 }

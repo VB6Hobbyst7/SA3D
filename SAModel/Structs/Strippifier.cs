@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SATools.SAModel.Structs
@@ -60,7 +61,7 @@ namespace SATools.SAModel.Structs
             /// </summary>
             /// <param name="other">Vertex to check connection with</param>
             /// <returns></returns>
-            public Edge IsConnectedWith(Vertex other)
+            public Edge? IsConnectedWith(Vertex other)
             {
                 if (edges.ContainsKey(other))
                     return edges[other];
@@ -203,7 +204,7 @@ namespace SATools.SAModel.Structs
             /// <returns></returns>
             private Edge AddEdge(Vertex v1, Vertex v2, List<Edge> edges)
             {
-                Edge e = v1.IsConnectedWith(v2);
+                Edge? e = v1.IsConnectedWith(v2);
 
                 if (e == null)
                 {
@@ -225,7 +226,7 @@ namespace SATools.SAModel.Structs
             /// </summary>
             /// <param name="vert"></param>
             /// <returns></returns>
-            public bool HasVertex(Vertex vert)
+            public bool HasVertex(Vertex? vert)
             {
                 return vertices.Contains(vert);
             }
@@ -237,7 +238,7 @@ namespace SATools.SAModel.Structs
             /// <param name="v1"></param>
             /// <param name="v2"></param>
             /// <returns></returns>
-            public Vertex GetThirdVertex(Vertex v1, Vertex v2)
+            public Vertex? GetThirdVertex(Vertex v1, Vertex v2)
             {
                 if (vertices.Contains(v1) && vertices.Contains(v2))
                     foreach (Vertex v in vertices)
@@ -251,7 +252,7 @@ namespace SATools.SAModel.Structs
             /// </summary>
             /// <param name="other"></param>
             /// <returns></returns>
-            public Edge GetSharedEdge(Triangle other)
+            public Edge? GetSharedEdge(Triangle other)
             {
                 foreach (Edge e in edges)
                     if (other.edges.Contains(e))
@@ -265,7 +266,7 @@ namespace SATools.SAModel.Structs
             /// <param name="v1"></param>
             /// <param name="v2"></param>
             /// <returns></returns>
-            public Triangle NextTriangleS(Vertex v1, Vertex v2)
+            public Triangle? NextTriangleS(Vertex? v1, Vertex? v2)
             {
                 Triangle[] trisToUse = AvailableNeighbours;
 
@@ -289,7 +290,7 @@ namespace SATools.SAModel.Structs
                     if (weights[i] == 0)
                         return t;
 
-                    if (hasBase)
+                    if (v1 != null && v2 != null)
                     {
                         // if swap is needed, add weight
                         if (t.HasVertex(v2))
@@ -305,7 +306,7 @@ namespace SATools.SAModel.Structs
                     }
                     else
                     {
-                        Vertex[] eVerts = t.GetSharedEdge(this).vertices;
+                        Vertex[] eVerts = t.GetSharedEdge(this)?.vertices ?? throw new NullReferenceException("No shared edge found");
                         vConnection[i] = eVerts[0].AvailableTris + eVerts[1].AvailableTris;
                     }
 
@@ -335,14 +336,69 @@ namespace SATools.SAModel.Structs
             }
 
             /// <summary>
+            /// Gets the next triangle in a strip sequence (with swapping)
+            /// </summary>
+            /// <returns></returns>
+            /// <exception cref="NullReferenceException"></exception>
+            public Triangle? NextTriangleS()
+            {
+                Triangle[] trisToUse = AvailableNeighbours;
+
+                if (trisToUse.Length == 0)
+                    return null;
+                if (trisToUse.Length == 1)
+                    return trisToUse[0];
+
+                int[] weights = new int[trisToUse.Length];
+                int[] vConnection = new int[trisToUse.Length];
+                int biggestConnection = 0;
+
+                int i = -1;
+                foreach (Triangle t in trisToUse)
+                {
+                    i++;
+                    weights[i] = t.AvailableNeighbours.Length;
+
+                    if (weights[i] == 0)
+                        return t;
+
+                    Vertex[] eVerts = t.GetSharedEdge(this)?.vertices ?? throw new NullReferenceException("No shared edge found");
+                    vConnection[i] = eVerts[0].AvailableTris + eVerts[1].AvailableTris;
+                    
+
+                    if (vConnection[i] > biggestConnection)
+                        biggestConnection = vConnection[i];
+                }
+
+                i = -1;
+                foreach (int v in vConnection)
+                {
+                    i++;
+                    if (v < biggestConnection)
+                        weights[i] -= 1;
+                    else
+                        weights[i] += 1;
+                }
+
+                int index = 0;
+                for (int j = 1; j < trisToUse.Length; j++)
+                {
+                    if (weights[j] < weights[index])
+                        index = j;
+                }
+
+                return trisToUse[index];
+            }
+
+            /// <summary>
             /// Gets the next triangle in a strip sequence (no swapping)
             /// </summary>
             /// <param name="v1"></param>
             /// <param name="v2"></param>
             /// <returns></returns>
-            public Triangle NextTriangle(Vertex v1, Vertex v2)
+            public Triangle? NextTriangle(Vertex v1, Vertex v2)
             {
-                Edge e = v1.IsConnectedWith(v2);
+                Edge e = v1.IsConnectedWith(v2) ?? throw new InvalidOperationException("Vertices are not connected");
 
                 foreach (Triangle t in e.triangles)
                     if (t != this && !t.used)
@@ -461,7 +517,7 @@ namespace SATools.SAModel.Structs
 
             Triangle getFirstTri()
             {
-                Triangle resultTri = null;
+                Triangle? resultTri = null;
                 int curNCount = int.MaxValue;
 
                 int i = -1;
@@ -488,7 +544,7 @@ namespace SATools.SAModel.Structs
 
                 }
 
-                return resultTri;
+                return resultTri ?? throw new NullReferenceException("No more first triangles");
             }
 
             Triangle firstTri = getFirstTri();
@@ -506,7 +562,7 @@ namespace SATools.SAModel.Structs
                 Triangle currentTri = firstTri;
                 currentTri.used = true;
 
-                Triangle newTri = currentTri.NextTriangleS(null, null);
+                Triangle newTri = currentTri.NextTriangleS() ?? throw new InvalidOperationException("First tri somehow has no usable neighbours");
 
                 // If the two triangles have a broken cull flow, then dont continue
                 // the strip (well ok, there is a chance it could continue on
@@ -524,12 +580,12 @@ namespace SATools.SAModel.Structs
 
                 // get the starting vert
                 // (the one which is not connected with the new tri)
-                Vertex[] sharedVerts = currentTri.GetSharedEdge(newTri).vertices;
-                Vertex prevVert = currentTri.GetThirdVertex(sharedVerts[0], sharedVerts[1]);
+                Vertex[] sharedVerts = currentTri.GetSharedEdge(newTri)?.vertices ?? throw new InvalidOperationException("Triangles are somehow not connected");
+                Vertex prevVert = currentTri.GetThirdVertex(sharedVerts[0], sharedVerts[1]) ?? throw new InvalidOperationException("Triangles are somehow not connected");
 
                 // get the vertex which wouldnt be connected to
                 // the tri afterwards, to prevent swapping 
-                Triangle secNewTri = newTri.NextTriangleS(null, null);
+                Triangle? secNewTri = newTri.NextTriangleS();
                 Vertex currentVert;
                 Vertex nextVert;
 
@@ -540,12 +596,13 @@ namespace SATools.SAModel.Structs
                 // then that would mean that the second tri has only one neighbour,
                 // which can only occur if the first tri also has only one
                 // neighbour. Only two triangles in the strip! boom!
+                // Addendum: reading this, it sounds wrong lol - 113D
                 if (secNewTri == null)
                 {
                     currentVert = sharedVerts[1];
                     nextVert = sharedVerts[0];
 
-                    int thirdVertex = newTri.GetThirdVertex(currentVert, nextVert).index;
+                    int thirdVertex = newTri.GetThirdVertex(currentVert, nextVert)?.index ?? throw new InvalidOperationException("Triangles are somehow not connected");
 
                     strips.Add(new int[] { prevVert.index, nextVert.index, currentVert.index, thirdVertex });
                     written += 2;
@@ -567,99 +624,106 @@ namespace SATools.SAModel.Structs
                 }
 
                 // initializing the strip base
-                List<int> strip = new()
-                { prevVert.index, currentVert.index, nextVert.index };
-                written++;
+                int[] strip = StripLoop(
+                    mesh, firstTri, ref written, 
+                    newTri, secNewTri,
+                    prevVert, currentVert, nextVert);
 
-                // shift verts two forward
-                prevVert = nextVert;
-                currentVert = newTri.GetThirdVertex(currentVert, nextVert);
-
-                // shift triangles one forward
-                currentTri = newTri;
-                newTri = currentTri.HasBrokenCullFlow(secNewTri) ? null : secNewTri;
-
-                // creating the strip
-                bool reachedEnd = false;
-                bool reversedList = false;
-                while (!reachedEnd)
-                {
-                    // writing the next index
-                    strip.Add(currentVert.index);
-                    written++;
-
-                    // ending or reversing the loop when the current
-                    // tri is None (end of the strip)
-                    if (newTri == null)
-                    {
-                        if (!reversedList && firstTri.AvailableNeighbours.Length > 0)
-                        {
-                            reversedList = true;
-                            prevVert = mesh.vertices[strip[1]];
-                            currentVert = mesh.vertices[strip[0]];
-                            newTri = firstTri.NextTriangle(prevVert, currentVert);
-                            if (newTri == null)
-                            {
-                                reachedEnd = true;
-                                continue;
-                            }
-
-                            strip.Reverse();
-
-                            Triangle tTri = firstTri;
-                            firstTri = currentTri;
-                            currentTri = tTri;
-                        }
-                        else
-                        {
-                            reachedEnd = true;
-                            continue;
-                        }
-                    }
-
-                    // getting the next vertex to write
-                    nextVert = newTri.GetThirdVertex(prevVert, currentVert);
-
-                    if (nextVert == null)
-                    {
-                        reachedEnd = true;
-                        continue;
-                    }
-
-                    prevVert = currentVert;
-                    currentVert = nextVert;
-
-                    Triangle oldTri = currentTri;
-                    currentTri = newTri;
-                    currentTri.used = true;
-
-                    if (oldTri.HasBrokenCullFlow(currentTri))
-                        newTri = null;
-                    else
-                        newTri = currentTri.NextTriangle(prevVert, currentVert);
-                }
-
-                // checking if the triangle is reversed
-                for (int i = 0; i < 3; i++)
-                {
-                    if (firstTri.vertices[0].index == strip[i])
-                    {
-                        if (firstTri.vertices[1].index == strip[(i + 1) % 3])
-                        {
-                            if (strip.Count % 2 == 1)
-                                strip.Reverse();
-                            else
-                                strip.Insert(0, strip[0]);
-                        }
-                        break;
-                    }
-                }
-
-                strips.Add(strip.ToArray());
+                strips.Add(strip);
                 firstTri = getFirstTri();
             }
 
             return strips.ToArray();
+        }
+    
+        private static int[] StripLoop(Mesh mesh, Triangle firstTriangle, ref int written, Triangle tri2, Triangle tri3, Vertex vert1, Vertex vert2, Vertex vert3)
+        {
+            List<int> strip = new() { vert1.index, vert2.index, vert3.index };
+            written++;
+
+            // shift verts two forward
+            Vertex prevVert = vert3;
+            Vertex currentVert = tri2.GetThirdVertex(vert2, vert3) ?? throw new InvalidOperationException("Third vertex somehow null");
+
+            // shift triangles one forward
+            Triangle currentTri = tri2;
+            Triangle? newTri = currentTri.HasBrokenCullFlow(tri3) ? null : tri3;
+
+            // creating the strip
+            bool reachedEnd = false;
+            bool reversedList = false;
+            while (!reachedEnd)
+            {
+                // writing the next index
+                strip.Add(currentVert.index);
+                written++;
+
+                // ending or reversing the loop when the current
+                // tri is None (end of the strip)
+                if (newTri == null)
+                {
+                    if (!reversedList && firstTriangle.AvailableNeighbours.Length > 0)
+                    {
+                        reversedList = true;
+                        prevVert = mesh.vertices[strip[1]];
+                        currentVert = mesh.vertices[strip[0]];
+                        newTri = firstTriangle.NextTriangle(prevVert, currentVert);
+                        if (newTri == null)
+                        {
+                            reachedEnd = true;
+                            continue;
+                        }
+
+                        strip.Reverse();
+
+                        (currentTri, firstTriangle) = (firstTriangle, currentTri);
+                    }
+                    else
+                    {
+                        reachedEnd = true;
+                        continue;
+                    }
+                }
+
+                // getting the next vertex to write
+                Vertex? nextVert = newTri.GetThirdVertex(prevVert, currentVert);
+
+                if (nextVert == null)
+                {
+                    reachedEnd = true;
+                    continue;
+                }
+
+                prevVert = currentVert;
+                currentVert = nextVert;
+
+                Triangle oldTri = currentTri;
+                currentTri = newTri;
+                currentTri.used = true;
+
+                if (oldTri.HasBrokenCullFlow(currentTri))
+                    newTri = null;
+                else
+                    newTri = currentTri.NextTriangle(prevVert, currentVert);
+            }
+
+            // checking if the triangle is reversed
+            for (int i = 0; i < 3; i++)
+            {
+                if (firstTriangle.vertices[0].index == strip[i])
+                {
+                    if (firstTriangle.vertices[1].index == strip[(i + 1) % 3])
+                    {
+                        if (strip.Count % 2 == 1)
+                            strip.Reverse();
+                        else
+                            strip.Insert(0, strip[0]);
+                    }
+                    break;
+                }
+            }
+
+            return strip.ToArray();
         }
     }
 }

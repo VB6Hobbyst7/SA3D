@@ -55,7 +55,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 /// </summary>
                 public ushort UserFlag3 { get; set; }
 
-                public override bool Equals(object obj)
+                public override bool Equals(object? obj)
                 {
                     return obj is Corner corner &&
                            Index == corner.Index &&
@@ -538,6 +538,12 @@ namespace SATools.SAModel.ModelData.CHUNK
         public PolyChunkStrip(ushort stripCount, byte userFlagCount) : base(ChunkType.Strip_Strip)
         {
             Strips = new Strip[stripCount];
+            UserAttributes = userFlagCount;
+        }
+
+        public PolyChunkStrip(Strip[] strips, byte userFlagCount) : base(ChunkType.Strip_Strip)
+        {
+            Strips = strips;
             UserAttributes = userFlagCount;
         }
 

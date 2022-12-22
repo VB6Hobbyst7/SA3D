@@ -255,7 +255,7 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="textures"></param>
-        public void WriteNJA(TextWriter writer, string[] textures)
+        public void WriteNJA(TextWriter writer, string[]? textures)
         {
             // starting the material
             writer.WriteLine("MATSTART");
@@ -311,7 +311,7 @@ namespace SATools.SAModel.ModelData.BASIC
             writer.WriteUInt32(Attributes);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Material material &&
                    DiffuseColor == material.DiffuseColor &&

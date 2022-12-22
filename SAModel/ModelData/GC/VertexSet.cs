@@ -14,7 +14,7 @@ namespace SATools.SAModel.ModelData.GC
     {
         public static readonly VertexSet NullVertexSet = new(VertexAttribute.Null, default, default, null);
 
-        private readonly object _data;
+        private readonly object? _data;
 
         /// <summary>
         /// The type of vertex data that is stored
@@ -67,7 +67,7 @@ namespace SATools.SAModel.ModelData.GC
         }
 
         public int DataLength
-            => ((Array)_data).Length;
+            => ((Array?)_data)?.Length ?? 0;
 
         public VertexSet(Vector3[] vector3Data, bool normals)
         {
@@ -117,7 +117,7 @@ namespace SATools.SAModel.ModelData.GC
         /// <param name="dataType"></param>
         /// <param name="structType"></param>
         /// <param name="fractionalBitCount"></param>
-        private VertexSet(VertexAttribute attribute, DataType dataType, StructType structType, object data)
+        private VertexSet(VertexAttribute attribute, DataType dataType, StructType structType, object? data)
         {
             Attribute = attribute;
             DataType = dataType;
@@ -186,7 +186,7 @@ namespace SATools.SAModel.ModelData.GC
             => Clone();
 
         public VertexSet Clone()
-            => new(Attribute, DataType, StructType, ((Array)_data).Clone());
+            => new(Attribute, DataType, StructType, ((Array?)_data)?.Clone() ?? null);
 
         public override string ToString() => $"{Attribute}: {DataLength}";
     }

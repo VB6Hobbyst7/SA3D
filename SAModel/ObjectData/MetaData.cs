@@ -19,12 +19,12 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Author of the file
         /// </summary>
-        public string Author { get; set; }
+        public string? Author { get; set; }
 
         /// <summary>
         /// Description of the files contents
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// C struct labels (only for reading)
