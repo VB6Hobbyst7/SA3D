@@ -135,7 +135,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static ModelFile? Read(string filename) 
+        public static ModelFile? Read(string filename)
             => Read(File.ReadAllBytes(filename), filename);
 
         /// <summary>

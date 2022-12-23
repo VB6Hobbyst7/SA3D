@@ -186,9 +186,9 @@ namespace SATools.SAModel.ModelData.CHUNK
 
                     foreach (ChunkAttach atc in chunks)
                     {
-                        if(atc.VertexChunks != null)
+                        if (atc.VertexChunks != null)
                             vertexChunks.AddRange(atc.VertexChunks);
-                        if(atc.PolyChunks != null)
+                        if (atc.PolyChunks != null)
                             polyChunks.AddRange(atc.PolyChunks);
                     }
 
@@ -201,8 +201,8 @@ namespace SATools.SAModel.ModelData.CHUNK
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
 
                 ChunkAttach chunkAttach = (ChunkAttach)node._attach;
-                
-                if(chunkAttach.VertexChunks != null)
+
+                if (chunkAttach.VertexChunks != null)
                 {
                     foreach (VertexChunk vtx in chunkAttach.VertexChunks)
                     {
@@ -225,7 +225,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                         }
                     }
                 }
-                    
+
             }
 
             ConvertModelFromChunk(model, optimize);
@@ -261,7 +261,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
 
                 // first, get rid of all duplicate vertices
-                if(colorVertices.CreateDistinctMap(out ChunkVertex[]? distinctVerts, out int[]? vertMap))
+                if (colorVertices.CreateDistinctMap(out ChunkVertex[]? distinctVerts, out int[]? vertMap))
                 {
                     vertices = distinctVerts;
 
@@ -404,7 +404,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 for (int j = 0; j < corners.Length; j++)
                 {
                     int index = corners[j].Index;
-                    if(vertMap != null)
+                    if (vertMap != null)
                         index = vertMap[index];
                     corners[j].Index = (ushort)sortedVertMap[index];
                 }
@@ -453,7 +453,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
             }
 
-            singleWeights = singleWeights.OrderBy(x => x.vertex.GetFirstWeightIndex() ).ToList();
+            singleWeights = singleWeights.OrderBy(x => x.vertex.GetFirstWeightIndex()).ToList();
             int multiWeightOffset = singleWeights.Count;
 
             // grouping the vertices together by node
@@ -608,7 +608,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         private static PolyChunk[] CreateStripChunk(PolyChunkStrip.Strip.Corner[] corners, BufferMaterial material)
         {
             PolyChunkStrip.Strip[] strips;
-            if(corners.CreateDistinctMap(out PolyChunkStrip.Strip.Corner[]? distinct, out int[]? map))
+            if (corners.CreateDistinctMap(out PolyChunkStrip.Strip.Corner[]? distinct, out int[]? map))
             {
                 int[][] stripMaps = Strippifier.Strip(map);
                 strips = new PolyChunkStrip.Strip[stripMaps.Length];

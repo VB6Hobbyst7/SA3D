@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
@@ -204,7 +203,7 @@ namespace SATools.SAModel.ModelData.GC
                 }
 
                 // getting the distinct corners and generating strip information with them
-                if(!triangles.CreateDistinctMap(out Corner[]? distinct, out int[]? map))
+                if (!triangles.CreateDistinctMap(out Corner[]? distinct, out int[]? map))
                 {
                     return mesh;
                 }

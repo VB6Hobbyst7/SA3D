@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using static SATools.SACommon.HelperExtensions;
 using static SATools.SACommon.StringExtensions;
 
@@ -65,7 +64,8 @@ namespace SATools.SAModel.ModelData
         public BufferMesh[] MeshData
         {
             get => _meshData;
-            [MemberNotNull(nameof(_meshData))] set
+            [MemberNotNull(nameof(_meshData))]
+            set
             {
                 _meshData = value;
                 BufferHasOpaque = _meshData.Any(x => !x.Material?.UseAlpha == true);
@@ -89,7 +89,7 @@ namespace SATools.SAModel.ModelData
         public virtual bool HasWeight
             => MeshData.Any(x => x.ContinueWeight || x.TriangleList == null || x.TriangleList.Length == 0);
 
-        protected Attach() 
+        protected Attach()
         {
             _meshData = Array.Empty<BufferMesh>();
             Name = string.Empty;

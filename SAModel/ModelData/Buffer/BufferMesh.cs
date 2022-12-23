@@ -131,8 +131,8 @@ namespace SATools.SAModel.ModelData.Buffer
             }
             Array.Resize(ref corners, newArraySize);
 
-            if(corners.CreateDistinctMap(out BufferCorner[]? distinct, out int[]? map))
-            { 
+            if (corners.CreateDistinctMap(out BufferCorner[]? distinct, out int[]? map))
+            {
                 Corners = distinct;
                 TriangleList = (uint[])(object)map; // i cant believe this case works lol
             }
@@ -235,7 +235,8 @@ namespace SATools.SAModel.ModelData.Buffer
 
         public BufferMesh Clone()
         {
-            return new() {
+            return new()
+            {
                 ContinueWeight = ContinueWeight,
                 Vertices = (BufferVertex[]?)Vertices?.Clone(),
                 Corners = (BufferCorner[]?)Corners?.Clone(),

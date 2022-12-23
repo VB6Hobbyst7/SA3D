@@ -45,7 +45,7 @@ namespace SATools.SAModel.ModelData.CHUNK
         {
             VertexChunks = vertexChunks;
             PolyChunks = polyChunks;
-            
+
             List<Vector3> pos = new();
             if (VertexChunks != null)
             {

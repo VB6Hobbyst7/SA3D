@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SATools.SAModel.Structs
@@ -364,7 +363,7 @@ namespace SATools.SAModel.Structs
 
                     Vertex[] eVerts = t.GetSharedEdge(this)?.vertices ?? throw new NullReferenceException("No shared edge found");
                     vConnection[i] = eVerts[0].AvailableTris + eVerts[1].AvailableTris;
-                    
+
 
                     if (vConnection[i] > biggestConnection)
                         biggestConnection = vConnection[i];
@@ -625,7 +624,7 @@ namespace SATools.SAModel.Structs
 
                 // initializing the strip base
                 int[] strip = StripLoop(
-                    mesh, firstTri, ref written, 
+                    mesh, firstTri, ref written,
                     newTri, secNewTri,
                     prevVert, currentVert, nextVert);
 
@@ -635,7 +634,7 @@ namespace SATools.SAModel.Structs
 
             return strips.ToArray();
         }
-    
+
         private static int[] StripLoop(Mesh mesh, Triangle firstTriangle, ref int written, Triangle tri2, Triangle tri3, Vertex vert1, Vertex vert2, Vertex vert3)
         {
             List<int> strip = new() { vert1.index, vert2.index, vert3.index };

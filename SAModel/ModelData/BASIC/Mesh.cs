@@ -203,7 +203,7 @@ namespace SATools.SAModel.ModelData.BASIC
                     return null;
 
                 addr -= imageBase;
-                if(labels.TryGetValue(addr, out string? result))
+                if (labels.TryGetValue(addr, out string? result))
                 {
                     return result;
                 }

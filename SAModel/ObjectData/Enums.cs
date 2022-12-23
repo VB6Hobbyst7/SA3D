@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using SATools.SACommon;
+﻿using SATools.SACommon;
+using System;
 
 namespace SATools.SAModel.ObjData
 {
@@ -329,7 +328,7 @@ namespace SATools.SAModel.ObjData
             ( SA1SurfaceAttributes.Visible, SurfaceAttributes.Visible ),
         };
 
-        private static readonly (SA2SurfaceAttributes sa2, SurfaceAttributes universal)[] SA2SurfaceAttributeMapping = new[] 
+        private static readonly (SA2SurfaceAttributes sa2, SurfaceAttributes universal)[] SA2SurfaceAttributeMapping = new[]
         {
             ( SA2SurfaceAttributes.Solid, SurfaceAttributes.Solid ),
             ( SA2SurfaceAttributes.Water, SurfaceAttributes.Water ),

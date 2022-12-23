@@ -1,4 +1,5 @@
 ﻿using SATools.SAModel.ModelData;
+using SATools.SAModel.ModelData.Weighted;
 using SATools.SAModel.ObjData;
 using System.Numerics;
 
@@ -13,13 +14,13 @@ namespace SATools.SAModel.Blender
 
         public static void ExportModel(NodeStruct[] nodes, WeightedBufferAttach[] weightedAttaches, AttachFormat format, bool njFile, string filepath, bool optimize, bool ignoreWeights)
         {
-            if(nodes.Length == 0)
+            if (nodes.Length == 0)
             {
                 throw new InvalidDataException("No nodes passed over");
             }
 
             ObjectNode[] objNodes = new ObjectNode[nodes.Length];
-            for(int i = 0; i < nodes.Length; i++)
+            for (int i = 0; i < nodes.Length; i++)
             {
                 NodeStruct node = nodes[i];
 
@@ -41,11 +42,7 @@ namespace SATools.SAModel.Blender
             }
             ObjectNode root = objNodes[0];
 
-            for(int i = 0; i < weightedAttaches.Length; i++)
-            {
-                WeightedBufferAttach.FromWeightedBuffer(root, weightedAttaches, optimize, ignoreWeights, format);
-            }
-
+            WeightedBufferAttach.FromWeightedBuffer(root, weightedAttaches, optimize, ignoreWeights, format);
 
             File.WriteAllBytes(filepath, ModelFile.Write(format, njFile, root));
         }

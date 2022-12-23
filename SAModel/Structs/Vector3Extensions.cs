@@ -200,7 +200,7 @@ namespace SATools.SAModel.Structs
         public static Vector3 Center(IEnumerable<Vector3> points)
         {
             Vector3? first = null;
-            foreach(Vector3 point in points)
+            foreach (Vector3 point in points)
             {
                 first = point;
                 break;

@@ -274,7 +274,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         /// <param name="filename">Path to the file to read</param>
         /// <returns></returns>
-        public static LandTable? ReadFile(string filename) 
+        public static LandTable? ReadFile(string filename)
             => ReadFile(File.ReadAllBytes(filename));
 
         /// <summary>

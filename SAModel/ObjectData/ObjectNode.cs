@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
@@ -43,7 +42,7 @@ namespace SATools.SAModel.ObjData
             get => _attach;
             set
             {
-                if(value != null)
+                if (value != null)
                 {
                     foreach (ObjectNode o in GetObjects())
                     {
@@ -181,34 +180,34 @@ namespace SATools.SAModel.ObjData
 
         #region Object Attributes
 
-        public bool NoPosition 
-        { 
-            get => Attributes.HasFlag(ObjectAttributes.NoPosition); 
-            set => SetObjectAttribute(ObjectAttributes.NoPosition, value); 
+        public bool NoPosition
+        {
+            get => Attributes.HasFlag(ObjectAttributes.NoPosition);
+            set => SetObjectAttribute(ObjectAttributes.NoPosition, value);
         }
 
-        public bool NoRotation 
-        { 
-            get => Attributes.HasFlag(ObjectAttributes.NoRotation); 
-            set => SetObjectAttribute(ObjectAttributes.NoRotation, value); 
+        public bool NoRotation
+        {
+            get => Attributes.HasFlag(ObjectAttributes.NoRotation);
+            set => SetObjectAttribute(ObjectAttributes.NoRotation, value);
         }
 
-        public bool NoScale 
-        { 
-            get => Attributes.HasFlag(ObjectAttributes.NoScale); 
-            set => SetObjectAttribute(ObjectAttributes.NoScale, value); 
+        public bool NoScale
+        {
+            get => Attributes.HasFlag(ObjectAttributes.NoScale);
+            set => SetObjectAttribute(ObjectAttributes.NoScale, value);
         }
 
-        public bool SkipDraw 
-        { 
-            get => Attributes.HasFlag(ObjectAttributes.SkipDraw); 
-            set => SetObjectAttribute(ObjectAttributes.SkipDraw, value); 
+        public bool SkipDraw
+        {
+            get => Attributes.HasFlag(ObjectAttributes.SkipDraw);
+            set => SetObjectAttribute(ObjectAttributes.SkipDraw, value);
         }
 
-        public bool SkipChildren 
-        { 
-            get => Attributes.HasFlag(ObjectAttributes.SkipChildren); 
-            set => SetObjectAttribute(ObjectAttributes.SkipChildren, value); 
+        public bool SkipChildren
+        {
+            get => Attributes.HasFlag(ObjectAttributes.SkipChildren);
+            set => SetObjectAttribute(ObjectAttributes.SkipChildren, value);
         }
 
         /// <summary>
@@ -381,7 +380,7 @@ namespace SATools.SAModel.ObjData
 
             return result;
         }
-        
+
         /// <summary>
         /// Writes object (not its children) to a byte stream
         /// </summary>
