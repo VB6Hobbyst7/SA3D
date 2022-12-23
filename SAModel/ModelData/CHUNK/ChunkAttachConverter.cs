@@ -1,5 +1,6 @@
 ﻿using SATools.SACommon;
 using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ModelData.Weighted;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
@@ -126,7 +127,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     bool binaryWeighted = true;
                     foreach (var vertex in wba.Vertices)
                     {
-                        if (vertex.Weights.Count > 1)
+                        if (vertex.GetWeightCount() > 1)
                         {
                             binaryWeighted = false;
                             break;
@@ -329,18 +330,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     };
 
                     var vertex = wba.Vertices[bc.VertexIndex];
-                    int nodeIndex = 0;
-                    float weight = 0;
-                    foreach (var weightPair in vertex.Weights)
-                    {
-                        if (weightPair.Value > weight)
-                        {
-                            weight = weightPair.Value;
-                            nodeIndex = weightPair.Key;
-                        }
-                    }
-
-                    vertices.Add(new(nodeIndex, vertex.Position, bc.Color));
+                    vertices.Add(new(vertex.GetMaxWeightIndex(), vertex.Position, bc.Color));
                 }
                 cornerSets[i] = corners;
             }
@@ -448,11 +438,12 @@ namespace SATools.SAModel.ModelData.CHUNK
             for (int i = 0; i < wba.Vertices.Length; i++)
             {
                 WeightedVertex vtx = wba.Vertices[i];
-                if (vtx.Weights.Count == 0)
+                int weightCount = vtx.GetWeightCount();
+                if (weightCount == 0)
                 {
                     throw new InvalidDataException("Vertex has no specified weights");
                 }
-                else if (vtx.Weights.Count == 1)
+                else if (weightCount == 1)
                 {
                     singleWeights.Add(new(i, vtx));
                 }
@@ -462,7 +453,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 }
             }
 
-            singleWeights = singleWeights.OrderBy(x => x.vertex.Weights.ElementAt(0).Key).ToList();
+            singleWeights = singleWeights.OrderBy(x => x.vertex.GetFirstWeightIndex() ).ToList();
             int multiWeightOffset = singleWeights.Count;
 
             // grouping the vertices together by node
@@ -478,7 +469,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 for (int i = 0; i < singleWeights.Count; i++)
                 {
                     var vert = singleWeights[i].vertex;
-                    bool contains = vert.Weights.ContainsKey(nodeIndex);
+                    bool contains = vert.Weights[nodeIndex] > 0f;
                     if (contains)
                     {
                         if (singleWeightVerts.Count == 0)
@@ -515,17 +506,18 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     var vert = multiWeights[i].vertex;
 
-                    if (!vert.Weights.TryGetValue(nodeIndex, out float weight))
+                    float weight = vert.Weights[nodeIndex];
+                    if (weight == 0f)
                         continue;
 
                     Vector3 pos = new(vert.Position.X, vert.Position.Y, vert.Position.Z);
                     ChunkVertex chunkVert = new(pos, vert.Normal, (ushort)(i + multiWeightOffset), weight);
 
-                    if (vert.Weights.Min(x => x.Key) == nodeIndex)
+                    if (vert.GetFirstWeightIndex() == nodeIndex)
                     {
                         initWeightsVerts.Add(chunkVert);
                     }
-                    else if (vert.Weights.Max(x => x.Key) == nodeIndex)
+                    else if (vert.GetLastWeightIndex() == nodeIndex)
                     {
                         endWeightsVerts.Add(chunkVert);
                     }

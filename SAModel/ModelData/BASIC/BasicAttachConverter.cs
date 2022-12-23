@@ -1,4 +1,5 @@
 ﻿using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ModelData.Weighted;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;

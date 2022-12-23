@@ -47,7 +47,7 @@ namespace SATools.SAModel.Structs
             Vector3 v = new();
             if (RotateZYX)
             {
-                float test = (w * x) - (y * z); // -M32 / 2
+                float test = (w * x) - (y * z);
 
                 if (test > 0.4995f) // singularity at north pole
                 {
@@ -61,19 +61,15 @@ namespace SATools.SAModel.Structs
                 }
                 else
                 {
-                    v.X = MathF.Asin(2f * test); // asin(-M32)
-                    v.Y = MathF.Atan2(2f * ((w * y) + (z * x)), 1 - (2f * ((y * y) + (x * x)))); // atan2(M31, M33)
-                    v.Z = MathF.Atan2(2f * ((w * z) + (y * x)), 1 - (2f * ((z * z) + (x * x)))); // atan2(M12,M22)
+                    v.X = MathF.Asin(2f * test);
+                    v.Y = MathF.Atan2(2f * ((w * y) + (z * x)), 1 - (2f * ((y * y) + (x * x))));
+                    v.Z = MathF.Atan2(2f * ((w * z) + (y * x)), 1 - (2f * ((z * z) + (x * x))));
                 }
 
-                // here, z is only sometimes correct... weird. But the part above works, so idc this is only reference either way
-                // x = MathF.Atan(-mtx.M32 / MathF.Sqrt(1 - (mtx.M32 * mtx.M32)));
-                // y = MathF.Atan(mtx.M31 / mtx.M33);
-                // z = MathF.Atan(mtx.M12 / mtx.M22); 
             }
             else
             {
-                float test = (w * y) - (x * z); // -M13 / 2
+                float test = (w * y) - (x * z);
 
                 if (test > 0.4995f) // singularity at north pole
                 {
@@ -87,14 +83,10 @@ namespace SATools.SAModel.Structs
                 }
                 else
                 {
-                    v.X = MathF.Atan2(2f * ((w * x) + (z * y)), 1 - (2f * ((y * y) + (x * x)))); //atan2(M23,M33)
-                    v.Y = MathF.Asin(2f * test); // asin(-M13)
-                    v.Z = MathF.Atan2(2f * ((w * z) + (y * x)), 1 - (2f * ((z * z) + (y * y)))); //atan2(M12,M11)
+                    v.X = MathF.Atan2(2f * ((w * x) + (z * y)), 1 - (2f * ((y * y) + (x * x))));
+                    v.Y = MathF.Asin(2f * test);
+                    v.Z = MathF.Atan2(2f * ((w * z) + (y * x)), 1 - (2f * ((z * z) + (y * y))));
                 }
-
-                // x = MathF.Atan(mtx.M23 / mtx.M33);
-                // y = MathF.Atan(-mtx.M13 / MathF.Sqrt(1 - (mtx.M13 * mtx.M13)));
-                // z = MathF.Atan(mtx.M12 / mtx.M11);
             }
             v *= Rad2Deg;
 

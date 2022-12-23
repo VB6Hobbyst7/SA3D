@@ -1,4 +1,7 @@
-﻿using SATools.SAModel.ModelData.Buffer;
+﻿using SATools.SAModel.ModelData.BASIC;
+using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ModelData.CHUNK;
+using SATools.SAModel.ModelData.GC;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.Structs;
 using System;
@@ -7,176 +10,17 @@ using System.Linq;
 using System.Numerics;
 using static SATools.SACommon.HelperExtensions;
 
-namespace SATools.SAModel.ModelData
+namespace SATools.SAModel.ModelData.Weighted
 {
     /// <summary>
-    /// Vertex in local space with weight information
-    /// </summary>
-    public struct WeightedVertex : IComparable<WeightedVertex>, IEquatable<WeightedVertex>
-    {
-        public Vector3 Position { get; set; }
-
-        public Vector3 Normal { get; set; }
-
-        public SortedDictionary<int, float> Weights { get; set; }
-
-        public WeightedVertex(Vector3 position, Vector3 normal)
-        {
-            Position = position;
-            Normal = normal;
-            Weights = new();
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is WeightedVertex other
-                && Position == other.Position
-                && Normal == other.Normal
-                && Weights.SequenceEqual(other.Weights);
-        }
-
-        public override int GetHashCode()
-            => HashCode.Combine(Position, Normal, Weights);
-
-        public int CompareTo(WeightedVertex other)
-        {
-            if (other.Weights.Count != Weights.Count)
-                return Weights.Count - other.Weights.Count;
-
-            for (int i = 0; i < Weights.Count; i++)
-            {
-                int result = Weights.Keys.ElementAt(i) - other.Weights.Keys.ElementAt(i);
-                if (result != 0)
-                    return result;
-            }
-
-            return 0;
-        }
-
-        public static bool operator ==(WeightedVertex left, WeightedVertex right)
-            => left.Equals(right);
-
-        public static bool operator !=(WeightedVertex left, WeightedVertex right)
-            => !(left == right);
-
-        public override string ToString()
-        {
-            string result = Weights.Count.ToString();
-
-            if (Weights.Count > 0)
-            {
-                result += " - ";
-                foreach (int joint in Weights.Keys)
-                    result += joint + ", ";
-            }
-
-            return result;
-        }
-
-        bool IEquatable<WeightedVertex>.Equals(WeightedVertex other)
-            => Equals(other);
-
-        public WeightedVertex clone()
-        {
-            WeightedVertex result = new(Position, Normal);
-            foreach (var pair in Weights)
-            {
-                result.Weights.Add(pair.Key, pair.Value);
-            }
-
-            return result;
-        }
-    }
-
-    public interface IOffsetableAttachResult
-    {
-        public int VertexCount { get; }
-        public int[] AttachIndices { get; }
-        public Attach[] Attaches { get; }
-
-        public void ModifyVertexOffset(int offset);
-
-        /// <summary>
-        /// Checks for any vertex overlaps in the models and sets their vertex offset accordingly
-        /// </summary>
-        public static void PlanVertexOffsets<T>(T[] attaches) where T : IOffsetableAttachResult
-        {
-            int nodeCount = attaches.Max(x => x.AttachIndices.Max()) + 1;
-            List<(int start, int end)>[] ranges = new List<(int start, int end)>[nodeCount];
-            for (int i = 0; i < nodeCount; i++)
-                ranges[i] = new();
-
-            foreach (IOffsetableAttachResult cr in attaches)
-            {
-                int startNode = cr.AttachIndices.Min();
-                int endNode = cr.AttachIndices.Max();
-                HashSet<(int start, int end)> blocked = new();
-
-                for (int i = startNode; i <= endNode; i++)
-                {
-                    foreach (var r in ranges[i])
-                        blocked.Add(r);
-                }
-
-                int lowestAvailableStart = 0xFFFF;
-
-                if (blocked.Count == 0)
-                {
-                    lowestAvailableStart = 0;
-                }
-                else
-                {
-                    foreach (var (blockedStart, blockedEnd) in blocked)
-                    {
-                        if (blockedEnd >= lowestAvailableStart)
-                            continue;
-
-                        int checkStart = blockedEnd;
-                        int checkEnd = checkStart + cr.VertexCount;
-                        bool fits = true;
-                        foreach (var checkrange in blocked)
-                        {
-                            if (!(checkrange.start > checkEnd || checkrange.end < checkStart))
-                            {
-                                fits = false;
-                                break;
-                            }
-                        }
-
-                        if (fits)
-                        {
-                            lowestAvailableStart = blockedEnd;
-                        }
-                    }
-                }
-
-                int lowestAvailableEnd = lowestAvailableStart + cr.VertexCount;
-
-
-                for (int i = startNode; i <= endNode; i++)
-                {
-                    ranges[i].Add((lowestAvailableStart, lowestAvailableEnd));
-                }
-
-                if (lowestAvailableStart > 0)
-                {
-                    cr.ModifyVertexOffset(lowestAvailableStart);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Helper methods for generating attaches
+    /// Helper class for model conversions
     /// </summary>
     public class WeightedBufferAttach
     {
         private readonly struct BufferResult : IOffsetableAttachResult
         {
             public int VertexCount { get; }
-
             public int[] AttachIndices { get; }
-
             public Attach[] Attaches { get; }
 
             public BufferResult(int vertexCount, int[] attachIndices, Attach[] attaches)
@@ -185,7 +29,6 @@ namespace SATools.SAModel.ModelData
                 AttachIndices = attachIndices;
                 Attaches = attaches;
             }
-
 
             public void ModifyVertexOffset(int offset)
             {
@@ -221,9 +64,10 @@ namespace SATools.SAModel.ModelData
 
             foreach (WeightedVertex vtx in vertices)
             {
-                foreach (int index in vtx.Weights.Keys)
+                for (int i = 0; i < vtx.Weights.Length; i++)
                 {
-                    dependingNodes.Add(index);
+                    if (vtx.Weights[i] > 0)
+                        dependingNodes.Add(i);
                 }
             }
 
@@ -314,7 +158,7 @@ namespace SATools.SAModel.ModelData
                             if (vtx.Weight == 0.0f)
                             {
                                 if (!bufferMesh.ContinueWeight)
-                                    cache[index] = new(default, default);
+                                    cache[index] = new(default, default, nodes.Length);
                                 continue;
                             }
 
@@ -329,10 +173,10 @@ namespace SATools.SAModel.ModelData
                             }
                             else
                             {
-                                cache[index] = new(pos, nrm);
+                                cache[index] = new(pos, nrm, nodes.Length);
                             }
 
-                            cache[index].Weights.Add(i, vtx.Weight);
+                            cache[index].Weights[i] = vtx.Weight;
                         }
                     }
 
@@ -347,7 +191,7 @@ namespace SATools.SAModel.ModelData
                             if (vertexMap[vertexIndex] == -1)
                             {
                                 vertexMap[vertexIndex] = vertices.Count;
-                                vertices.Add(cache[vertexIndex].clone());
+                                vertices.Add(cache[vertexIndex].Clone());
                             }
 
                             meshCorners.Add(new(
@@ -436,6 +280,26 @@ namespace SATools.SAModel.ModelData
             return result.ToArray();
         }
 
+        public static void FromWeightedBuffer(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize, bool ignoreWeights, AttachFormat format)
+        {
+            switch (format)
+            {
+                case AttachFormat.Buffer:
+                    FromWeightedBuffer(model, meshData, optimize);
+                    break;
+                case AttachFormat.BASIC:
+                    BasicAttachConverter.ConvertWeightedToBasic(model, meshData, optimize, ignoreWeights);
+                    break;
+                case AttachFormat.CHUNK:
+                    ChunkAttachConverter.ConvertWeightedToChunk(model, meshData, optimize);
+                    break;
+                case AttachFormat.GC:
+                    GCAttachConverter.ConvertWeightedToGC(model, meshData, optimize, ignoreWeights);
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public static void FromWeightedBuffer(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize)
         {
@@ -530,12 +394,13 @@ namespace SATools.SAModel.ModelData
                 {
                     WeightedVertex wVert = wba.Vertices[i];
 
-                    if (!wVert.Weights.TryGetValue(nodeIndex, out float weight))
+                    float weight = wVert.Weights[nodeIndex];
+                    if (weight == 0)
                         continue;
 
                     BufferVertex vert = new(wVert.Position, wVert.Normal, (ushort)i, weight);
 
-                    if (wVert.Weights.Min(x => x.Key) == nodeIndex)
+                    if (wVert.GetFirstWeightIndex() == nodeIndex)
                     {
                         initVerts.Add(vert);
                     }
@@ -549,18 +414,12 @@ namespace SATools.SAModel.ModelData
 
                 if (initVerts.Count > 0)
                 {
-                    vertexMeshes.Add(
-                        new(initVerts.ToArray(),
-                            false,
-                            0));
+                    vertexMeshes.Add(new(initVerts.ToArray(), false, 0));
                 }
 
                 if (continueVerts.Count > 0)
                 {
-                    vertexMeshes.Add(
-                        new(continueVerts.ToArray(),
-                            true,
-                            0));
+                    vertexMeshes.Add(new(continueVerts.ToArray(), true, 0));
                 }
 
                 meshSets.Add((nodeIndex, vertexMeshes.ToArray()));
@@ -609,7 +468,7 @@ namespace SATools.SAModel.ModelData
 
             if (optimize)
             {
-                if(vertices.CreateDistinctMap(out BufferVertex[]? distinctVerts, out int[]? vertMap))
+                if (vertices.CreateDistinctMap(out BufferVertex[]? distinctVerts, out int[]? vertMap))
                 {
                     vertices = distinctVerts;
 

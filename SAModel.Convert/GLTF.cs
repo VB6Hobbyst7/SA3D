@@ -3,6 +3,7 @@ using SATools.SAArchive;
 using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
+using SATools.SAModel.ModelData.Weighted;
 using SATools.SAModel.ObjData;
 using SATools.SAModel.ObjData.Animation;
 using SharpGLTF.Memory;
@@ -184,10 +185,13 @@ namespace SATools.SAModel.Convert
             foreach (var primitive in mesh.Primitives)
             {
                 // Vertices
-                primitive.VertexAccessors.TryGetValue("POSITION", /****/ out Accessor positions);
-                primitive.VertexAccessors.TryGetValue("NORMAL", /******/ out Accessor normals);
-                primitive.VertexAccessors.TryGetValue("WEIGHTS_0", /***/ out Accessor weights);
-                primitive.VertexAccessors.TryGetValue("JOINTS_0", /****/ out Accessor joints);
+                primitive.VertexAccessors.TryGetValue("POSITION", /****/ out Accessor? positions);
+                primitive.VertexAccessors.TryGetValue("NORMAL", /******/ out Accessor? normals);
+                primitive.VertexAccessors.TryGetValue("WEIGHTS_0", /***/ out Accessor? weights);
+                primitive.VertexAccessors.TryGetValue("JOINTS_0", /****/ out Accessor? joints);
+
+                if (positions == null)
+                    throw new NullReferenceException($"No positions in gltf mesh {mesh.Name}!");
 
                 var positionArray = positions.AsVector3Array();
                 var normalArray = normals?.AsVector3Array();
@@ -203,28 +207,28 @@ namespace SATools.SAModel.Convert
                     var pos = Vector3.Transform(positionArray[i], meshMatrix);
                     var nrm = normalArray != null ? Vector3.TransformNormal(normalArray[i], meshMatrix) : Vector3.UnitY;
 
-                    WeightedVertex vert = new(pos, nrm);
+                    WeightedVertex vert = new(pos, nrm, nodes.Length);
 
-                    if (weightsArray != null)
+                    if (weightsArray != null && jointsArray != null)
                     {
                         var joint = jointsArray[i];
                         var weight = weightsArray[i];
 
                         if (weight.X > 0)
-                            vert.Weights.Add(skinMap[(int)joint.X], weight.X);
+                            vert.Weights[skinMap[(int)joint.X]] = weight.X;
 
                         if (weight.Y > 0)
-                            vert.Weights.Add(skinMap[(int)joint.Y], weight.Y);
+                            vert.Weights[skinMap[(int)joint.Y]] = weight.Y;
 
                         if (weight.Z > 0)
-                            vert.Weights.Add(skinMap[(int)joint.Z], weight.Z);
+                            vert.Weights[skinMap[(int)joint.Z]] = weight.Z;
 
                         if (weight.W > 0)
-                            vert.Weights.Add(skinMap[(int)joint.W], weight.W);
+                            vert.Weights[skinMap[(int)joint.W]] = weight.W;
                     }
                     else
                     {
-                        vert.Weights.Add(skinMap[0], 1);
+                        vert.Weights[skinMap[0]] = 1;
                     }
 
                     vertexSet[i] = vert;
@@ -354,10 +358,12 @@ namespace SATools.SAModel.Convert
 
         private static BufferMaterial GetMaterial(Material mat)
         {
-            BufferMaterial result = new();
-            result.Diffuse = Color.White;
-            result.Specular = Color.White;
-            result.SpecularExponent = 32f;
+            BufferMaterial result = new()
+            {
+                Diffuse = Color.White,
+                Specular = Color.White,
+                SpecularExponent = 32f
+            };
 
             if (mat == null)
                 return result;

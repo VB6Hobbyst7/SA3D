@@ -181,7 +181,35 @@ namespace SATools.SAModel.ObjData
 
         #region Object Attributes
 
+        public bool NoPosition 
+        { 
+            get => Attributes.HasFlag(ObjectAttributes.NoPosition); 
+            set => SetObjectAttribute(ObjectAttributes.NoPosition, value); 
+        }
 
+        public bool NoRotation 
+        { 
+            get => Attributes.HasFlag(ObjectAttributes.NoRotation); 
+            set => SetObjectAttribute(ObjectAttributes.NoRotation, value); 
+        }
+
+        public bool NoScale 
+        { 
+            get => Attributes.HasFlag(ObjectAttributes.NoScale); 
+            set => SetObjectAttribute(ObjectAttributes.NoScale, value); 
+        }
+
+        public bool SkipDraw 
+        { 
+            get => Attributes.HasFlag(ObjectAttributes.SkipDraw); 
+            set => SetObjectAttribute(ObjectAttributes.SkipDraw, value); 
+        }
+
+        public bool SkipChildren 
+        { 
+            get => Attributes.HasFlag(ObjectAttributes.SkipChildren); 
+            set => SetObjectAttribute(ObjectAttributes.SkipChildren, value); 
+        }
 
         /// <summary>
         /// Whether the euler order is "inverted"
@@ -256,6 +284,15 @@ namespace SATools.SAModel.ObjData
                 Attributes |= attribute;
             else
                 Attributes &= ~attribute;
+        }
+
+        public void SetAllObjectAttributes(ObjectAttributes attributes, bool updateRotation = true)
+        {
+            bool rotateXYZBefore = RotateZYX;
+            Attributes = attributes;
+
+            if (rotateXYZBefore != RotateZYX && updateRotation)
+                _rotation = QuaternionExtensions.ToEuler(_quaternionRotation, RotateZYX);
         }
 
         /// <summary>

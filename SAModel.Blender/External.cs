@@ -1,10 +1,6 @@
 ﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ObjData;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 
 namespace SATools.SAModel.Blender
 {
@@ -15,7 +11,7 @@ namespace SATools.SAModel.Blender
             return x * 2;
         }
 
-        public static void ExportModel(NodeStruct[] nodes, WeightedBufferAttach[] attaches, string filepath)
+        public static void ExportModel(NodeStruct[] nodes, WeightedBufferAttach[] weightedAttaches, AttachFormat format, bool njFile, string filepath, bool optimize, bool ignoreWeights)
         {
             if(nodes.Length == 0)
             {
@@ -26,10 +22,39 @@ namespace SATools.SAModel.Blender
             for(int i = 0; i < nodes.Length; i++)
             {
                 NodeStruct node = nodes[i];
-                ObjectNode? parent = node.parentIndex >= 0 ? objNodes[node.parentIndex] : null;
-                ObjectNode objNode = new(parent);
 
+                node.localMatrix.TransformsFromBlenderMatrix(
+                    out Vector3 position,
+                    out Vector3 rotation,
+                    out Vector3 scale);
+
+                ObjectNode? parent = node.parentIndex >= 0 ? objNodes[node.parentIndex] : null;
+                ObjectNode objNode = new(parent)
+                {
+                    Name = node.name,
+                    Position = position,
+                    Rotation = rotation,
+                    Scale = scale
+                };
+
+                objNode.SetAllObjectAttributes(node.attributes, true);
             }
+            ObjectNode root = objNodes[0];
+
+            for(int i = 0; i < weightedAttaches.Length; i++)
+            {
+                WeightedBufferAttach.FromWeightedBuffer(root, weightedAttaches, optimize, ignoreWeights, format);
+            }
+
+
+            File.WriteAllBytes(filepath, ModelFile.Write(format, njFile, root));
+        }
+
+        private static void TransformsFromBlenderMatrix(this Matrix4x4 matrix, out Vector3 position, out Vector3 rotation, out Vector3 scale)
+        {
+            position = Vector3.Zero;
+            rotation = Vector3.Zero;
+            scale = Vector3.One;
         }
     }
 }
