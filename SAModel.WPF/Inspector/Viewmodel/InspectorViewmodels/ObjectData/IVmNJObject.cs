@@ -84,6 +84,65 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             }
         }
 
+
+        [Tooltip("World space scale")]
+        public Vector3 Scale
+        {
+            get => NJObject.Scale;
+            set
+            {
+                NJObject.Scale = value;
+                OnPropertyChanged(nameof(LocalMatrix));
+                OnPropertyChanged(nameof(WorldMatrix));
+            }
+        }
+
+        [DisplayName("Local Matrix")]
+        [Tooltip("Local transform matrix created from the transform properties")]
+        public Matrix4x4 LocalMatrix
+            => NJObject.LocalMatrix;
+
+        [DisplayName("World Matrix")]
+        [Tooltip("World transform matrix based on local matrix and parent world matrix")]
+        public Matrix4x4 WorldMatrix
+            => NJObject.GetWorldMatrix();
+
+
+        [DisplayName("No Position")]
+        public bool NoPosition
+        {
+            get => NJObject.NoPosition;
+            set => NJObject.NoPosition = value;
+        }
+
+        [DisplayName("No Rotation")]
+        public bool NoRotation
+        {
+            get => NJObject.NoRotation;
+            set => NJObject.NoRotation = value;
+        }
+
+        [DisplayName("No Scale")]
+        public bool NoScale
+        {
+            get => NJObject.NoScale;
+            set => NJObject.NoScale = value;
+        }
+
+        [DisplayName("Skip Draw")]
+        public bool SkipDraw
+        {
+            get => NJObject.SkipDraw;
+            set => NJObject.SkipDraw = value;
+        }
+
+        [DisplayName("Skip Children")]
+        public bool SkipChildren
+        {
+            get => NJObject.SkipChildren;
+            set => NJObject.SkipChildren = value;
+        }
+
         [DisplayName("Rotate ZYX")]
         [Tooltip("Inverted Rotational order (preserve the euler rotation)")]
         public bool RotateZYX
@@ -109,34 +168,18 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             }
         }
 
-        [Tooltip("World space scale")]
-        public Vector3 Scale
+        [DisplayName("Animate")]
+        public bool Animate
         {
-            get => NJObject.Scale;
-            set
-            {
-                NJObject.Scale = value;
-                OnPropertyChanged(nameof(LocalMatrix));
-                OnPropertyChanged(nameof(WorldMatrix));
-            }
+            get => NJObject.Animate;
+            set => NJObject.Animate = value;
         }
 
-        [DisplayName("Local Matrix")]
-        [Tooltip("Local transform matrix created from the transform properties")]
-        public Matrix4x4 LocalMatrix
-            => NJObject.LocalMatrix;
-
-        [DisplayName("World Matrix")]
-        [Tooltip("World transform matrix based on local matrix and parent world matrix")]
-        public Matrix4x4 WorldMatrix
-            => NJObject.GetWorldMatrix();
-
-
-        [Tooltip("The written object attributes, which are determined by the other properties")]
-        public ObjectAttributes Attributes
+        [DisplayName("Morph")]
+        public bool Morph
         {
-            get => NJObject.Attributes;
-            set => NJObject.Attributes = value;
+            get => NJObject.Morph;
+            set => NJObject.Morph = value;
         }
 
         public IVmNJObject() : base() { }

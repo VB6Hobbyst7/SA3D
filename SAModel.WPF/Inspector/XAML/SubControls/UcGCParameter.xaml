@@ -277,14 +277,14 @@
                                         Grid.Column="1" Grid.Row="1">
                         <ComboBoxItem Content="Matrix2x4"   Tag="{x:Static gc:TexGenType.Matrix2x4}"/>
                         <ComboBoxItem Content="Matrix3x4"   Tag="{x:Static gc:TexGenType.Matrix3x4}"/>
-                        <ComboBoxItem Content="Bump0"   Tag="{x:Static gc:TexGenType.Bump0}"/>
-                        <ComboBoxItem Content="Bump1"   Tag="{x:Static gc:TexGenType.Bump1}"/>
-                        <ComboBoxItem Content="Bump2"   Tag="{x:Static gc:TexGenType.Bump2}"/>
-                        <ComboBoxItem Content="Bump3"   Tag="{x:Static gc:TexGenType.Bump3}"/>
-                        <ComboBoxItem Content="Bump4"   Tag="{x:Static gc:TexGenType.Bump4}"/>
-                        <ComboBoxItem Content="Bump5"   Tag="{x:Static gc:TexGenType.Bump5}"/>
-                        <ComboBoxItem Content="Bump6"   Tag="{x:Static gc:TexGenType.Bump6}"/>
-                        <ComboBoxItem Content="Bump7"   Tag="{x:Static gc:TexGenType.Bump7}"/>
+                        <ComboBoxItem Content="Bump0"   Tag="{x:Static gc:TexGenType.Bitmap0}"/>
+                        <ComboBoxItem Content="Bump1"   Tag="{x:Static gc:TexGenType.Bitmap1}"/>
+                        <ComboBoxItem Content="Bump2"   Tag="{x:Static gc:TexGenType.Bitmap2}"/>
+                        <ComboBoxItem Content="Bump3"   Tag="{x:Static gc:TexGenType.Bitmap3}"/>
+                        <ComboBoxItem Content="Bump4"   Tag="{x:Static gc:TexGenType.Bitmap4}"/>
+                        <ComboBoxItem Content="Bump5"   Tag="{x:Static gc:TexGenType.Bitmap5}"/>
+                        <ComboBoxItem Content="Bump6"   Tag="{x:Static gc:TexGenType.Bitmap6}"/>
+                        <ComboBoxItem Content="Bump7"   Tag="{x:Static gc:TexGenType.Bitmap7}"/>
                         <ComboBoxItem Content="SRTG"   Tag="{x:Static gc:TexGenType.SRTG}"/>
                     </local:EnumComboBox>
 

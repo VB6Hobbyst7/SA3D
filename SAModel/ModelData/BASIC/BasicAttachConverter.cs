@@ -94,10 +94,10 @@ namespace SATools.SAModel.ModelData.BASIC
                         mat.DestinationAlpha = bmat.DestinationBlendmode;
                         mat.DoubleSided = !bmat.Culling;
 
-                        mat.IgnoreLighting = bmat.HasAttribute(MaterialAttributes.noDiffuse);
-                        mat.IgnoreSpecular = bmat.HasAttribute(MaterialAttributes.noSpecular);
-                        mat.UseTexture = bmat.HasAttribute(MaterialAttributes.useTexture);
-                        mat.EnvironmentMap = bmat.HasAttribute(MaterialAttributes.normalMapping);
+                        mat.IgnoreLighting = bmat.HasAttribute(MaterialAttributes.NoDiffuse);
+                        mat.IgnoreSpecular = bmat.HasAttribute(MaterialAttributes.NoSpecular);
+                        mat.UseTexture = bmat.HasAttribute(MaterialAttributes.UseTexture);
+                        mat.EnvironmentMap = bmat.HasAttribute(MaterialAttributes.NormalMapping);
                     }
                     materials[i] = mat;
 
@@ -226,13 +226,13 @@ namespace SATools.SAModel.ModelData.BASIC
                             SourceBlendMode = mat.SourceAlpha,
                             DestinationBlendmode = mat.DestinationAlpha,
                             Culling = !mat.DoubleSided,
-                            MaterialAttributes = MaterialAttributes.noAmbient
+                            MaterialAttributes = MaterialAttributes.NoAmbient
                         };
                         //bMat.SetAttribute(MaterialAttributes.Flat, mesh.Colors != null);
-                        bMat.SetAttribute(MaterialAttributes.noDiffuse, mat.IgnoreLighting);
-                        bMat.SetAttribute(MaterialAttributes.noSpecular, mat.IgnoreSpecular);
-                        bMat.SetAttribute(MaterialAttributes.useTexture, mat.UseTexture);
-                        bMat.SetAttribute(MaterialAttributes.normalMapping, mat.EnvironmentMap);
+                        bMat.SetAttribute(MaterialAttributes.NoDiffuse, mat.IgnoreLighting);
+                        bMat.SetAttribute(MaterialAttributes.NoSpecular, mat.IgnoreSpecular);
+                        bMat.SetAttribute(MaterialAttributes.UseTexture, mat.UseTexture);
+                        bMat.SetAttribute(MaterialAttributes.NormalMapping, mat.EnvironmentMap);
                     }
                     else
                     {

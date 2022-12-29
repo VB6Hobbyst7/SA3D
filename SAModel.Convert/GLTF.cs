@@ -378,7 +378,7 @@ namespace SATools.SAModel.Convert
                 {
                     if (c.Texture != null)
                     {
-                        result.SetAttribute(MaterialAttributes.useTexture, true);
+                        result.SetAttribute(MaterialAttributes.UseTexture, true);
                         result.TextureIndex = (uint)c.Texture.LogicalIndex;
 
                         switch (c.TextureSampler.WrapS)

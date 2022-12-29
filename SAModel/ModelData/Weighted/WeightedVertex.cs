@@ -30,6 +30,16 @@ namespace SATools.SAModel.ModelData.Weighted
             Weights = weights;
         }
 
+        /// <summary>
+        /// Raw value composite. Used in PythonNet
+        /// </summary>
+        public WeightedVertex(float px, float py, float pz, float nx, float ny, float nz, float[] weights)
+        {
+            Position = new(px, py, pz);
+            Normal = new(nx, ny, nz);
+            Weights = weights;
+        }
+
         public int GetWeightCount()
         {
             int count = 0;

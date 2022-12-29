@@ -155,14 +155,14 @@ namespace SATools.SAModel.ModelData.GC
     {
         Matrix3x4 = 0x0,
         Matrix2x4 = 0x1,
-        Bump0 = 0x2,
-        Bump1 = 0x3,
-        Bump2 = 0x4,
-        Bump3 = 0x5,
-        Bump4 = 0x6,
-        Bump5 = 0x7,
-        Bump6 = 0x8,
-        Bump7 = 0x9,
+        Bitmap0 = 0x2,
+        Bitmap1 = 0x3,
+        Bitmap2 = 0x4,
+        Bitmap3 = 0x5,
+        Bitmap4 = 0x6,
+        Bitmap5 = 0x7,
+        Bitmap6 = 0x8,
+        Bitmap7 = 0x9,
         SRTG = 0xA
     }
 

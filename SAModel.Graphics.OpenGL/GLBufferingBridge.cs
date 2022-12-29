@@ -186,7 +186,7 @@ namespace SATools.SAModel.Graphics.OpenGL
 
         public override unsafe void BufferMaterial(Material material)
         {
-            if (material.BufferMaterial.MaterialAttributes.HasFlag(MaterialAttributes.useTexture) && material.BufferTextureSet != null)
+            if (material.BufferMaterial.MaterialAttributes.HasFlag(MaterialAttributes.UseTexture) && material.BufferTextureSet != null)
             {
                 int textureIndex = (int)material.BufferMaterial.TextureIndex;
                 GL.BindTexture(TextureTarget.Texture2D, TextureHandles[material.BufferTextureSet][textureIndex]);

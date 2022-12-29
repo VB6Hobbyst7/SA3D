@@ -178,6 +178,16 @@ namespace SATools.SAModel.ModelData.Buffer
         }
 
         /// <summary>
+        /// Raw value composite. Used in PythonNet
+        /// </summary>
+        public BufferCorner(int vertexIndex, float r, float g, float b, float a, float u, float v)
+        {
+            VertexIndex = (ushort)vertexIndex;
+            Color = new(r, g, b, a);
+            Texcoord = new(u, v);
+        }
+
+        /// <summary>
         /// Writes the buffer corner to a stream
         /// </summary>
         /// <param name="writer">Output stream</param>

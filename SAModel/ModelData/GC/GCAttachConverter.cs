@@ -150,7 +150,7 @@ namespace SATools.SAModel.ModelData.GC
                         {
                             currentMaterial = new BufferMaterial()
                             {
-                                MaterialAttributes = MaterialAttributes.noSpecular
+                                MaterialAttributes = MaterialAttributes.NoSpecular
                             };
                         }
                         else
@@ -260,7 +260,7 @@ namespace SATools.SAModel.ModelData.GC
                             {
                                 TexCoordID = cacheMaterial.TexCoordID,
                                 TexGenType = cacheMaterial.TexGenType,
-                                TexGenSrc = cacheMaterial.HasAttribute(MaterialAttributes.normalMapping) ? TexGenSrc.Normal : cacheMaterial.TexGenSrc,
+                                TexGenSrc = cacheMaterial.HasAttribute(MaterialAttributes.NormalMapping) ? TexGenSrc.Normal : cacheMaterial.TexGenSrc,
                                 MatrixID = cacheMaterial.MatrixID
                             });
                         }
@@ -389,7 +389,7 @@ namespace SATools.SAModel.ModelData.GC
 
                 BufferMaterial material = new()
                 {
-                    MaterialAttributes = MaterialAttributes.noSpecular
+                    MaterialAttributes = MaterialAttributes.NoSpecular
                 };
                 material.SetAttribute(MaterialAttributes.Flat, colors != null);
                 float uvFac = 1;
@@ -438,7 +438,7 @@ namespace SATools.SAModel.ModelData.GC
                                 material.Ambient = ambientCol.AmbientColor;
                                 break;
                             case ParameterType.Texture:
-                                material.SetAttribute(MaterialAttributes.useTexture, true);
+                                material.SetAttribute(MaterialAttributes.UseTexture, true);
                                 TextureParameter tex = (TextureParameter)param;
                                 material.TextureIndex = tex.TextureID;
                                 material.ClampU = !tex.Tiling.HasFlag(GCTileMode.RepeatU);
@@ -449,7 +449,7 @@ namespace SATools.SAModel.ModelData.GC
                                 break;
                             case ParameterType.TexCoordGen:
                                 TexCoordGenParameter gen = (TexCoordGenParameter)param;
-                                material.SetAttribute(MaterialAttributes.normalMapping, gen.TexGenSrc == TexGenSrc.Normal);
+                                material.SetAttribute(MaterialAttributes.NormalMapping, gen.TexGenSrc == TexGenSrc.Normal);
                                 material.MatrixID = gen.MatrixID;
                                 material.TexCoordID = gen.TexCoordID;
                                 material.TexGenSrc = gen.TexGenSrc;

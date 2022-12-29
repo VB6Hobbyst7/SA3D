@@ -86,7 +86,7 @@ namespace SATools.SAModel.Graphics
 
             var matFlags = BufferMaterial.MaterialAttributes;
             if (BufferTextureSet == null || BufferMaterial.TextureIndex > BufferTextureSet.Textures.Count)
-                matFlags &= ~MaterialAttributes.useTexture;
+                matFlags &= ~MaterialAttributes.UseTexture;
 
             int flags = (ushort)matFlags;
             _bufferWriter.Write(flags);

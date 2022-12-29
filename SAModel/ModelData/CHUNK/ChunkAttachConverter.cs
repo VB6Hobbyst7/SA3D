@@ -651,10 +651,10 @@ namespace SATools.SAModel.ModelData.CHUNK
             {
                 HasUV = true,
                 FlatShading = material.HasAttribute(MaterialAttributes.Flat),
-                IgnoreAmbient = material.HasAttribute(MaterialAttributes.noAmbient),
-                IgnoreLight = material.HasAttribute(MaterialAttributes.noDiffuse),
-                IgnoreSpecular = material.HasAttribute(MaterialAttributes.noSpecular),
-                EnvironmentMapping = material.HasAttribute(MaterialAttributes.normalMapping),
+                IgnoreAmbient = material.HasAttribute(MaterialAttributes.NoAmbient),
+                IgnoreLight = material.HasAttribute(MaterialAttributes.NoDiffuse),
+                IgnoreSpecular = material.HasAttribute(MaterialAttributes.NoSpecular),
+                EnvironmentMapping = material.HasAttribute(MaterialAttributes.NormalMapping),
                 UseAlpha = material.UseAlpha,
                 DoubleSide = !material.Culling
             };
@@ -793,7 +793,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                 {
                     BufferMaterial material = new()
                     {
-                        MaterialAttributes = MaterialAttributes.useTexture
+                        MaterialAttributes = MaterialAttributes.UseTexture
                     };
                     foreach (PolyChunk cnk in active)
                     {
@@ -866,10 +866,10 @@ namespace SATools.SAModel.ModelData.CHUNK
                                 PolyChunkStrip stripCnk = (PolyChunkStrip)cnk;
 
                                 material.SetAttribute(MaterialAttributes.Flat, stripCnk.FlatShading);
-                                material.SetAttribute(MaterialAttributes.noAmbient, stripCnk.IgnoreAmbient);
-                                material.SetAttribute(MaterialAttributes.noDiffuse, stripCnk.IgnoreLight);
-                                material.SetAttribute(MaterialAttributes.noSpecular, stripCnk.IgnoreSpecular);
-                                material.SetAttribute(MaterialAttributes.normalMapping, stripCnk.EnvironmentMapping);
+                                material.SetAttribute(MaterialAttributes.NoAmbient, stripCnk.IgnoreAmbient);
+                                material.SetAttribute(MaterialAttributes.NoDiffuse, stripCnk.IgnoreLight);
+                                material.SetAttribute(MaterialAttributes.NoSpecular, stripCnk.IgnoreSpecular);
+                                material.SetAttribute(MaterialAttributes.NormalMapping, stripCnk.EnvironmentMapping);
                                 material.UseAlpha = stripCnk.UseAlpha;
                                 material.Culling = !stripCnk.DoubleSide;
 

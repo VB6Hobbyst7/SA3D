@@ -18,23 +18,23 @@ namespace SATools.SAModel.ModelData.Buffer
         /// <summary>
         /// Ignores ambient lighting
         /// </summary>
-        noAmbient = 0x02,
+        NoAmbient = 0x02,
         /// <summary>
         /// Ignores diffuse lighting
         /// </summary>
-        noDiffuse = 0x04,
+        NoDiffuse = 0x04,
         /// <summary>
         /// Ignores specular lighting
         /// </summary>
-        noSpecular = 0x08,
+        NoSpecular = 0x08,
         /// <summary>
         /// Whether textures should be rendered
         /// </summary>
-        useTexture = 0x10,
+        UseTexture = 0x10,
         /// <summary>
         /// Whether to use normal mapping for textures
         /// </summary>
-        normalMapping = 0x20,
+        NormalMapping = 0x20,
 
         Mask = 0xFF
     }
