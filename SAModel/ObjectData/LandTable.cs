@@ -1,7 +1,7 @@
 ﻿using Reloaded.Memory.Streams;
 using SATools.SACommon;
 using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData.Animation;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
-namespace SATools.SAModel.ObjData
+namespace SATools.SAModel.ObjectData
 {
     /// <summary>
     /// Stage geometry information
@@ -165,7 +165,7 @@ namespace SATools.SAModel.ObjData
             if (newFormat == Format && !forceUpdate)
                 return;
 
-            ObjectNode dummyModel = new();
+            Node dummyModel = new();
 
             void convertAttaches(AttachFormat format, HashSet<Attach> attaches, Dictionary<Attach, Attach> attachMap, HashSet<LandEntry> landentries)
             {
@@ -539,8 +539,8 @@ namespace SATools.SAModel.ObjData
 
             foreach (LandEntryMotion lem in GeometryAnimations)
             {
-                ObjectNode[] models = lem.Model.GetObjects();
-                foreach (ObjectNode mdl in models)
+                Node[] models = lem.Model.GetObjects();
+                foreach (Node mdl in models)
                 {
                     if (mdl.Attach != null)
                         attaches.Add(mdl.Attach);

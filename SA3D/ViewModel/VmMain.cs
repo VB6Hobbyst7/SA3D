@@ -3,8 +3,8 @@ using SATools.SA3D.ViewModel.TreeItems;
 using SATools.SAArchive;
 using SATools.SAModel.Graphics;
 using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.IO;
 
@@ -129,7 +129,7 @@ namespace SATools.SA3D.ViewModel
             switch (mode)
             {
                 case Mode.Model:
-                    ObjectNode obj = new()
+                    Node obj = new()
                     {
                         Name = "Root"
                     };
@@ -139,7 +139,7 @@ namespace SATools.SA3D.ViewModel
                     ObjectTree.Objects.Add(new(null, new VmObject(task, null)));
                     break;
                 case Mode.Level:
-                    LoadLandtable(new LandTable(SAModel.ObjData.LandtableFormat.Buffer));
+                    LoadLandtable(new LandTable(SAModel.ObjectData.LandtableFormat.Buffer));
                     break;
                 case Mode.None:
                 case Mode.ProjectSA1:
@@ -178,9 +178,9 @@ namespace SATools.SA3D.ViewModel
 
                 FileFormat = ltbl.Format switch
                 {
-                    SAModel.ObjData.LandtableFormat.SA1 or SAModel.ObjData.LandtableFormat.SADX => AttachFormat.BASIC,
-                    SAModel.ObjData.LandtableFormat.SA2 => AttachFormat.CHUNK,
-                    SAModel.ObjData.LandtableFormat.SA2B => AttachFormat.GC,
+                    SAModel.ObjectData.LandtableFormat.SA1 or SAModel.ObjectData.LandtableFormat.SADX => AttachFormat.BASIC,
+                    SAModel.ObjectData.LandtableFormat.SA2 => AttachFormat.CHUNK,
+                    SAModel.ObjectData.LandtableFormat.SA2B => AttachFormat.GC,
                     _ => AttachFormat.Buffer,
                 };
                 return true;
@@ -225,7 +225,7 @@ namespace SATools.SA3D.ViewModel
             GeometryTree.Objects.Add(new VmTreeItem(null, new VmTextureHead(Context.Scene.LandTextureSet)));
         }
 
-        public void InsertModel(ObjectNode insertRoot, bool insertAtRoot, TextureSet textures, Motion[] animations)
+        public void InsertModel(Node insertRoot, bool insertAtRoot, TextureSet textures, Motion[] animations)
         {
             if (ApplicationMode == Mode.Model)
             {
@@ -233,7 +233,7 @@ namespace SATools.SA3D.ViewModel
                     && ObjectTree?.Selected.ItemType == TreeItemType.Model
                     && ObjectTree.Selected.Parent.ItemType != TreeItemType.ModelHead)
                 {
-                    ((ObjectNode)ObjectTree.Selected.Data).AddChild(insertRoot);
+                    ((Node)ObjectTree.Selected.Data).AddChild(insertRoot);
                 }
                 else
                 {
@@ -276,10 +276,10 @@ namespace SATools.SA3D.ViewModel
             {
                 var ltblFormat = FileFormat switch
                 {
-                    AttachFormat.BASIC => SAModel.ObjData.LandtableFormat.SA1,
-                    AttachFormat.CHUNK => SAModel.ObjData.LandtableFormat.SA2,
-                    AttachFormat.GC => SAModel.ObjData.LandtableFormat.SA2B,
-                    _ => SAModel.ObjData.LandtableFormat.Buffer,
+                    AttachFormat.BASIC => SAModel.ObjectData.LandtableFormat.SA1,
+                    AttachFormat.CHUNK => SAModel.ObjectData.LandtableFormat.SA2,
+                    AttachFormat.GC => SAModel.ObjectData.LandtableFormat.SA2B,
+                    _ => SAModel.ObjectData.LandtableFormat.Buffer,
                 };
 
 

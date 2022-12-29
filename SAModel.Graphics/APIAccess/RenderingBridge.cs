@@ -1,6 +1,6 @@
 ﻿using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;

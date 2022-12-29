@@ -8,7 +8,7 @@ using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.MathHelper;
 
-namespace SATools.SAModel.ObjData.Animation
+namespace SATools.SAModel.ObjectData.Animation
 {
 
     /// <summary>

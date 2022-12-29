@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:objEnums="clr-namespace:SATools.SAModel.ObjData;assembly=SAModel"
+    xmlns:objEnums="clr-namespace:SATools.SAModel.ObjectData;assembly=SAModel"
     xmlns:attachEnums="clr-namespace:SATools.SAModel.ModelData;assembly=SAModel"
     xmlns:gcenums="clr-namespace:SATools.SAModel.ModelData.GC;assembly=SAModel"
     xmlns:num="http://gu.se/NumericInput"

@@ -2,7 +2,7 @@
 using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.OpenGL.Properties;
 using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

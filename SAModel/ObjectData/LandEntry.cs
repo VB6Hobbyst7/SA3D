@@ -7,7 +7,7 @@ using System.Numerics;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
-namespace SATools.SAModel.ObjData
+namespace SATools.SAModel.ObjectData
 {
     /// <summary>
     /// Stage Geometry
@@ -17,7 +17,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Model for the geometry
         /// </summary>
-        private readonly ObjectNode _model;
+        private readonly Node _model;
 
         /// <summary>
         /// Name of the Landentry
@@ -127,7 +127,7 @@ namespace SATools.SAModel.ObjData
         {
             if (attach == null)
                 throw new ArgumentNullException(nameof(attach), "Attach cant be null!");
-            _model = new ObjectNode()
+            _model = new Node()
             {
                 Attach = attach,
                 Name = "col_" + GenerateIdentifier()
@@ -135,7 +135,7 @@ namespace SATools.SAModel.ObjData
             ModelBounds = attach.MeshBounds;
         }
 
-        private LandEntry(ObjectNode model, SurfaceAttributes attribs, uint blockbit, uint unknown, Bounds modelBounds)
+        private LandEntry(Node model, SurfaceAttributes attribs, uint blockbit, uint unknown, Bounds modelBounds)
         {
             _model = model;
             SurfaceAttributes = attribs;
@@ -191,7 +191,7 @@ namespace SATools.SAModel.ObjData
             uint modelAddr = source.ToUInt32(address);
             if (modelAddr == 0)
                 throw new InvalidOperationException("Landentry model address is null!");
-            ObjectNode model = ObjectNode.Read(source, modelAddr - imageBase, imageBase, format, ltblFormat == LandtableFormat.SADX, labels, attaches);
+            Node model = Node.Read(source, modelAddr - imageBase, imageBase, format, ltblFormat == LandtableFormat.SADX, labels, attaches);
 
             uint unknown = 0;
             uint blockBit;

@@ -2,7 +2,7 @@
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ModelData.CHUNK;
 using SATools.SAModel.ModelData.GC;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -58,7 +58,7 @@ namespace SATools.SAModel.ModelData.Weighted
             DependencyRootIndex = dependencyRoot;
         }
 
-        public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, ObjectNode[] nodes)
+        public static WeightedBufferAttach Create(WeightedVertex[] vertices, BufferCorner[][] corners, BufferMaterial[] materials, Node[] nodes)
         {
             HashSet<int> dependingNodes = new();
 
@@ -99,11 +99,11 @@ namespace SATools.SAModel.ModelData.Weighted
         /// <param name="model">Model to convert</param>
         /// <returns></returns>
         /// <exception cref="FormatException"></exception>
-        public static WeightedBufferAttach[] ToWeightedBuffer(ObjectNode model, bool combineAtDependencyRoots)
+        public static WeightedBufferAttach[] ToWeightedBuffer(Node model, bool combineAtDependencyRoots)
         {
             // checking if all the meshes have buffer information
-            ObjectNode[] nodes = model.GetObjects();
-            foreach (ObjectNode node in nodes)
+            Node[] nodes = model.GetObjects();
+            foreach (Node node in nodes)
             {
                 if (node.Attach == null)
                     continue;
@@ -116,13 +116,13 @@ namespace SATools.SAModel.ModelData.Weighted
             int[] vertexMap = new int[cache.Length];
 
             // The world matrix for each object
-            Dictionary<ObjectNode, Matrix4x4> worldMatrices = new();
+            Dictionary<Node, Matrix4x4> worldMatrices = new();
 
             List<WeightedBufferAttach> result = new();
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                ObjectNode node = nodes[i];
+                Node node = nodes[i];
 
                 // get the world matrix
                 Matrix4x4 worldMatrix = node.LocalMatrix;
@@ -280,7 +280,7 @@ namespace SATools.SAModel.ModelData.Weighted
             return result.ToArray();
         }
 
-        public static void FromWeightedBuffer(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize, bool ignoreWeights, AttachFormat format)
+        public static void FromWeightedBuffer(Node model, WeightedBufferAttach[] meshData, bool optimize, bool ignoreWeights, AttachFormat format)
         {
             switch (format)
             {
@@ -301,7 +301,7 @@ namespace SATools.SAModel.ModelData.Weighted
             }
         }
 
-        public static void FromWeightedBuffer(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize)
+        public static void FromWeightedBuffer(Node model, WeightedBufferAttach[] meshData, bool optimize)
         {
             List<BufferResult> bufferResults = new();
 
@@ -323,7 +323,7 @@ namespace SATools.SAModel.ModelData.Weighted
 
             IOffsetableAttachResult.PlanVertexOffsets(bufferResults.ToArray());
 
-            ObjectNode[] nodes = model.GetObjects();
+            Node[] nodes = model.GetObjects();
             List<Attach>[] nodeAttaches = new List<Attach>[nodes.Length];
             for (int i = 0; i < nodeAttaches.Length; i++)
                 nodeAttaches[i] = new();
@@ -339,7 +339,7 @@ namespace SATools.SAModel.ModelData.Weighted
             for (int i = 0; i < nodeAttaches.Length; i++)
             {
                 List<Attach> attaches = nodeAttaches[i];
-                ObjectNode node = nodes[i];
+                Node node = nodes[i];
                 if (attaches.Count == 0)
                 {
                     node._attach = null;
@@ -518,9 +518,9 @@ namespace SATools.SAModel.ModelData.Weighted
         }
 
 
-        private static int GetCommonNodeIndex(ObjectNode[] nodes, HashSet<int> indices)
+        private static int GetCommonNodeIndex(Node[] nodes, HashSet<int> indices)
         {
-            Dictionary<ObjectNode, int> indexMap = new();
+            Dictionary<Node, int> indexMap = new();
             for (int i = 0; i < nodes.Length; i++)
             {
                 indexMap.Add(nodes[i], i);
@@ -530,7 +530,7 @@ namespace SATools.SAModel.ModelData.Weighted
 
             foreach (int i in indices)
             {
-                ObjectNode? node = nodes[i];
+                Node? node = nodes[i];
                 while (node != null)
                 {
                     parentIndices[indexMap[node]]++;

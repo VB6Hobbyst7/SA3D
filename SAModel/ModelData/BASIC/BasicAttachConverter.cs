@@ -1,6 +1,6 @@
 ﻿using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ModelData.Weighted;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace SATools.SAModel.ModelData.BASIC
     /// </summary>
     public static class BasicAttachConverter
     {
-        public static void ConvertModelToBasic(ObjectNode model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
+        public static void ConvertModelToBasic(Node model, bool optimize = true, bool ignoreWeights = false, bool forceUpdate = false)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
@@ -27,19 +27,19 @@ namespace SATools.SAModel.ModelData.BASIC
             ConvertWeightedToBasic(model, weightedMeshes, optimize, ignoreWeights);
         }
 
-        public static void ConvertWeightedToBasic(ObjectNode model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
+        public static void ConvertWeightedToBasic(Node model, WeightedBufferAttach[] meshData, bool optimize = true, bool ignoreWeights = false)
         {
             if (meshData.Any(x => x.DependingNodeIndices.Count > 0) && !ignoreWeights)
             {
                 throw new FormatException("Model is weighted, cannot convert to GC format!");
             }
 
-            ObjectNode[] nodes = model.GetObjects();
+            Node[] nodes = model.GetObjects();
             BasicAttach[] attaches = new BasicAttach[nodes.Length];
 
             foreach (var weightedAttach in meshData)
             {
-                ObjectNode node = nodes[weightedAttach.DependencyRootIndex];
+                Node node = nodes[weightedAttach.DependencyRootIndex];
 
                 Matrix4x4 worldMatrix = node.GetWorldMatrix();
                 Matrix4x4.Invert(worldMatrix, out Matrix4x4 invertedWorldMatrix);
@@ -174,15 +174,15 @@ namespace SATools.SAModel.ModelData.BASIC
         /// </summary>
         /// <param name="model">The tip of the model hierarchy to convert</param>
         /// <param name="optimize">Whether the buffer model should be optimized</param>
-        public static void ConvertModelFromBasic(ObjectNode model, bool optimize = true)
+        public static void ConvertModelFromBasic(Node model, bool optimize = true)
         {
             if (model.Parent != null)
                 throw new FormatException($"Model {model.Name} is not hierarchy root!");
 
             HashSet<BasicAttach> attaches = new();
-            ObjectNode[] models = model.GetObjects();
+            Node[] models = model.GetObjects();
 
-            foreach (ObjectNode obj in models)
+            foreach (Node obj in models)
             {
                 if (obj.Attach == null)
                     continue;

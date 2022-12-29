@@ -8,7 +8,7 @@ using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.HelperExtensions;
 
 
-namespace SATools.SAModel.ObjData
+namespace SATools.SAModel.ObjectData
 {
     /// <summary>
     /// Meta data storage for both mdl and lvl files

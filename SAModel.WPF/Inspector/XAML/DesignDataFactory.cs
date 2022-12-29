@@ -1,4 +1,4 @@
-﻿using SATools.SAModel.ObjData;
+﻿using SATools.SAModel.ObjectData;
 using SATools.SAModel.WPF.Inspector.Viewmodel;
 using System;
 

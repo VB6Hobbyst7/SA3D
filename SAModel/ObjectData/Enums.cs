@@ -1,7 +1,7 @@
 ﻿using SATools.SACommon;
 using System;
 
-namespace SATools.SAModel.ObjData
+namespace SATools.SAModel.ObjectData
 {
     /// <summary>
     /// LandTable formats

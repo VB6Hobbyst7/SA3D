@@ -1,7 +1,7 @@
 ﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Weighted;
 using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System.Numerics;
 
 namespace SATools.SAModel.Blender
@@ -15,7 +15,7 @@ namespace SATools.SAModel.Blender
                 throw new InvalidDataException("No nodes passed over");
             }
 
-            ObjectNode[] objNodes = new ObjectNode[nodes.Length];
+            Node[] objNodes = new Node[nodes.Length];
             for (int i = 0; i < nodes.Length; i++)
             {
                 NodeStruct node = nodes[i];
@@ -32,8 +32,8 @@ namespace SATools.SAModel.Blender
                     out Vector3 rotation,
                     out Vector3 scale);
 
-                ObjectNode? parent = node.parentIndex >= 0 ? objNodes[node.parentIndex] : null;
-                ObjectNode objNode = new(parent)
+                Node? parent = node.parentIndex >= 0 ? objNodes[node.parentIndex] : null;
+                Node objNode = new(parent)
                 {
                     Name = node.name,
                     Position = position,
@@ -43,7 +43,7 @@ namespace SATools.SAModel.Blender
 
                 objNode.SetAllObjectAttributes(node.attributes, true);
             }
-            ObjectNode root = objNodes[0];
+            Node root = objNodes[0];
 
             WeightedBufferAttach[] attaches = new WeightedBufferAttach[weightedAttaches.Length];
             for(int i = 0; i < weightedAttaches.Length; i++)

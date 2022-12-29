@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
 
-namespace SATools.SAModel.ObjData.Animation
+namespace SATools.SAModel.ObjectData.Animation
 {
     /// <summary>
     /// Level geometry animation (only used in sa1)
@@ -34,7 +34,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Model that is being animated
         /// </summary>
-        public ObjectNode Model { get; set; }
+        public Node Model { get; set; }
 
         /// <summary>
         /// Animation
@@ -51,7 +51,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         /// <param name="frame">Start frame</param>
         /// <param name="step">Animation speed</param>
-        public LandEntryMotion(float frame, float step, float maxFrame, ObjectNode model, Motion motion, uint texListPtr)
+        public LandEntryMotion(float frame, float step, float maxFrame, Node model, Motion motion, uint texListPtr)
             : this(frame, step, maxFrame, model, new Action(model, motion), texListPtr) { }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <param name="model"></param>
         /// <param name="motion"></param>
         /// <param name="texListPtr"></param>
-        public LandEntryMotion(float frame, float step, float maxFrame, ObjectNode model, Action action, uint texListPtr)
+        public LandEntryMotion(float frame, float step, float maxFrame, Node model, Action action, uint texListPtr)
         {
             Frame = frame;
             Step = step;
@@ -93,7 +93,7 @@ namespace SATools.SAModel.ObjData.Animation
             float maxFrame = source.ToSingle(address + 8);
 
             uint modelAddress = source.ToUInt32(address + 0xC) - imageBase;
-            ObjectNode model = ObjectNode.Read(source, modelAddress, imageBase, format, DX, labels, attaches);
+            Node model = Node.Read(source, modelAddress, imageBase, format, DX, labels, attaches);
 
             uint motionAddress = source.ToUInt32(address + 0x10) - imageBase;
             Action action = Action.Read(source, motionAddress, imageBase, format, DX, labels, attaches);

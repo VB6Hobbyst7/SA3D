@@ -1,5 +1,5 @@
 ﻿using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using SATools.SAModel.Structs;
 using System;
 using System.Numerics;

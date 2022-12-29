@@ -1,5 +1,5 @@
-﻿using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
+﻿using SATools.SAModel.ObjectData;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

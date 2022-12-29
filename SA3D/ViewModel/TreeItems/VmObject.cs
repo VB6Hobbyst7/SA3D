@@ -1,6 +1,6 @@
 ﻿using SATools.SA3D.ViewModel.Base;
 using SATools.SAModel.Graphics;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System.Collections.Generic;
 
 namespace SATools.SA3D.ViewModel.TreeItems

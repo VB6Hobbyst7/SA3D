@@ -4,8 +4,8 @@ using SATools.SACommon;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ModelData.Weighted;
-using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData;
+using SATools.SAModel.ObjectData.Animation;
 using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using System;
@@ -27,13 +27,13 @@ namespace SATools.SAModel.Convert
 
         public readonly struct Contents
         {
-            public ObjectNode Root { get; }
+            public ObjectData.Node Root { get; }
 
             public TextureSet Textures { get; }
 
             public Motion[] Animations { get; }
 
-            public Contents(ObjectNode root, TextureSet textures, Motion[] animations)
+            public Contents(ObjectData.Node root, TextureSet textures, Motion[] animations)
             {
                 Root = root;
                 Textures = textures;
@@ -63,10 +63,10 @@ namespace SATools.SAModel.Convert
             }
 
             // lets first set up the object hierarchy
-            Dictionary<Node, ObjectNode> objectsPairs = new();
-            Dictionary<ObjectNode, Node> invertedObjectsPairs = new();
+            Dictionary<SharpGLTF.Schema2.Node, ObjectData.Node> objectsPairs = new();
+            Dictionary<ObjectData.Node, SharpGLTF.Schema2.Node> invertedObjectsPairs = new();
 
-            List<ObjectNode> roots = new();
+            List<ObjectData.Node> roots = new();
             foreach (var n in gltfModel.LogicalNodes)
             {
                 if (n.VisualParent == null)
@@ -83,12 +83,12 @@ namespace SATools.SAModel.Convert
             if (roots.Count == 0)
                 throw new InvalidDataException("GLTF contains no nodes");
 
-            ObjectNode root;
+            ObjectData.Node root;
             bool extraRoot = false;
             if (roots.Count > 1)
             {
                 extraRoot = true;
-                root = new ObjectNode()
+                root = new ObjectData.Node()
                 {
                     Name = "Root"
                 };
@@ -100,17 +100,17 @@ namespace SATools.SAModel.Convert
                 root = roots[0];
             }
 
-            ObjectNode[] objects = root.GetObjects();
+            ObjectData.Node[] objects = root.GetObjects();
 
             //Note: not supporting reused meshes
             List<WeightedBufferAttach> weightedAttaches = new();
 
-            foreach (ObjectNode njo in objects)
+            foreach (ObjectData.Node njo in objects)
             {
                 if (extraRoot && njo == root)
                     continue;
 
-                Node node = invertedObjectsPairs[njo];
+                SharpGLTF.Schema2.Node node = invertedObjectsPairs[njo];
 
                 if (node.Mesh == null)
                     continue;
@@ -124,7 +124,7 @@ namespace SATools.SAModel.Convert
                     skinMap = new int[skin.JointsCount];
                     for (int i = 0; i < skin.JointsCount; i++)
                     {
-                        (Node bone, _) = skin.GetJoint(i);
+                        (SharpGLTF.Schema2.Node bone, _) = skin.GetJoint(i);
                         skinMap[i] = Array.IndexOf(objects, objectsPairs[bone]);
                     }
                 }
@@ -155,9 +155,9 @@ namespace SATools.SAModel.Convert
             return new Contents(root, textures, animations);
         }
 
-        private static ObjectNode FromNode(Node node, Dictionary<Node, ObjectNode> objects)
+        private static ObjectData.Node FromNode(SharpGLTF.Schema2.Node node, Dictionary<SharpGLTF.Schema2.Node, ObjectData.Node> objects)
         {
-            ObjectNode result = new();
+            ObjectData.Node result = new();
             if (string.IsNullOrWhiteSpace(node.Name))
                 result.Name = "Node_" + node.LogicalIndex;
             else
@@ -176,7 +176,7 @@ namespace SATools.SAModel.Convert
             return result;
         }
 
-        private static WeightedBufferAttach FromMesh(Mesh mesh, int[] skinMap, Matrix4x4 meshMatrix, ObjectNode[] nodes)
+        private static WeightedBufferAttach FromMesh(Mesh mesh, int[] skinMap, Matrix4x4 meshMatrix, ObjectData.Node[] nodes)
         {
             List<WeightedVertex> vertices = new();
             List<BufferCorner[]> corners = new();

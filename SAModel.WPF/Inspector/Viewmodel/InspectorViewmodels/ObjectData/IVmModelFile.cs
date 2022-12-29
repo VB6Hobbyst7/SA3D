@@ -1,6 +1,6 @@
 ﻿using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.Collections.ObjectModel;
 
@@ -24,11 +24,11 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
             => ModelFile.NJFile;
 
         [Tooltip("The tip of the models object tree")]
-        public ObjectNode Model
+        public Node Model
             => ModelFile.Model;
 
         [Tooltip("All objects in hierarchial order")]
-        public ObjectNode[] Models { get; }
+        public Node[] Models { get; }
 
         [Tooltip("Animations either embedded or referenced in the file")]
         public ReadOnlyCollection<Motion> Animations

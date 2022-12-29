@@ -1,6 +1,6 @@
 ﻿using SATools.SAArchive;
 using SATools.SAModel.Graphics.APIAccess;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

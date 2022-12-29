@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System.IO;
 using System.Windows;
 

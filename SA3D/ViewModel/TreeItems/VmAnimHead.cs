@@ -1,5 +1,5 @@
 ﻿using SATools.SA3D.ViewModel.Base;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData.Animation;
 using System.Collections.Generic;
 
 namespace SATools.SA3D.ViewModel.TreeItems

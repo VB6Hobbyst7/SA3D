@@ -3,7 +3,7 @@ using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.Graphics.Properties;
 using SATools.SAModel.Graphics.UI;
 using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using SATools.SAModel.Structs;
 using System;
 using System.Collections.Generic;
@@ -77,7 +77,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// see <see cref="ActiveNJO"/>
         /// </summary>
-        private ObjectNode _activeNJO;
+        private Node _activeNJO;
 
         /// <summary>
         /// see <see cref="ActiveLE"/>
@@ -208,7 +208,7 @@ namespace SATools.SAModel.Graphics
         /// <summary>
         /// Active NJ Object
         /// </summary>
-        public ObjectNode ActiveNJO
+        public Node ActiveNJO
         {
             get => _activeNJO;
             set

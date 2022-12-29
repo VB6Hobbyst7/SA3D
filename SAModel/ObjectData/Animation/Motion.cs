@@ -7,7 +7,7 @@ using System.Text;
 using static SATools.SACommon.ByteConverter;
 using static SATools.SACommon.StringExtensions;
 
-namespace SATools.SAModel.ObjData.Animation
+namespace SATools.SAModel.ObjectData.Animation
 {
     /// <summary>
     /// Animation data of a model

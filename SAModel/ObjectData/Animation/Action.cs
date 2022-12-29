@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using static SATools.SACommon.ByteConverter;
 
-namespace SATools.SAModel.ObjData.Animation
+namespace SATools.SAModel.ObjectData.Animation
 {
     /// <summary>
     /// Model and Motion in one struct
@@ -14,7 +14,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// <summary>
         /// Assigned model
         /// </summary>
-        public ObjectNode Model { get; }
+        public Node Model { get; }
 
         /// <summary>
         /// Animation of the model
@@ -26,7 +26,7 @@ namespace SATools.SAModel.ObjData.Animation
         /// </summary>
         /// <param name="model"></param>
         /// <param name="animation"></param>
-        public Action(ObjectNode model, Motion animation)
+        public Action(Node model, Motion animation)
         {
             Model = model;
             Animation = animation;
@@ -49,7 +49,7 @@ namespace SATools.SAModel.ObjData.Animation
             if (mdlAddress == 0)
                 throw new FormatException($"Action at {address:X8} does not have a model!");
             mdlAddress -= imagebase;
-            ObjectNode mdl = ObjectNode.Read(source, mdlAddress, imagebase, format, DX, labels, attaches);
+            Node mdl = Node.Read(source, mdlAddress, imagebase, format, DX, labels, attaches);
 
             uint aniAddress = source.ToUInt32(address + 4);
             if (aniAddress == 0)

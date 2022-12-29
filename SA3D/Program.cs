@@ -1,7 +1,7 @@
 ﻿using SATools.SAArchive;
 using SATools.SAModel.Graphics;
 using SATools.SAModel.Graphics.OpenGL;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -139,14 +139,14 @@ namespace SATools.SA3D
                 string ext = Path.GetExtension(path);
                 if (ext.EndsWith("lvl"))
                 {
-                    var ltbl = SAModel.ObjData.LandTable.ReadFile(path);
+                    var ltbl = SAModel.ObjectData.LandTable.ReadFile(path);
                     context.Scene.LoadLandtable(ltbl);
                     if (textures != null)
                         context.Scene.LandTextureSet = textures;
                 }
                 else if (ext.EndsWith("mdl") || ext.EndsWith("nj"))
                 {
-                    var file = SAModel.ObjData.ModelFile.Read(path);
+                    var file = SAModel.ObjectData.ModelFile.Read(path);
                     DebugTask task = new(file.Model, textures, Path.GetFileNameWithoutExtension(path));
 
                     if (motionPath != null)

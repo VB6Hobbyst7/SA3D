@@ -1,7 +1,7 @@
 ﻿using SATools.SAModel.Graphics.APIAccess;
 using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using SATools.SAModel.Structs;
 using System.Collections.Generic;
 using System.Numerics;
@@ -47,7 +47,7 @@ namespace SATools.SAModel.Graphics
     {
         #region Preparing render meshes
 
-        public static List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels(IReadOnlyCollection<GameTask> tasks, ObjectNode active, Camera cam, BufferingBridge buffer)
+        public static List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> PrepareModels(IReadOnlyCollection<GameTask> tasks, Node active, Camera cam, BufferingBridge buffer)
         {
             List<(DisplayTask task, List<RenderMesh> opaque, List<RenderMesh> transparent)> result = new();
 
@@ -69,12 +69,12 @@ namespace SATools.SAModel.Graphics
         }
 
         private static void PrepareModel(
-            this ObjectNode obj,
+            this Node obj,
             List<RenderMesh> opaque,
             List<RenderMesh> transparent,
             BufferingBridge buffer,
             Camera cam,
-            ObjectNode activeObj,
+            Node activeObj,
             Matrix4? parentWorld,
             bool weighted)
         {
@@ -106,7 +106,7 @@ namespace SATools.SAModel.Graphics
         }
 
 
-        internal static void GetModelLine(ObjectNode obj, List<Vector3> lines, Matrix4? parentWorld)
+        internal static void GetModelLine(Node obj, List<Vector3> lines, Matrix4? parentWorld)
         {
             Matrix4 world = obj.LocalMatrix;
             if (parentWorld.HasValue)

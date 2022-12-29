@@ -1,7 +1,7 @@
 ﻿using Reloaded.Memory.Streams;
 using SATools.SACommon;
 using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using static SATools.SACommon.ByteConverter;
 
-namespace SATools.SAModel.ObjData
+namespace SATools.SAModel.ObjectData
 {
     /// <summary>
     /// Stores a hierarchy of NJS_Objects and Attaches
@@ -109,7 +109,7 @@ namespace SATools.SAModel.ObjData
         /// <summary>
         /// Hierarchy tip of the file
         /// </summary>
-        public ObjectNode Model { get; }
+        public Node Model { get; }
 
         /// <summary>
         /// Animations from files references in the meta data
@@ -121,7 +121,7 @@ namespace SATools.SAModel.ObjData
         /// </summary>
         public MetaData MetaData { get; }
 
-        private ModelFile(AttachFormat format, ObjectNode model, Motion[] animations, MetaData metaData, bool nj)
+        private ModelFile(AttachFormat format, Node model, Motion[] animations, MetaData metaData, bool nj)
         {
             Format = format;
             Model = model;
@@ -150,7 +150,7 @@ namespace SATools.SAModel.ObjData
             PushBigEndian(false);
 
             AttachFormat? format = null;
-            ObjectNode model;
+            Node model;
             Dictionary<uint, Attach> attaches = new();
             List<Motion> Animations = new();
             MetaData metaData = new();
@@ -206,7 +206,7 @@ namespace SATools.SAModel.ObjData
 
                 // the addresses start 8 bytes ahead, and since we always subtract the image base from the addresses,
                 // we have to add them this time, so we invert the 8 to add 8 by subtracting
-                model = ObjectNode.Read(source, ninjaOffset, ~(ninjaOffset - 1), format.Value, false, new(), attaches);
+                model = Node.Read(source, ninjaOffset, ~(ninjaOffset - 1), format.Value, false, new(), attaches);
                 nj = true;
             }
             else
@@ -244,7 +244,7 @@ namespace SATools.SAModel.ObjData
                 metaData = MetaData.Read(source, version, true);
                 Dictionary<uint, string> labels = new(metaData.Labels);
 
-                model = ObjectNode.Read(source, source.ToUInt32(8), 0, format.Value, false, labels, attaches);
+                model = Node.Read(source, source.ToUInt32(8), 0, format.Value, false, labels, attaches);
 
                 // reading animations
                 if (filename != null)
@@ -291,7 +291,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="outputPath">The path of the file</param>
         /// <param name="NJ">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
-        public static void WriteToFile(string outputPath, AttachFormat format, bool NJ, ObjectNode model)
+        public static void WriteToFile(string outputPath, AttachFormat format, bool NJ, Node model)
             => WriteToFile(outputPath, format, NJ, model, new MetaData());
 
         /// <summary>
@@ -305,7 +305,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="description">Description of the files contents</param>
         /// <param name="metadata">Other meta data</param>
         /// <param name="animFiles">Animation file paths</param>
-        public static void WriteToFile(string outputPath, AttachFormat format, bool NJ, ObjectNode model, MetaData metaData)
+        public static void WriteToFile(string outputPath, AttachFormat format, bool NJ, Node model, MetaData metaData)
         {
             File.WriteAllBytes(outputPath, Write(format, NJ, model, metaData));
         }
@@ -316,7 +316,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="format">Format of the file</param>
         /// <param name="NJFile">Whether to write an nj binary</param>
         /// <param name="model">The root model to write to the file</param>
-        public static byte[] Write(AttachFormat format, bool NJFile, ObjectNode model)
+        public static byte[] Write(AttachFormat format, bool NJFile, Node model)
             => Write(format, NJFile, model, new MetaData());
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace SATools.SAModel.ObjData
         /// <param name="description">Description of the files contents</param>
         /// <param name="metadata">Other meta data</param>
         /// <param name="animFiles">Animation file paths</param>
-        public static byte[] Write(AttachFormat format, bool NJFile, ObjectNode model, MetaData metaData)
+        public static byte[] Write(AttachFormat format, bool NJFile, Node model, MetaData metaData)
         {
             using ExtendedMemoryStream stream = new();
             EndianWriter writer = new(stream);
@@ -393,9 +393,9 @@ namespace SATools.SAModel.ObjData
         /// <param name="DX">Whether the file is for SADX</param>
         /// <param name="model">Top level object to write</param>
         /// <param name="textures">Texture list</param>
-        public static void WriteNJA(string outputPath, bool DX, ObjectNode model, string[]? textures = null)
+        public static void WriteNJA(string outputPath, bool DX, Node model, string[]? textures = null)
         {
-            ObjectNode[] objects = model.GetObjects();
+            Node[] objects = model.GetObjects();
             Attach[] attaches = model.GetAttaches();
 
             AttachFormat fmt;
@@ -420,7 +420,7 @@ namespace SATools.SAModel.ObjData
             writer.WriteLine("OBJECT_START");
             writer.WriteLine();
 
-            foreach (ObjectNode obj in objects.Reverse())
+            foreach (Node obj in objects.Reverse())
             {
                 obj.WriteNJA(writer, labels);
             }

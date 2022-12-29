@@ -1,5 +1,5 @@
 ﻿using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System;
 using System.Collections.ObjectModel;
 using System.Numerics;
@@ -9,10 +9,10 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
     internal class IVmNJObject : InspectorViewModel
     {
         protected override Type ViewmodelType
-            => typeof(ObjectNode);
+            => typeof(Node);
 
-        private ObjectNode NJObject
-            => (ObjectNode)Source;
+        private Node NJObject
+            => (Node)Source;
 
         [Tooltip("C label of the NJObject Object")]
         public string Name
@@ -22,14 +22,14 @@ namespace SATools.SAModel.WPF.Inspector.Viewmodel.InspectorViewmodels.ObjectData
         }
 
         [Tooltip("Parent Object")]
-        public ObjectNode Parent
+        public Node Parent
         {
             get => NJObject.Parent;
             set => value.AddChild(NJObject);
         }
 
         [Tooltip("Children objects")]
-        public ReadOnlyCollection<ObjectNode> Children
+        public ReadOnlyCollection<Node> Children
             => NJObject.Children;
 
         [Tooltip("Mesh information")]

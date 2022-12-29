@@ -1,7 +1,7 @@
 ﻿using SATools.SAArchive;
 using SATools.SAModel.ModelData;
-using SATools.SAModel.ObjData;
-using SATools.SAModel.ObjData.Animation;
+using SATools.SAModel.ObjectData;
+using SATools.SAModel.ObjectData.Animation;
 using System;
 using System.Collections.Generic;
 
@@ -49,7 +49,7 @@ namespace SATools.SAModel.Graphics
 
         private TextureSet _textureSet;
 
-        public ObjectNode Model { get; private set; }
+        public Node Model { get; private set; }
 
         public TextureSet TextureSet
         {
@@ -62,14 +62,14 @@ namespace SATools.SAModel.Graphics
             }
         }
 
-        public DisplayTask(ObjectNode obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? (obj == null ? "New Model" : obj.Name) : name)
+        public DisplayTask(Node obj, TextureSet textureSet, string name = null) : base(string.IsNullOrWhiteSpace(name) ? (obj == null ? "New Model" : obj.Name) : name)
         {
             Model = obj ?? throw new ArgumentNullException("New model cannot be null!");
             Model.ConvertAttachFormat(AttachFormat.Buffer, true, false);
             TextureSet = textureSet;
         }
 
-        public void ReplaceModel(ObjectNode newModel)
+        public void ReplaceModel(Node newModel)
         {
             Model = newModel ?? throw new ArgumentNullException("New model cannot be null!");
             Model?.ConvertAttachFormat(AttachFormat.Buffer, true, false);
@@ -98,7 +98,7 @@ namespace SATools.SAModel.Graphics
 
         public float AnimationTimestamp { get; set; }
 
-        public DebugTask(ObjectNode obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
+        public DebugTask(Node obj, TextureSet textureSet, string name = null) : base(obj, textureSet, name)
         {
             Motions = new();
         }
@@ -113,12 +113,12 @@ namespace SATools.SAModel.Graphics
             AnimationTimestamp += (float)(delta * AnimationSpeed * motion.PlaybackSpeed);
             AnimationTimestamp %= motion.Frames - 1;
 
-            ObjectNode[] models = Model.GetObjects();
+            Node[] models = Model.GetObjects();
             for (int i = 0; i < models.Length; i++)
             {
                 if (motion.Keyframes.ContainsKey(i))
                 {
-                    ObjectNode mdl = models[i];
+                    Node mdl = models[i];
                     if (!mdl.Animate)
                         continue;
                     Frame frame = motion.Keyframes[i].GetFrameAt(AnimationTimestamp);

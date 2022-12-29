@@ -1,12 +1,12 @@
 ﻿using SATools.SA3D.ViewModel.Base;
-using SATools.SAModel.ObjData;
+using SATools.SAModel.ObjectData;
 using System.Collections.Generic;
 
 namespace SATools.SA3D.ViewModel.TreeItems
 {
     public class VmModelHead : BaseViewModel, ITreeItemData
     {
-        public ObjectNode ObjectData { get; }
+        public Node ObjectData { get; }
 
         public TreeItemType ItemType
             => TreeItemType.ModelHead;
@@ -28,7 +28,7 @@ namespace SATools.SA3D.ViewModel.TreeItems
 
         }
 
-        public VmModelHead(ObjectNode objectData)
+        public VmModelHead(Node objectData)
         {
             ObjectData = objectData;
         }
