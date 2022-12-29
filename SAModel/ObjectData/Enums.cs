@@ -42,7 +42,7 @@ namespace SATools.SAModel.ObjectData
     /// NJS object flags
     /// </summary>
     [Flags]
-    public enum ObjectAttributes : uint
+    public enum NodeAttributes : uint
     {
         NoPosition = 0x01,
         NoRotation = 0x02,

@@ -567,16 +567,16 @@
 
     <!--#endregion-->
 
-    <DataTemplate x:Key="ObjectAttributes" DataType="{x:Type objEnums:ObjectAttributes}">
+    <DataTemplate x:Key="ObjectAttributes" DataType="{x:Type objEnums:NodeAttributes}">
         <sub:FlagListBox Style="{StaticResource HexFlagList2}">
-            <sub:HexFlagListItem Content="No Position"   Flag="{x:Static objEnums:ObjectAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
-            <sub:HexFlagListItem Content="No Rotation"   Flag="{x:Static objEnums:ObjectAttributes.NoRotation}"    ToolTip="No/Ignore rotation Data"/>
-            <sub:HexFlagListItem Content="No Scale"      Flag="{x:Static objEnums:ObjectAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
-            <sub:HexFlagListItem Content="Skip Draw"     Flag="{x:Static objEnums:ObjectAttributes.SkipDraw}"      ToolTip="No/Ignore display Task"/>
-            <sub:HexFlagListItem Content="Skip Children" Flag="{x:Static objEnums:ObjectAttributes.SkipChildren}"  ToolTip="No/Ignore children"/>
-            <sub:HexFlagListItem Content="Rotate ZYX"    Flag="{x:Static objEnums:ObjectAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
-            <sub:HexFlagListItem Content="No Animate"    Flag="{x:Static objEnums:ObjectAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
-            <sub:HexFlagListItem Content="No Morph"      Flag="{x:Static objEnums:ObjectAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
+            <sub:HexFlagListItem Content="No Position"   Flag="{x:Static objEnums:NodeAttributes.NoPosition}"    ToolTip="No/Ignore position Data"/>
+            <sub:HexFlagListItem Content="No Rotation"   Flag="{x:Static objEnums:NodeAttributes.NoRotation}"    ToolTip="No/Ignore rotation Data"/>
+            <sub:HexFlagListItem Content="No Scale"      Flag="{x:Static objEnums:NodeAttributes.NoScale}"       ToolTip="No/Ignore scale Data"/>
+            <sub:HexFlagListItem Content="Skip Draw"     Flag="{x:Static objEnums:NodeAttributes.SkipDraw}"      ToolTip="No/Ignore display Task"/>
+            <sub:HexFlagListItem Content="Skip Children" Flag="{x:Static objEnums:NodeAttributes.SkipChildren}"  ToolTip="No/Ignore children"/>
+            <sub:HexFlagListItem Content="Rotate ZYX"    Flag="{x:Static objEnums:NodeAttributes.RotateZYX}"     ToolTip="Inverted euler rotation"/>
+            <sub:HexFlagListItem Content="No Animate"    Flag="{x:Static objEnums:NodeAttributes.NoAnimate}"     ToolTip="Ignore object for animations"/>
+            <sub:HexFlagListItem Content="No Morph"      Flag="{x:Static objEnums:NodeAttributes.NoMorph}"       ToolTip="Ignore object for morphs"/>
         </sub:FlagListBox>
     </DataTemplate>
 

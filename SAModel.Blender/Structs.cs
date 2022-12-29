@@ -14,10 +14,10 @@ namespace SATools.SAModel.Blender
         public string name;
         public Matrix4x4 worldMatrix;
         public int parentIndex;
-        public ObjectAttributes attributes;
+        public NodeAttributes attributes;
 
         public NodeStruct(
-            string name, int parentIndex, ObjectAttributes attributes,
+            string name, int parentIndex, NodeAttributes attributes,
             float m11, float m12, float m13, float m14,
             float m21, float m22, float m23, float m24,
             float m31, float m32, float m33, float m34,

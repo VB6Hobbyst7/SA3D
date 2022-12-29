@@ -182,32 +182,32 @@ namespace SATools.SAModel.ObjectData
 
         public bool NoPosition
         {
-            get => Attributes.HasFlag(ObjectAttributes.NoPosition);
-            set => SetObjectAttribute(ObjectAttributes.NoPosition, value);
+            get => Attributes.HasFlag(NodeAttributes.NoPosition);
+            set => SetObjectAttribute(NodeAttributes.NoPosition, value);
         }
 
         public bool NoRotation
         {
-            get => Attributes.HasFlag(ObjectAttributes.NoRotation);
-            set => SetObjectAttribute(ObjectAttributes.NoRotation, value);
+            get => Attributes.HasFlag(NodeAttributes.NoRotation);
+            set => SetObjectAttribute(NodeAttributes.NoRotation, value);
         }
 
         public bool NoScale
         {
-            get => Attributes.HasFlag(ObjectAttributes.NoScale);
-            set => SetObjectAttribute(ObjectAttributes.NoScale, value);
+            get => Attributes.HasFlag(NodeAttributes.NoScale);
+            set => SetObjectAttribute(NodeAttributes.NoScale, value);
         }
 
         public bool SkipDraw
         {
-            get => Attributes.HasFlag(ObjectAttributes.SkipDraw);
-            set => SetObjectAttribute(ObjectAttributes.SkipDraw, value);
+            get => Attributes.HasFlag(NodeAttributes.SkipDraw);
+            set => SetObjectAttribute(NodeAttributes.SkipDraw, value);
         }
 
         public bool SkipChildren
         {
-            get => Attributes.HasFlag(ObjectAttributes.SkipChildren);
-            set => SetObjectAttribute(ObjectAttributes.SkipChildren, value);
+            get => Attributes.HasFlag(NodeAttributes.SkipChildren);
+            set => SetObjectAttribute(NodeAttributes.SkipChildren, value);
         }
 
         /// <summary>
@@ -215,8 +215,8 @@ namespace SATools.SAModel.ObjectData
         /// </summary>
         public bool RotateZYX
         {
-            get => Attributes.HasFlag(ObjectAttributes.RotateZYX);
-            private set => SetObjectAttribute(ObjectAttributes.RotateZYX, value);
+            get => Attributes.HasFlag(NodeAttributes.RotateZYX);
+            private set => SetObjectAttribute(NodeAttributes.RotateZYX, value);
         }
 
         /// <summary>
@@ -224,8 +224,8 @@ namespace SATools.SAModel.ObjectData
         /// </summary>
         public bool Animate
         {
-            get => !Attributes.HasFlag(ObjectAttributes.NoAnimate);
-            set => SetObjectAttribute(ObjectAttributes.NoAnimate, !value);
+            get => !Attributes.HasFlag(NodeAttributes.NoAnimate);
+            set => SetObjectAttribute(NodeAttributes.NoAnimate, !value);
         }
 
         /// <summary>
@@ -233,14 +233,14 @@ namespace SATools.SAModel.ObjectData
         /// </summary>
         public bool Morph
         {
-            get => !Attributes.HasFlag(ObjectAttributes.NoMorph);
-            set => SetObjectAttribute(ObjectAttributes.NoMorph, !value);
+            get => !Attributes.HasFlag(NodeAttributes.NoMorph);
+            set => SetObjectAttribute(NodeAttributes.NoMorph, !value);
         }
 
         /// <summary>
         /// Various attributes summarizing the data inside of the object
         /// </summary>
-        public ObjectAttributes Attributes { get; private set; }
+        public NodeAttributes Attributes { get; private set; }
 
         #endregion
 
@@ -277,7 +277,7 @@ namespace SATools.SAModel.ObjectData
         private void UpdateMatrix()
             => LocalMatrix = QuaternionExtensions.CreateTransformMatrix(_position, _quaternionRotation, _scale);
 
-        private void SetObjectAttribute(ObjectAttributes attribute, bool state)
+        private void SetObjectAttribute(NodeAttributes attribute, bool state)
         {
             if (state)
                 Attributes |= attribute;
@@ -285,7 +285,7 @@ namespace SATools.SAModel.ObjectData
                 Attributes &= ~attribute;
         }
 
-        public void SetAllObjectAttributes(ObjectAttributes attributes, bool updateRotation = true)
+        public void SetAllObjectAttributes(NodeAttributes attributes, bool updateRotation = true)
         {
             bool rotateXYZBefore = RotateZYX;
             Attributes = attributes;
@@ -328,10 +328,10 @@ namespace SATools.SAModel.ObjectData
             string name = labels.ContainsKey(address) ? labels[address] : "object_" + address.ToString("X8");
 
             // reading object attributes
-            ObjectAttributes attribs = (ObjectAttributes)source.ToInt32(address);
-            bool rotateZYX = attribs.HasFlag(ObjectAttributes.RotateZYX);
-            bool animate = !attribs.HasFlag(ObjectAttributes.NoAnimate);
-            bool morph = !attribs.HasFlag(ObjectAttributes.NoMorph);
+            NodeAttributes attribs = (NodeAttributes)source.ToInt32(address);
+            bool rotateZYX = attribs.HasFlag(NodeAttributes.RotateZYX);
+            bool animate = !attribs.HasFlag(NodeAttributes.NoAnimate);
+            bool morph = !attribs.HasFlag(NodeAttributes.NoMorph);
 
             // reading the attach
             Attach? atc = null;
