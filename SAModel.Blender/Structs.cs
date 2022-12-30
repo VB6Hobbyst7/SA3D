@@ -1,5 +1,4 @@
-﻿using SATools.SACommon;
-using SATools.SAModel.ModelData;
+﻿using SATools.SAModel.ModelData;
 using SATools.SAModel.ModelData.Buffer;
 using SATools.SAModel.ModelData.GC;
 using SATools.SAModel.ModelData.Weighted;
@@ -139,17 +138,20 @@ namespace SATools.SAModel.Blender
         public WeightedVertex[] vertices;
         public BufferCorner[][] corners;
         public MaterialStruct[] materials;
+        public bool forceVertexColors;
 
         public MeshStruct(
             string name,
             WeightedVertex[] vertices,
             BufferCorner[][] corners,
-            MaterialStruct[] materials)
+            MaterialStruct[] materials,
+            bool forceVertexColors)
         {
             this.name = name;
             this.vertices = vertices;
             this.corners = corners;
             this.materials = materials;
+            this.forceVertexColors = forceVertexColors;
         }
     }
 }

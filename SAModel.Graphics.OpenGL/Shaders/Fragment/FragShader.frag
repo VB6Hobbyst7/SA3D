@@ -151,15 +151,14 @@ void main()
 			// checking ambient flag
 			if((flags & NO_AMBIENT) == 0)
 			{
-				col += ambient * tex;
-				alpha *= ambient.a;
+				col += ambient;
 			}
 
 			// checking the diffuse flag
 			if((flags & NO_DIFFUSE) == 0)
 			{
 				col += tex * diffuse * lighting(viewDirection);
-				alpha *= diffuse.a;
+				alpha *= tex.a * diffuse.a;
 			}
 
 			// checking the specular flag

@@ -74,31 +74,32 @@ namespace SATools.SAModel.ModelData.BASIC
                 for (int i = 0; i < weightedAttach.Corners.Length; i++)
                 {
                     // creating the material
-                    Material mat = new();
                     BufferMaterial bmat = weightedAttach.Materials[i];
-                    if (bmat != null)
-                    {
-                        mat.DiffuseColor = bmat.Diffuse;
-                        mat.SpecularColor = bmat.Specular;
-                        mat.Exponent = bmat.SpecularExponent;
-                        mat.TextureID = bmat.TextureIndex;
-                        mat.FilterMode = bmat.TextureFiltering;
-                        mat.MipmapDAdjust = bmat.MipmapDistanceAdjust;
-                        mat.SuperSample = bmat.AnisotropicFiltering;
-                        mat.ClampU = bmat.ClampU;
-                        mat.ClampV = bmat.ClampV;
-                        mat.MirrorU = bmat.MirrorU;
-                        mat.MirrorV = bmat.MirrorV;
-                        mat.UseAlpha = bmat.UseAlpha;
-                        mat.SourceAlpha = bmat.SourceBlendMode;
-                        mat.DestinationAlpha = bmat.DestinationBlendmode;
-                        mat.DoubleSided = !bmat.Culling;
 
-                        mat.IgnoreLighting = bmat.HasAttribute(MaterialAttributes.NoDiffuse);
-                        mat.IgnoreSpecular = bmat.HasAttribute(MaterialAttributes.NoSpecular);
-                        mat.UseTexture = bmat.HasAttribute(MaterialAttributes.UseTexture);
-                        mat.EnvironmentMap = bmat.HasAttribute(MaterialAttributes.NormalMapping);
-                    }
+                    Material mat = new()
+                    {
+                        DiffuseColor = bmat.Diffuse,
+                        SpecularColor = bmat.Specular,
+                        Exponent = bmat.SpecularExponent,
+                        TextureID = bmat.TextureIndex,
+                        FilterMode = bmat.TextureFiltering,
+                        MipmapDAdjust = bmat.MipmapDistanceAdjust,
+                        SuperSample = bmat.AnisotropicFiltering,
+                        ClampU = bmat.ClampU,
+                        ClampV = bmat.ClampV,
+                        MirrorU = bmat.MirrorU,
+                        MirrorV = bmat.MirrorV,
+                        UseAlpha = bmat.UseAlpha,
+                        SourceAlpha = bmat.SourceBlendMode,
+                        DestinationAlpha = bmat.DestinationBlendmode,
+                        DoubleSided = !bmat.Culling,
+
+                        IgnoreLighting = bmat.HasAttribute(MaterialAttributes.NoDiffuse),
+                        IgnoreSpecular = bmat.HasAttribute(MaterialAttributes.NoSpecular),
+                        UseTexture = bmat.HasAttribute(MaterialAttributes.UseTexture),
+                        EnvironmentMap = bmat.HasAttribute(MaterialAttributes.NormalMapping)
+                    };
+
                     materials[i] = mat;
 
                     // creating the polygons

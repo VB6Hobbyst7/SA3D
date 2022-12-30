@@ -629,7 +629,7 @@ namespace SATools.SAModel.ModelData.CHUNK
                     for (int k = offset; k < stripMap.Length; k++)
                         stripCorners[k - offset] = distinct[stripMap[k]];
 
-                    strips[i] = new PolyChunkStrip.Strip(stripCorners, reversed);
+                    strips[i] = new PolyChunkStrip.Strip(stripCorners, !reversed);
                 }
             }
             else

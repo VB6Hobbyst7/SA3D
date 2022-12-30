@@ -78,7 +78,7 @@ namespace SATools.SAModel.ModelData.Weighted
 
         public int GetLastWeightIndex()
         {
-            for (int i = Weights.Length - 1; i >= 0; i++)
+            for (int i = Weights.Length - 1; i >= 0; i--)
                 if (Weights[i] > 0f)
                     return i;
             return -1;

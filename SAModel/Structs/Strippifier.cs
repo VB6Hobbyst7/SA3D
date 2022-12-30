@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SATools.SAModel.Structs
@@ -514,15 +515,12 @@ namespace SATools.SAModel.Structs
                 tri.used = true;
             }
 
-            Triangle getFirstTri()
+            Triangle? getFirstTri()
             {
                 Triangle? resultTri = null;
-                int curNCount = int.MaxValue;
 
-                int i = -1;
                 foreach (Triangle t in mesh.triangles)
                 {
-                    i++;
                     if (t.used)
                         continue;
 
@@ -533,20 +531,24 @@ namespace SATools.SAModel.Structs
                         continue;
                     }
 
-                    if (tnCount < curNCount)
+                    if(resultTri == null)
+                    {
+                        resultTri = t;
+                        continue;
+                    }
+
+                    if (tnCount < resultTri.AvailableNeighbours.Length)
                     {
                         if (tnCount == 1)
                             return t;
-                        curNCount = tnCount;
                         resultTri = t;
                     }
-
                 }
 
-                return resultTri ?? throw new NullReferenceException("No more first triangles");
+                return resultTri;
             }
 
-            Triangle firstTri = getFirstTri();
+            Triangle? firstTri = getFirstTri();
 
             // as long as some triangles remain to be written, keep the loop running
             while (written != triCount)
@@ -558,7 +560,7 @@ namespace SATools.SAModel.Structs
 
                 // the first thing we gotta do is determine the
                 // first (max) 3 triangles to write
-                Triangle currentTri = firstTri;
+                Triangle currentTri = firstTri ?? throw new NullReferenceException("First triangle is null!");
                 currentTri.used = true;
 
                 Triangle newTri = currentTri.NextTriangleS() ?? throw new InvalidOperationException("First tri somehow has no usable neighbours");
